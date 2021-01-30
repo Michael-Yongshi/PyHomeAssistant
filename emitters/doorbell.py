@@ -11,9 +11,6 @@ from signal import pause
 # for handling the GPIO connections
 from gpiozero import LED, Button
 
-# for sounds
-import simpleaudio
-
 # set GPIO connection variables used for the button (with hold time) and led
 button = Button(4, hold_time=2.5)
 led = LED(18)
