@@ -10,6 +10,8 @@ class ListenState(hass.Hass):
 
     Test this class by manually setting a test state
     -> hass web ui -> developer tools -> state -> type "person.yongshi" -> state: 'online' -> set state
+
+    Technically a state change is still an event under the hood, although of a special kind and they all follow the event "state_changed".
     """
 
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
