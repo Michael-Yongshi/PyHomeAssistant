@@ -5,10 +5,10 @@
 
 import appdaemon.plugins.hass.hassapi as hass
 
-class ListenState(hass.Hass):
+class ServiceStateChange(hass.Hass):
     """
     Type of class:
-    - Generic script
+    - Service script
 
     Method called:
     - Changes state of entity 'person.yongshi'
@@ -27,7 +27,7 @@ class ListenState(hass.Hass):
             self.call_service("light/turn_on", entity_id = "light.arilux_rgb_led_controller", brightness = 255)
         
             # Now let's print a message when this function is called. Add the following line
-            self.log(f"Hey, Generic script ran!")
+            self.log(f"Hey, Service script ran!")
             self.log(f"The state of entity {entity} changed from {old} to {new}!")
 
         else:
