@@ -5,3 +5,7 @@ listen_event:
 listen_state:
   module: listen_state
   class: ListenState
+
+listen_sun:
+  module: listen_sun
+  class: ListenSun
