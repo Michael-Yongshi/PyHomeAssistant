@@ -9,6 +9,9 @@ class ListenSun(hass.Hass):
     - Print to log: "Hey, Listen!"
 
     Method is called whenever the sun rises or sets (which is a built-in event trigger)
+    See other built-in events here:
+    https://www.home-assistant.io/docs/configuration/events/
+    
     """
 
     def initialize(self):
