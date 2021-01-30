@@ -6,7 +6,7 @@ class ListenDoorbell(hass.Hass):
     - Event Listener
 
     Method called:
-    - Print to log: "Hey, Listen!"
+    - Create message and send to the telegram bot
     
     Test this class by firing a test event
     -> hass web ui -> developer tools -> events -> type "DOORBELL_PRESSED" -> fire event
@@ -21,6 +21,12 @@ class ListenDoorbell(hass.Hass):
     # the method that is called when an event happens
     def event_happened(self, event_name, data, kwargs):
 
-        # Now let's print a message when this function is called. Add the following line
-        self.log(f"Hey, Listen!")
-        self.log(f"I heard that someone is at the door!")
+        message = f"I heard that someone is at the door!"
+        
+        # log the message
+        self.log(message)
+
+        # Call telegram message service to send the message from the telegram bot
+        self.call_service(
+            "telegram_bot/send_message", message=message,
+        )
