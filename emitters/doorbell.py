@@ -9,7 +9,7 @@ from time import sleep
 from signal import pause
 
 # for handling the GPIO connections
-from gpiozero import LED, Button
+from gpiozero import Button
 
 # set GPIO connection variables used for the button (with hold time) and led
 button = Button(4, hold_time=2.5)
@@ -28,9 +28,6 @@ def doorbell():
 def button_pressed():
     logging.debug('Button was pressed')
 
-    # turn on led to signal the visitor
-    led_on()
-
     # emit the event to home assistant
     emit_event()
 
@@ -39,9 +36,6 @@ def button_pressed():
     logging.debug(f'Going to sleep for {time} second')
     sleep(time)
 
-    # turn off led to signal the visitor ringing has ended
-    led_off()
-
 def button_held():
     logging.debug('Button was held')
 
@@ -49,16 +43,6 @@ def button_released():
 
     # Signal that program is continuing to listen to events
     logging.info('Listening for visitors')
-
-def led_on():
-
-    led.on()
-    logging.debug('Led is turned on')
-
-def led_off():
-
-    led.off()
-    logging.debug('Led is turned off')
 
 def emit_event():
 
