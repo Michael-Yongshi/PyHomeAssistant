@@ -9,3 +9,7 @@ listen_state:
 listen_sun:
   module: listen_sun
   class: ListenSun
+
+listen_door:
+  module: listen_doorbell
+  class: ListenDoorbell
