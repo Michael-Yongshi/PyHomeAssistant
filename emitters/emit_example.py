@@ -24,7 +24,7 @@ def emit_example():
 def emit_event(current_time):
 
     # default address for the rest api in default settings
-    url = "http://homeassistant:8123/api/events/EMIT_EXAMPLE"
+    url = "http://homeassistant:8123/api/events/EVENT_EXAMPLE"
 
     # open file with the api token
     with open(token_filepath, "r") as text_file:
@@ -40,9 +40,7 @@ def emit_event(current_time):
         "time": f"{current_time}",
     }
 
-    print(f"url = {url}")
-    print(f"headers = {headers}")
-    print(f"json = {json}")
+    print(f"url {url}, headers {headers}, json {json}")
 
     # send out the actual request to the api
     response = requests.post(url=url, headers=headers, json=json)
@@ -52,7 +50,3 @@ def emit_event(current_time):
 if __name__ == "__main__":
 
     emit_example()
-    # try:
-    #     emit_on_button_press()
-    # finally:
-    #     logging.critical('Emit encountered a critical error!')

@@ -1,6 +1,10 @@
-listen_event:
-  module: listen_event
-  class: ListenEvent
+listen_door:
+  module: listen_doorbell
+  class: ListenDoorbell
+
+listen_example:
+  module: listen_example
+  class: ListenExample
 
 listen_state:
   module: listen_state
@@ -9,7 +13,3 @@ listen_state:
 listen_sun:
   module: listen_sun
   class: ListenSun
-
-listen_door:
-  module: listen_doorbell
-  class: ListenDoorbell
