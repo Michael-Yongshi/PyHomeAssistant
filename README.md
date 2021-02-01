@@ -1,4 +1,6 @@
 # PyHomeAssistant
+Generic guide to installing a home assistant server (rpi)
+Describes how to let standalone devices emit events to the server and/or receive input from the server to trigger actions.
 
 ## How to
 
