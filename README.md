@@ -67,7 +67,7 @@ file that lists all runnable scripts in the format:
 scripts that listen for events or state changes before running, i.e. a ringer that plays only if the 'DOORBELL_PRESSED' event is received.
 
 #### Services
-scripts that contain generic methods to be reused in listeners, i.e. script to play a sound, which might be called by both a ringer and a smoke alarm script.
+scripts that contain generic methods or other functionality to be reused in listeners, i.e. script to play a sound, which might be called by both a ringer and a smoke alarm script.
 
 #### Home Assistant service to send request to another Rest API
 https://www.home-assistant.io/integrations/rest/
