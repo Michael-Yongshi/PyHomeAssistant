@@ -1,0 +1,12 @@
+[Unit]
+Description=Doorbell
+After=network.target
+
+[Service]
+User=pi
+WorkingDirectory=/
+ExecStart=python3 /home/pi/doorbell.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
