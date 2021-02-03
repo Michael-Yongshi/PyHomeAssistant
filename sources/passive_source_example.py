@@ -1,0 +1,1 @@
+# api flask python to receive a request for data instead of actively emitting it.

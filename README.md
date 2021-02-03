@@ -49,29 +49,33 @@ https://www.home-assistant.io/integrations/rest/
 The Rest sensor
 
 
+
+
+## listeners
+### Active listeners
+Programs on an external device that actively poll the HASS for data in order to execute a certain method on their own.
+I.e. Automatic car charger that polls the HASS for energy monitoring information to determine if its safe to keep charging the car or if the solar panels are generating electricity
+
+### Passive listeners
+Programs on an external device that receive data from the HASS through an api flask method in order to execute a certain method.
+I.e. Automatic car charger that can be forced to charge or stop charging based on a request by the HASS (indirectly, the end user)
+
+## Services
+scripts that contain methods on the HASS itself. They can receive information from emitters, process data and transmit information or commands to listeners.
+for example to receive emitter information, process information and act.or other functionality to be reused in listeners, i.e. script to play a sound, which might be called by both a ringer and a smoke alarm script.
+
 ### Apdeamon Apps
 Apdeamon makes it possible to run any python script in Home Assistant.
-These are 'Listen' scripts, that are triggered by a certain condition, or 'Service' scripts, that are pieces of reusable code.
+These are programs that are triggered by a certain condition, run permanently, or are pieces of reusable code (support functions).
 
-NOTE: You can use the appdaemon web ui log to see what happens in these programs, but the log in appdaemon prints from bottom to top!
-
-#### apps.yaml
-file that lists all runnable scripts in the format:
+apps.yaml: file that lists all runnable scripts in the format
 ```
 <name>
   module: <filename>
   class: <classname>
 ```
 
-#### listeners
-scripts that listen for events or state changes before running, i.e. a ringer that plays only if the 'DOORBELL_PRESSED' event is received.
-
-#### Services
-scripts that contain generic methods or other functionality to be reused in listeners, i.e. script to play a sound, which might be called by both a ringer and a smoke alarm script.
-
-#### Home Assistant service to send request to another Rest API
-https://www.home-assistant.io/integrations/rest/
-
+NOTE: You can use the appdaemon web ui log to see what happens in these programs, but the log in appdaemon prints from bottom to top!
 
 ## Build
 

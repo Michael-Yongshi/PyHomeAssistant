@@ -1,9 +1,9 @@
 import appdaemon.plugins.hass.hassapi as hass
 
-class ListenExample(hass.Hass):
+class ServiceExample(hass.Hass):
     """
     Type of class:
-    - Event Listener
+    - Event Watcher
 
     Method called:
     - Log event and data

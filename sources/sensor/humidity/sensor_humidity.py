@@ -1,4 +1,5 @@
-http://www.davidhunt.ie/damp-pi-shower-room-moisture-extraction-with-raspberry-pi/
+# http://www.davidhunt.ie/damp-pi-shower-room-moisture-extraction-with-raspberry-pi/
+# https://www.circuitbasics.com/how-to-set-up-the-dht11-humidity-sensor-on-the-raspberry-pi/
 
 import os.path
 from datetime import datetime

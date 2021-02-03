@@ -1,3 +1,5 @@
+# This is solely a listener and HAAS request
+
 import appdaemon.plugins.hass.hassapi as hass
 
 class ListenDoorbell(hass.Hass):

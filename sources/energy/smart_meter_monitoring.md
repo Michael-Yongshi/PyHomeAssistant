@@ -1,4 +1,7 @@
-# PySmart meter
+# PySmartMeter
+
+This would be solely an emitter (transmit current status to HASS)
+
 Standalone device that just reads the (Dutch) Smart Meter that interacts with a smart energy meter according to the Dutch Smart Meter Requirements (DSMR)
 The data is directly exposed over a (lan) ethernet connection using the ser2net library
 
