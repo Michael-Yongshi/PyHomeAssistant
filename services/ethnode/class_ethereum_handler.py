@@ -1,8 +1,5 @@
 # Eliminate the useless stuff, maybe just use for inspiration
 
-# We want to request balances of different wallets that are loaded and potentially (if we have the private key) create and send transactions.
-
-
 import os
 import json
 import base64
