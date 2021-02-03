@@ -23,7 +23,7 @@ Example /etc/ser2net.conf for proxying USB/serial connections to DSMRv2.2 smart 
 2001:raw:600:/dev/ttyUSB0:9600 EVEN 1STOPBIT 7DATABITS XONXOFF LOCAL -RTSCTS
 ```
 
-
+<!-- 
 ## Development
 ### tutorials used
 
@@ -38,7 +38,7 @@ sudo apt-get upgrade
 copy files from other pc (or install git and clone the repo)
 ```
 scp pc:~/PyHomeAssistant/Emitters/smartmeter/* ~/
-```
+``` -->
 
 ## Optional functions
 
