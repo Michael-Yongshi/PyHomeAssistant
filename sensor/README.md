@@ -9,6 +9,7 @@ This will periodically emit event data to your Home Assistant and will trigger a
 ### tutorials used
 https://www.raspberrypi-spy.co.uk/2013/10/analogue-sensors-on-the-raspberry-pi-using-an-mcp3008/
 
+https://kookye.com/2017/06/01/design-a-smoke-detector-through-a-raspberry-pi-board-and-mq-2-smoke-sensor/
 
 ### install a raspbian pi
 Update the os
