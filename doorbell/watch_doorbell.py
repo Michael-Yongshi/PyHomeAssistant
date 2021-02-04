@@ -1,4 +1,5 @@
-# This is solely a listener and HAAS request
+# This is the Home Assistant Appdaemon script in order to watch the DOORBELL_PRESSED
+# event fired by doorbell.py
 
 import appdaemon.plugins.hass.hassapi as hass
 

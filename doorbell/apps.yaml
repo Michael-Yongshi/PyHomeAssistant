@@ -1,11 +1,3 @@
-watch_event_example:
-  module: watch_event_example
-  class: WatchEventExample
-
-watch_state_example:
-  module: watch_state_example
-  class: WatchStateExample
-
 doorbell:
   module: doorbell_pressed
   class: Doorbell_Pressed

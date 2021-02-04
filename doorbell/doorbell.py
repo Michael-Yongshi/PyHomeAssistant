@@ -139,7 +139,8 @@ def emit_event(current_time):
 if __name__ == "__main__":
 
     doorbell()
-    # try:
-    #     doorbell()
-    # finally:
-    #     logging.critical('Doorbell encountered a critical error!')
+
+    # Use below methods directly to debug led or sound problems
+    # led_on()
+    # led_off()
+    # play_sound()
