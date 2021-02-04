@@ -14,7 +14,7 @@ tts:
 # Enable telegram bot
 telegram_bot:
   - platform: broadcast
-    api_key: 1600749849:AAFXq0uaXNbqgibGwRbqATZdZxYZCVIjDCs
+    api_key: <insertAPIkey>
     allowed_chat_ids:
       - 10944908 # example id of a user
 #      - -987654321  # example id of a group, starts with a -
