@@ -1,16 +1,15 @@
-# PySmartMeter
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
 
-## use dedicated p1 smart meter pi zero to convert serial data and open to polling by home assistant
+# group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
 
-
-
-
-### Home assistant
-# Example configuration.yaml entry for remote (TCP/IP, i.e., via ser2net) connection to host which is connected to Smartmeter
-
+# enable DSMR sensor
 sensor:
   - platform: dsmr
-    host: 192.168.1.13
+    host: 192.168.178.44
     port: 2001
     dsmr_version: 5
 

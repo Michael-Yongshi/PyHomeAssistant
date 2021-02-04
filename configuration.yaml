@@ -1,0 +1,42 @@
+
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+# group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+# Enable telegram bot
+telegram_bot:
+  - platform: broadcast
+    api_key: 1600749849:AAFXq0uaXNbqgibGwRbqATZdZxYZCVIjDCs
+    allowed_chat_ids:
+      - 10944908 # example id of a user
+#      - -987654321  # example id of a group, starts with a -
+
+# enable DSMR sensor
+sensor:
+  - platform: dsmr
+    host: 192.168.178.44
+    port: 2001
+    dsmr_version: 5
+
+  - platform: openevse
+    host: 192.168.178.200
+    monitored_variables:
+      - status
+
+group:
+  meter_readings:
+    name: Meter readings
+    entities:
+      - sensor.energy_consumption_tarif_1
+      - sensor.energy_consumption_tarif_2
+      - sensor.energy_production_tarif_1
+      - sensor.energy_production_tarif_2
+      - sensor.gas_consumption

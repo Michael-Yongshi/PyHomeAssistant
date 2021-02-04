@@ -1,6 +1,6 @@
 import appdaemon.plugins.hass.hassapi as hass
 
-class ServiceExample(hass.Hass):
+class WatchActiveSource(hass.Hass):
     """
     Type of class:
     - Event Watcher

@@ -1,5 +1,6 @@
-# Run in order to check if you can emit an event to home assistant. I will print a return if so.
+# Active source example using requests to do API calls from source directly to HASS
 
+# Run in order to check if you can emit an event to home assistant. I will print a return if so.
 
 import os.path
 from datetime import datetime

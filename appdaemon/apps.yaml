@@ -1,7 +1,0 @@
-service_door:
-  module: service_doorbell
-  class: ServiceDoorbell
-
-service_example:
-  module: service_example
-  class: ServiceExample

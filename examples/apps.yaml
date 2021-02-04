@@ -1,0 +1,4 @@
+watch_active_source:
+  module: watch_active_source
+  class: WatchActiveSource
+

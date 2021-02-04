@@ -2,7 +2,7 @@
 
 import appdaemon.plugins.hass.hassapi as hass
 
-class ListenDoorbell(hass.Hass):
+class DoorbellPressed(hass.Hass):
     """
     Type of class:
     - Event Listener
