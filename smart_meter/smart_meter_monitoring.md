@@ -21,11 +21,6 @@ Example /etc/ser2net.conf for proxying USB/serial connections to DSMRv4 smart me
 2001:raw:600:/dev/ttyUSB0:115200 NONE 1STOPBIT 8DATABITS XONXOFF LOCAL -RTSCTS
 ```
 
-Example /etc/ser2net.conf for proxying USB/serial connections to DSMRv2.2 smart meters
-```
-2001:raw:600:/dev/ttyUSB0:9600 EVEN 1STOPBIT 7DATABITS XONXOFF LOCAL -RTSCTS
-```
-
 <!-- 
 ## Development
 ### tutorials used
