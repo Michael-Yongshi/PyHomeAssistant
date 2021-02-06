@@ -7,6 +7,21 @@ Describes how to let standalone devices emit events to the server and/or receive
 ## Development
 https://wltd.org/posts/how-to-make-complex-automations-with-appdaemon-easily
 
+### Apdeamon Apps
+Apdeamon makes it possible to run any python script in Home Assistant.
+These are programs that are triggered by a certain condition, run permanently, or are pieces of reusable code (support functions).
+
+apps.yaml: file that lists all runnable scripts in the format
+```
+<name>
+  module: <filename>
+  class: <classname>
+```
+
+NOTE: You can use the appdaemon web ui log to see what happens in these programs, but the log in appdaemon prints from bottom to top!
+
+NOTE: Dont put any comments at the top of a python scipt used by Appdaemon, it will be unable to find the class and error out. put any comments you have within the class itself!
+
 ### Collect events
 #### Emit event to Home Assistant
 First we need to make sure our external sources can reach Home Assistant to push / emit events that trigger automations.
@@ -64,18 +79,6 @@ I.e. Automatic car charger that can be forced to charge or stop charging based o
 scripts that contain methods on the HASS itself. They can receive information from emitters, process data and transmit information or commands to listeners.
 for example to receive emitter information, process information and act.or other functionality to be reused in listeners, i.e. script to play a sound, which might be called by both a ringer and a smoke alarm script.
 
-### Apdeamon Apps
-Apdeamon makes it possible to run any python script in Home Assistant.
-These are programs that are triggered by a certain condition, run permanently, or are pieces of reusable code (support functions).
-
-apps.yaml: file that lists all runnable scripts in the format
-```
-<name>
-  module: <filename>
-  class: <classname>
-```
-
-NOTE: You can use the appdaemon web ui log to see what happens in these programs, but the log in appdaemon prints from bottom to top!
 
 ## Build
 
