@@ -1,7 +1,12 @@
+watch_active_source:
+  module: watch_active_source
+  class: WatchActiveSource
+
 watch_doorbell:
   module: watch_doorbell
   class: WatchDoorbell
 
-watch_active_source:
-  module: watch_active_source
-  class: WatchActiveSource
+watch_fan:
+  module: watch_fan
+  class: WatchFan
+  param1: override
