@@ -1,9 +1,6 @@
-# This is the Home Assistant Appdaemon script in order to watch the DOORBELL_PRESSED
-# event fired by doorbell.py
-
 import appdaemon.plugins.hass.hassapi as hass
 
-class DoorbellPressed(hass.Hass):
+class WatchDoorbell(hass.Hass):
     """
     Type of class:
     - Event Listener
@@ -28,6 +25,7 @@ class DoorbellPressed(hass.Hass):
         
         # log the message
         self.log(message)
+        self.log(f"data = {data}")
 
         # Call telegram message service to send the message from the telegram bot
         self.call_service(
