@@ -8,7 +8,7 @@
 
 import os
 import json # to convert python list and dicts to json strings
-from ventilation import set_speed, read_speed
+from fan import set_speed, read_speed
 
 from flask import Flask, request
 
