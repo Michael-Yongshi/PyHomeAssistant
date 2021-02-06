@@ -1,0 +1,10 @@
+  # for DSMR sensors
+  meter_readings:
+    name: Meter readings
+    entities:
+      - sensor.energy_consumption_tarif_1
+      - sensor.energy_consumption_tarif_2
+      - sensor.power_consumption_phase_l1
+      - sensor.power_consumption_phase_l2
+      - sensor.power_consumption_phase_l3
+      - sensor.gas_consumption
