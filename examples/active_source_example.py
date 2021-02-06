@@ -14,16 +14,11 @@ token_filepath = os.path.join(os.path.expanduser('~'), '.ssh', 'Home_API_Token')
 
 def emit_example():
 
-    while True:
+    # get current time and log
+    current_time = datetime.now()
 
-        # get current time and log
-        current_time = datetime.now()
-
-        # emit the event with data to Home Assistant
-        emit_event(current_time)
-
-        # send every couple of seconds
-        sleep(5)
+    # emit the event with data to Home Assistant
+    emit_event(current_time)
 
 def emit_event(current_time):
 
