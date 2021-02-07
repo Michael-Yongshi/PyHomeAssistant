@@ -43,7 +43,6 @@ class WatchFan(hass.Hass):
 
         # Call rest api of ventilation_api.pi on /override
         # add speed in data
-        # if speed is 0 stop override
 
     def humidity(self, event_name, data, kwargs):
         
@@ -54,11 +53,8 @@ class WatchFan(hass.Hass):
         message = f"Measured humidity at level {self.humidity}! \nCurrent date and time is: {date_time}"
         self.log(message)
 
-        if self.override == 0:
+        determine_setting()
 
-
-
-        
     def smoke(self, event_name, data, kwargs):
         
         level = data["level"]
@@ -68,19 +64,23 @@ class WatchFan(hass.Hass):
         message = f"Measured smoke at level {level}! \nCurrent date and time is: {date_time}"
         self.log(message)
 
-        self.override = 
+        determine_setting()
 
     def determine_setting():
 
-        if self.smoke <= 500:
-            if self.humidity >= 700:
-                self.log(f"level 700 or higher observed")
+        if self.smoke >= 600:
+            self.log(f"Smoke detected, switching off fan!")
+            # request speed 0
+        
+        else:
+            if self.humidity >= 500:
+                self.log(f"level 500 or higher observed, set fan to speed 3")
                 # request speed 3
 
-            elif level >= 500:
+            elif level >= 300:
                 # request speed 2
-                self.log(f"level between 500 and 700 observed")
+                self.log(f"level between 300 and 500 observed, set fan to speed 2")
 
             else:
                 # request_speed 1
-                self.log(f"level 500 or lower observed")
+                self.log(f"level 300 or lower observed, set fan to speed 1")

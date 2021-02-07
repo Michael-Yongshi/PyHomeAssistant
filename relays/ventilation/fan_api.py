@@ -44,7 +44,10 @@ def post_api():
 
     set_speed(speed=speed)
     
+    result = read_speed()
 
+    return f"Current speed is {result}"
+    
 if __name__ == '__main__':
 
     host = '127.0.0.1'
