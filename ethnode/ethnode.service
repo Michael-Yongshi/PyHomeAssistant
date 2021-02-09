@@ -1,0 +1,12 @@
+[Unit]
+Description=Ethereum Node
+After=network.target
+
+[Service]
+User=pi
+WorkingDirectory=/
+ExecStart=python3 /home/ethereum/ethnode/ethnode_api.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

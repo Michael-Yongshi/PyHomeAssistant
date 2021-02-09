@@ -1,8 +1,25 @@
-# Eliminate the useless stuff, maybe just use for inspiration
+# # Ethereum node
+# From home assistant use your own node to request wallet info or send your own transactions
+# This means you can use a and check the status on your phone, without cloud providers
+
+# For etherscan there is built in home assistant integration to use.
+# https://www.home-assistant.io/integrations/etherscan/
+
+# ## Goal
+# Get functions with an address parameter in order to
+# - get balance (input account / contract)
+# - get transactions (input account / contract)
+# - get details transaction (input transaction)
+# - post transaction (input transaction dict)
+
+# in Ethereum Handler class that is opened up as api connections
+
+
 
 import os
 import json
 import base64
+from flask import Flask, request
 import time
 
 # web3 local functions
@@ -10,36 +27,37 @@ from web3 import auto # standalone web3 functions and methods
 from web3 import eth # balance and stuff
 from eth_keys import keys # get public key derived from private key
 from eth_account import Account # local ethereum wallet functionality
-from eth_account.messages import encode_defunct # specific encoding for signing
 
 # web3 connection with node
 from web3 import Web3
 
-node_url = "127.0.0.1"
 
 class EthereumHandler(object):
-    def __init__(self):
+    def __init__(self, network=""):
         super().__init__()
 
         """Initialize a Web3 connection to the local node, if connect_type is given set up a non-http connection (websocket or local)
         returns the connection if it executes successfully"""
 
         # Connect to specific network (websocket, http or personal connection)
-        self.w3 = Web3(Web3.HTTPProvider(f"http://{node_url}"))
+        self.w3 = Web3(Web3.HTTPProvider(f"http://127.0.0.1:8545"))
 
         # check connection
         if self.w3.isConnected() == True:
-            print(f"Success: Web3 connection to ethereum node {node_url}")
+            print(f"Success: Web3 connection to ethereum node")
         else:
             # print(f"Pinging the target {ping(url)}")
-            print(f"Failed to create a Web3 connection to ethereum node {node_url}")
+            print(f"Failed to create a Web3 connection to ethereum node")
 
-    def get_balance(self, wallet_public_key):
-        balance = self.w3.eth.getBalance(wallet_public_key)
-        return balance
+    def txn_new(self, wallet_private_key, to_address, value):
 
-    def txn_new(self, from_address, to_address, value, wallet_private_key):
-        
+        # get from address public key
+        from_address = self.get_public_key(wallet_private_key)
+
+        # check balance
+        if self.get_balance(from_address) < value:
+            return "Insufficient Balance!"
+
         # trasnfer 1 eth to the users address
         wei = self.w3.toWei(value, "ether")
 
@@ -55,12 +73,15 @@ class EthereumHandler(object):
 
         # send transaction
         txn_receipt = self.txn_send(txn_signed)
+        print(txn_receipt)
 
         # result
-        txn_hash = txn_receipt['transactionHash'].hex()
-        print(f"Success: send {value} ETH from {from_address} to {to_address} with transaction hash {txn_hash}")
+        try:
+            txn_hash = txn_receipt['transactionHash'].hex()
+        except:
+            txn_hash = txn_receipt
 
-        return txn_receipt
+        return txn_hash
 
     def txn_create(self, from_address, to_address, value):
         """
@@ -98,7 +119,11 @@ class EthereumHandler(object):
         Returns the hash if it is successfully executed."""
 
         # send transaction
-        txn_hash = self.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
+        try:
+            txn_hash = self.w3.eth.sendRawTransaction(txn_signed.rawTransaction)
+        except:
+            return "Couldn't send transaction, do you have sufficient balance?"
+
         txn_hash_string = txn_hash.hex()
         print(f"--Sending TXN to the node with hash {txn_hash_string}--")
 
@@ -119,8 +144,28 @@ class EthereumHandler(object):
         # print(txn_receipt)
         return txn_receipt
 
+    def get_balance(self, wallet_public_key):
+        balance = self.w3.eth.getBalance(wallet_public_key)
+        return balance
+
     @staticmethod
-    def private_key_create(seed=""):
+    def get_public_key(wallet_private_key):
+
+        # # create local account
+        # acct = Account()
+        # acct.from_key(wallet_private_key)
+
+        # return acct.address
+
+        pk_in_bytes = Web3.toBytes(hexstr="0x" + wallet_private_key)
+        Keys = keys.PrivateKey(pk_in_bytes)
+        wallet_public_key = Keys.public_key
+        address = wallet_public_key.to_checksum_address()
+
+        return address 
+
+    @staticmethod
+    def create_private_key(seed=""):
 
         if seed == "":
             random_string = os.urandom(30).hex() 
@@ -132,18 +177,11 @@ class EthereumHandler(object):
 
         return wallet_private_key
 
-    @staticmethod
-    def get_public_key(wallet_private_key):
 
-        # # create local account
-        # acct = Account()
-        # acct.from_key(wallet_private_key)
+if __name__ == '__main__':
 
-        # return acct.address
-
-        pk_in_bytes = Web3.toBytes(hexstr=wallet_private_key)
-        Keys = keys.PrivateKey(pk_in_bytes)
-        wallet_public_key = Keys.public_key
-        address = wallet_public_key.to_checksum_address()
-
-        return address 
+    e = EthereumHandler()
+    privkey = e.create_private_key()
+    pubkey = e.get_public_key(privkey)
+    balance = e.get_balance(pubkey)
+    txn = e.txn_new(privkey, pubkey, 1)
