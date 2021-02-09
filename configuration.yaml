@@ -24,14 +24,19 @@ telegram_bot:
 #   username: <username>
 #   password: <password>
 
-# enable DSMR sensor
 sensor:
+  # enable DSMR sensor
   - platform: dsmr
     host: 192.168.178.44
     port: 2001
     dsmr_version: 5
 
-  - platform: openevse
-    host: 192.168.178.200
-    monitored_variables:
-      - status
+  # enable rest endpoint for ethnode with our account
+  - platform: rest
+    name: ethnode_get_balance
+    resource: http://192.168.178.39:5000/get_my_balance
+
+  - platform: rest
+    resource: http://ip.jsontest.com
+    name: External IP
+    value_template: '{{ value_json.ip }}'

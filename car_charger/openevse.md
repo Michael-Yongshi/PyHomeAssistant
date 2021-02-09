@@ -21,3 +21,11 @@ first time setup
 https://guide.openenergymonitor.org/integrations/openevse/
 
 https://community.openenergymonitor.org/t/3ph-openevse-firmware-5-0-0-eu-vs-4-8/8384
+
+
+configuration:
+  # enable openevse charger
+  # - platform: openevse
+  #   host: 192.168.178.200
+  #   monitored_variables:
+  #     - status
