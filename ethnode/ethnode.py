@@ -15,7 +15,7 @@
 # in Ethereum Handler class that is opened up as api connections
 
 
-
+import logging
 import os
 import json
 import base64
@@ -31,6 +31,8 @@ from eth_account import Account # local ethereum wallet functionality
 # web3 connection with node
 from web3 import Web3
 
+url = "127.0.0.1"
+port = "8501"
 
 class EthereumHandler(object):
     def __init__(self, network=""):
@@ -40,14 +42,14 @@ class EthereumHandler(object):
         returns the connection if it executes successfully"""
 
         # Connect to specific network (websocket, http or personal connection)
-        self.w3 = Web3(Web3.HTTPProvider(f"http://127.0.0.1:8545"))
+        self.w3 = Web3(Web3.HTTPProvider(f"http://{url}:{port}"))
+        chain_id = self.w3.eth.chain_id
 
         # check connection
         if self.w3.isConnected() == True:
-            print(f"Success: Web3 connection to ethereum node")
+            logging.critical(f"Success: Web3 connection to ethereum node at {url}:{port} on chainID {chain_id}")
         else:
-            # print(f"Pinging the target {ping(url)}")
-            print(f"Failed to create a Web3 connection to ethereum node")
+            logging.critical(f"Failed to create a Web3 connection to ethereum node at {url}:{port} on chainID {chain_id}")
 
     def txn_new(self, wallet_private_key, to_address, value):
 
