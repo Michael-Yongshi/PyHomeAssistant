@@ -9,3 +9,6 @@ https://tutorials-raspberrypi.com/raspberry-pi-control-relay-switch-via-gpio/
 
 hardware
 https://thepihut.com/products/16a-relay-module-arduino-compatible
+
+
+https://github.com/WiringPi/WiringPi-Python
