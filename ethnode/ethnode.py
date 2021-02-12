@@ -43,13 +43,12 @@ class EthereumHandler(object):
 
         # Connect to specific network (websocket, http or personal connection)
         self.w3 = Web3(Web3.HTTPProvider(f"http://{url}:{port}"))
-        chain_id = self.w3.eth.chain_id
 
         # check connection
         if self.w3.isConnected() == True:
-            logging.critical(f"Success: Web3 connection to ethereum node at {url}:{port} on chainID {chain_id}")
+            logging.critical(f"Success: Web3 connection to ethereum node at {url}:{port}")
         else:
-            logging.critical(f"Failed to create a Web3 connection to ethereum node at {url}:{port} on chainID {chain_id}")
+            logging.critical(f"Failed to create a Web3 connection to ethereum node at {url}:{port}")
 
     def txn_new(self, wallet_private_key, to_address, value):
 
@@ -94,7 +93,7 @@ class EthereumHandler(object):
         txn_dict = {
             "gas": 2000000,
             "gasPrice": auto.w3.toWei("10000000000", "wei"),
-            "chainId": 3,
+            "chainId": self.network_id,
             }
 
         # update with nonce, address and value
