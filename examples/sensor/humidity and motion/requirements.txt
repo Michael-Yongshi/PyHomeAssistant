@@ -1,0 +1,9 @@
+###### Requirements without Version Specifiers ######`
+# function tools
+rpi.gpio
+gpiozero
+
+# buildtools
+
+###### Requirements with Version Specifiers ######`
+# pyqt5 >= 0.6.1             # Version Matching. Must be version 0.6.1

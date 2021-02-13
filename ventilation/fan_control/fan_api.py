@@ -8,31 +8,47 @@
 
 import os
 import json # to convert python list and dicts to json strings
-from fan import set_speed, read_speed
+from relay import check_relay, set_speed, read_speed
 
 from flask import Flask, request
 
 # run flask
 app = Flask(__name__)
 
+
+
+
 # Define GET requests
-@app.route('/status', methods=['GET'])
+@app.route('/check_relay', methods=['GET'])
+def api():
+    """
+    Check the current status of the relay and returns result
+    """
+
+    check_relay()
+    return "Checking finished"
+
+
+
+
+@app.route('/get_speed', methods=['GET'])
 def api():
     """
     Check the current status of the ventilation speeds and returns result
     """
 
-    speed = read_speed()
+    # returns the current speed
+    return f"Current speed is {read_speed()}"
 
-    return speed
+
+
 
 # Define POST requests
-@app.route('/override', methods=['POST'])
+@app.route('/post_speed', methods=['POST'])
 def post_api():
     """
-    Sets speed, expects input integer between 1 - 3
+    Sets speed, expects input between 0 - 3
     
-    expects a json with the following fields:
     :param integer speed:
 
     :return string result:
@@ -40,14 +56,16 @@ def post_api():
 
     # get parameters from arguments in the api call
     json = request.get_json()
-    speed = json["speed"]
 
-    set_speed(speed=speed)
+    # set speed
+    set_speed(speed=json["speed"])
     
-    result = read_speed()
+    # return on success
+    return f"Set speed to {read_speed()}"
+    
 
-    return f"Current speed is {result}"
-    
+
+
 if __name__ == '__main__':
 
     host = '127.0.0.1'
