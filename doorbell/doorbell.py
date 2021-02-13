@@ -16,7 +16,7 @@ token_filepath = os.path.join(os.path.expanduser('~'), '.ssh', 'Home_API_Token')
 
 # for handling the GPIO connections
 button = Button(4, hold_time=2.5)
-led = LED(18)
+# led = LED(18)
 
 # set sound variable
 sound_filepath = os.path.join(os.path.expanduser('~'), 'sounds', 'mixkit-home-standard-ding-dong-109.wav')
@@ -45,7 +45,7 @@ def button_pressed():
     emit_event(current_time)
 
     # turn on led to signal the visitor
-    led_on()
+    # led_on()
 
     # play sound
     play_sound()
@@ -55,7 +55,7 @@ def button_pressed():
     sleep(delay)
 
     # turn off led to signal the visitor ringing has ended
-    led_off()
+    # led_off()
 
 def button_held():
     logging.debug('Button was held')
@@ -67,12 +67,12 @@ def button_released():
 
 def led_on():
 
-    led.on()
+    # led.on()
     logging.debug('Led is turned on')
 
 def led_off():
 
-    led.off()
+    # led.off()
     logging.debug('Led is turned off')
 
 def play_sound():
