@@ -2,7 +2,7 @@
 # Configure a default setup of Home Assistant (frontend, api, etc)
 default_config:
 
-# group: !include groups.yaml
+group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
@@ -14,7 +14,7 @@ tts:
 # Enable telegram bot
 telegram_bot:
   - platform: broadcast
-    api_key: <token>
+    api_key: !secret telegram_token
     allowed_chat_ids:
       - 10944908 # example id of a user
 #      - -987654321  # example id of a group, starts with a -

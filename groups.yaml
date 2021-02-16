@@ -2,9 +2,26 @@
   meter_readings:
     name: Meter readings
     entities:
-      - sensor.energy_consumption_tarif_1
-      - sensor.energy_consumption_tarif_2
       - sensor.power_consumption_phase_l1
-      - sensor.power_consumption_phase_l2
-      - sensor.power_consumption_phase_l3
-      - sensor.gas_consumption
+      # - sensor.power_consumption_phase_l2
+      # - sensor.power_consumption_phase_l3
+      - sensor.voltage_phase_l1
+      # - sensor.voltage_phase_l2
+      # - sensor.voltage_phase_l3
+      - sensor.current_phase_l1
+      # - sensor.current_phase_l2
+      # - sensor.current_phase_l3
+      # - sensor.power_production_phase_l1
+      # - sensor.power_production_phase_l2
+      # - sensor.power_production_phase_l3
+      - sensor.hourly_gas_consumption
+
+  network:
+    name: Network
+    entities:
+      - sensor.external_ip
+
+  ethereum:
+    name: Ethereum
+    entities:
+      - sensor.ethnode_get_balance
