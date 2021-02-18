@@ -1,4 +1,3 @@
 watch_fan:
   module: watch_fan
   class: WatchFan
-  param1: override
