@@ -47,7 +47,7 @@ class WatchFan(hass.Hass):
         # send out the actual request to the api
         response = requests.post(url=url, headers=headers, json=json)
 
-        return response
+        self.log(response.text)
 
     # the method that is called when someone wants to override fan setting from home assistant itself
     def fan_override(self, entity, attribute, old, new, kwargs):
@@ -59,11 +59,10 @@ class WatchFan(hass.Hass):
         speed = int(new.split('.', 1)[0])
         
         # send fan command to set the speed to the new level
-        r = self.send_request(speed)
+        self.send_request(speed)
 
         # log
-        self.log(r.text)
-        message = f"Someone requested fan override, setting speed to {new} from {old}! \nCurrent date and time is: {self.override}"
+        message = f"Someone requested fan override, setting speed {old} => {new}! \nCurrent date and time is: {self.override}"
         self.log(message)
 
     # the method that is called if someone uses the motion detector
