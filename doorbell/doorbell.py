@@ -37,12 +37,8 @@ def doorbell():
 
 def button_pressed():
 
-    # get current time and log
-    current_time = datetime.now()
-    logging.debug(f'Button was pressed at {current_time}')
-
     # emit the event to Home Assistant
-    emit_event(current_time)
+    emit_event()
 
     # turn on led to signal the visitor
     # led_on()
@@ -97,7 +93,7 @@ def play_sound():
         else:
             logging.error(f"Sound file is missing: {sound}")
 
-def emit_event(current_time):
+def emit_event():
     """
     Emits a DOORBELL_PRESSED event.
     
@@ -107,6 +103,10 @@ def emit_event(current_time):
     """
 
     try:
+
+        # get current time and log
+        current_time = datetime.datetime.now()
+        logging.debug(f'Button was pressed at {current_time}')
 
         # default address for the rest api in default settings
         url = "http://homeassistant:8123/api/events/DOORBELL_PRESSED"
