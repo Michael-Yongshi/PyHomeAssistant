@@ -3,14 +3,6 @@
 #################################################################
 
   #################################################################
-  ## Network
-  #################################################################
-  network:
-    name: Network
-    entities:
-      - sensor.fritz_netmonitor
-
-  #################################################################
   ## interactive devices
   #################################################################
   lights:
@@ -23,6 +15,12 @@
     entities:
       - sensor.fan_speed
       - input_number.fan_override
+
+  vacuum:
+    name: Vacuum
+    entities:
+      - vacuum.dusty
+      - binary_sensor.dusty_bin_full
 
   #################################################################
   ## Non interactive devices
@@ -83,6 +81,14 @@
       - sensor.lastblock # integer
 
       - sensor.ethnode_get_balance
+
+  #################################################################
+  ## Network
+  #################################################################
+  network:
+    name: Network
+    entities:
+      - sensor.fritz_netmonitor
 
   #################################################################
   ## Environment
