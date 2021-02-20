@@ -21,6 +21,9 @@ char ssid[] = SECRET_SSID;        // your network SSID (name)
 char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
 int status = WL_IDLE_STATUS;     // the WiFi radio's status
 
+////////////// Fan speed
+int FanSpeed = 0;               // variable to store fan speed
+
 ////////////// Motion sensor
 const int DIG_PIN_MOTION = 8;   // the pin that OUTPUT pin of sensor is connected to
 int MotionStateCurrent   = LOW; // current state of pin
@@ -78,6 +81,9 @@ void setup() {
   printCurrentNet();
   printWifiData();
 
+  ////////////// Fan speed
+  // FanSpeed = result get fan speed
+  
   ////////////// Led
   pinMode(red_light_pin, OUTPUT);
   pinMode(green_light_pin, OUTPUT);
@@ -94,19 +100,15 @@ void setup() {
 // Loop
 ///////////////////////////////////////////////////////////////////////////////////////////
 void loop() {
+  
   ////////////// Wifi 
   // check the network connection:
   printCurrentNet();
 
-  ////////////// LED
-  // set RGB Led
-  RGB_color(255, 0, 0); // Red
-  delay(1000);
-  RGB_color(255, 0, 255); // Purple
-  delay(1000);
-  RGB_color(255, 255, 255); // Lightblue
-  delay(1000);
-  RGB_color(0, 0, 0); // Off
+  ////////////// Fan Speed
+  // Get current fan speed
+  // change led accordingly
+  determineLedChange();
   
   ////////////// Humidity
 
@@ -114,20 +116,19 @@ void loop() {
   ////////////// Motion
   MotionStatePrevious = MotionStateCurrent; // store old state
   MotionStateCurrent = digitalRead(DIG_PIN_MOTION);   // read new state
-
-  if (MotionStatePrevious == LOW && MotionStateCurrent == HIGH) {   // pin state change: LOW -> HIGH
-    Serial.println("Motion detected!");
-
-    RGB_color(0, 0, 255); // 
-    delay(1000);
+  Serial.println("MotionStateCurrent: ");
+  Serial.println(MotionStateCurrent);
+  
+  // If movement is detected, up fan speed and immediately show led change
+  if (MotionStatePrevious == LOW && MotionStateCurrent == HIGH) {
+    incrementFanSpeed();
+    Serial.println("Motion detected! Fanspeed changed to ");
+    Serial.println(FanSpeed);
+    determineLedChange();
   }
-  else
-  if (MotionStatePrevious == HIGH && MotionStateCurrent == LOW) {   // pin state change: HIGH -> LOW
-    Serial.println("Motion stopped!");
-  }
-
+  
   ////////////// delay for a second before running again
-  delay(1000);
+  delay(2000);
 
 }
 
@@ -183,6 +184,40 @@ void printMacAddress(byte mac[]) {
     }
   }
   Serial.println();
+}
+
+////////////// Led based on Fan speed
+void determineLedChange() {
+  
+  if (FanSpeed == 0) {
+    Serial.println("Fan is currently offline!");
+    RGB_color(0, 0, 0); // Off
+  }
+  else
+  if (FanSpeed == 1) {
+    Serial.println("Fan is currently on speed 1!");
+    RGB_color(255, 255, 255); // Lightblue
+  }
+  else
+  if (FanSpeed == 2) {
+    Serial.println("Fan is currently on speed 2!");
+    RGB_color(255, 0, 255); // Purple
+  }
+  else
+  if (FanSpeed == 3) {
+    Serial.println("Fan is currently on speed 3!");
+    RGB_color(255, 0, 0); // Red
+  }
+}
+
+////////////// increment Fan speed
+void incrementFanSpeed() {
+
+  FanSpeed = ++FanSpeed;
+  if (FanSpeed >= 4) {
+    Serial.println("Fan speed exceeded 3! Returning to 1!");
+    FanSpeed = 1;
+  }
 }
 
 ////////////// LED
