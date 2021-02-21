@@ -7,10 +7,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Libraries
 ///////////////////////////////////////////////////////////////////////////////////////////
+////////////// Wifi
 #include <SPI.h>
 #include <WiFiNINA.h>
 
 #include "wifi_secrets.h" 
+
+////////////// Humidity sensor
+#include <DHT.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Parameters
@@ -29,7 +33,8 @@ const int DIG_PIN_MOTION = 8;   // the pin that OUTPUT pin of sensor is connecte
 int MotionStateCurrent   = LOW; // current state of pin
 int MotionStatePrevious  = LOW; // previous state of pin
 
-////////////// Humidity sensor 
+////////////// Humidity sensor
+DHT dht(2, DHT11);
 
 ////////////// Led
 int red_light_pin= 11;
@@ -90,7 +95,8 @@ void setup() {
   pinMode(blue_light_pin, OUTPUT);
 
   ////////////// Humidity
-
+  dht.begin();
+  
   ////////////// Motion
   pinMode(DIG_PIN_MOTION, INPUT); // set arduino pin to input mode to read value from OUTPUT pin of sensor
 
@@ -111,7 +117,30 @@ void loop() {
   determineLedChange();
   
   ////////////// Humidity
+  // Reading temperature or humidity takes about 250 milliseconds!
+  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+  float humidity = dht.readHumidity();
+  // Read temperature as Celsius (the default)
+  float temp = dht.readTemperature();
 
+  // Check if any reads failed and exit early (to try again).
+  if (isnan(humidity) || isnan(temp)) {
+    Serial.println(F("Failed to read from DHT sensor!"));
+    return;
+  }
+
+  // Compute heat index in Celsius (isFahreheit = false)
+  float heatindex = dht.computeHeatIndex(temp, humidity, false);
+
+  Serial.print(F("Humidity: "));
+  Serial.print(humidity);
+  Serial.print(F("%, "));
+  Serial.print(F("Temperature: "));
+  Serial.print(temp);
+  Serial.print(F("°C, "));
+  Serial.print(F("Heat index: "));
+  Serial.print(heatindex);
+  Serial.print(F("°C "));
 
   ////////////// Motion
   MotionStatePrevious = MotionStateCurrent; // store old state
