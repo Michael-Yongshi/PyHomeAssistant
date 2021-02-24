@@ -2,6 +2,9 @@
 Generic guide to installing a home assistant server (rpi)
 Describes how to let standalone devices emit events to the server and/or receive input from the server to trigger actions.
 
+list of icons:
+https://gist.github.com/thomasloven/01e03543364cf685eff969ad7980f5d7
+
 ## How to
 
 ## Development
