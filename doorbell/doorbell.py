@@ -1,5 +1,5 @@
 import os.path
-from datetime import datetime
+import datetime
 from time import sleep
 from signal import pause
 import logging
@@ -37,21 +37,23 @@ def doorbell():
 
 def button_pressed():
 
-    # emit the event to Home Assistant
-    emit_event()
-
-    # turn on led to signal the visitor
-    # led_on()
-
-    # play sound
+    # play sound (asynchronous, will immediately proceed further after starting the audio)
     play_sound()
+
+    # turn on led to signal the visitor that doorbell is pressed
+    # led.on()
+    # logging.debug('Led is turned on')
+
+    # emit the event to Home Assistant (so notification can be send out)
+    emit_event()
 
     # a break to prevent impatient visitors pressing to quickly
     logging.debug(f'Going to sleep for {delay} seconds')
     sleep(delay)
 
-    # turn off led to signal the visitor ringing has ended
-    # led_off()
+    # turn off led to signal the visitor ringing is possible again
+    # led.off()
+    # logging.debug('Led is turned off')
 
 def button_held():
     logging.debug('Button was held')
@@ -60,16 +62,6 @@ def button_released():
 
     # Signal that program is continuing to listen to events
     logging.info('Listening for visitors')
-
-def led_on():
-
-    # led.on()
-    logging.debug('Led is turned on')
-
-def led_off():
-
-    # led.off()
-    logging.debug('Led is turned off')
 
 def play_sound():
 
@@ -80,8 +72,7 @@ def play_sound():
     try:
         logging.info(f'Sound is playing')
         play_obj = sound.play()
-        play_obj.wait_done()
-        logging.info(f"Sound was played")
+        # play_obj.wait_done()
 
     # trow an error if file cant be played
     except:
@@ -109,7 +100,7 @@ def emit_event():
         logging.debug(f'Button was pressed at {current_time}')
 
         # default address for the rest api in default settings
-        url = "http://homeassistant:8123/api/events/DOORBELL_PRESSED"
+        url = "http://rpi-home:8123/api/events/DOORBELL_PRESSED"
 
         # open file with the api token
         with open(token_filepath, "r") as text_file:
