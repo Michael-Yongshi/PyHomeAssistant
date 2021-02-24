@@ -13,6 +13,8 @@
   ventilation:
     name: Ventilation
     entities:
+      - sensor.mqtt_bathroom_humidity
+      - sensor.mqtt_bathroom_temperature
       - sensor.fan_speed
       - input_number.fan_override
 

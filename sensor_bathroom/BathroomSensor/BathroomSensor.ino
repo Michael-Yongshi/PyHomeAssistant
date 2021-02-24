@@ -7,11 +7,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Libraries
 ///////////////////////////////////////////////////////////////////////////////////////////
+#include "secrets.h" 
+
 ////////////// Wifi
 #include <SPI.h>
 #include <WiFiNINA.h>
 
-#include "wifi_secrets.h" 
+////////////// MQTT
+#include <ArduinoMqttClient.h>
 
 ////////////// Humidity sensor
 #include <DHT.h>
@@ -21,9 +24,19 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////// Wifi
-char ssid[] = SECRET_SSID;        // your network SSID (name)
-char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
+const char ssid[] = SECRET_WIFI_SSID;        // your network SSID (name)
+const char pass[] = SECRET_WIFI_PASS;    // your network password (use for WPA, or use as key for WEP)
 int status = WL_IDLE_STATUS;     // the WiFi radio's status
+
+////////////// MQTT
+const char mqtt_broker[] = SECRET_MQTT_BROKER;
+const int port = 1883;
+
+const char mqtt_user[] = SECRET_MQTT_USER;
+const char mqtt_password[] = SECRET_MQTT_PASS;
+
+WiFiClient wifiClient;
+MqttClient mqttClient(wifiClient);
 
 ////////////// Fan speed
 int FanSpeed = 0;               // variable to store fan speed
@@ -37,9 +50,14 @@ int MotionStatePrevious  = LOW; // previous state of pin
 DHT dht(2, DHT11);
 
 ////////////// Led
-int red_light_pin= 11;
-int green_light_pin = 10;
-int blue_light_pin = 9;
+const int red_light_pin= 11;
+const int green_light_pin = 10;
+const int blue_light_pin = 9;
+
+////////////// Delay
+const long interval = 1000;
+unsigned long previousMillis = 0;
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Set up
@@ -86,6 +104,24 @@ void setup() {
   printCurrentNet();
   printWifiData();
 
+  ////////////// MQTT
+
+  mqttClient.setId("Bathroom-Arduino");
+  mqttClient.setUsernamePassword(mqtt_user, mqtt_password);
+
+  Serial.print("Attempting to connect to the MQTT broker: ");
+  Serial.println(mqtt_broker);
+
+  if (!mqttClient.connect(mqtt_broker, port)) {
+    Serial.print("MQTT connection failed! Error code = ");
+    Serial.println(mqttClient.connectError());
+
+    while (1);
+  }
+
+  Serial.println("You're connected to the MQTT broker!");
+  Serial.println();
+
   ////////////// Fan speed
   // FanSpeed = result get fan speed
   
@@ -107,57 +143,38 @@ void setup() {
 ///////////////////////////////////////////////////////////////////////////////////////////
 void loop() {
   
-  ////////////// Wifi 
-  // check the network connection:
-  printCurrentNet();
+  ////////////// Delay
+  // avoid having delays in loop, we'll use the strategy from BlinkWithoutDelay
+  // see: File -> Examples -> 02.Digital -> BlinkWithoutDelay for more info
+  unsigned long currentMillis = millis();
 
-  ////////////// Fan Speed
-  // Get current fan speed
-  // change led accordingly
-  determineLedChange();
+  if (currentMillis - previousMillis >= interval) {
+    // save the last time a message was sent
+    previousMillis = currentMillis;
+
+
+    ////////////// Wifi 
+    // check the network connection:
+    printCurrentNet();
   
-  ////////////// Humidity
-  // Reading temperature or humidity takes about 250 milliseconds!
-  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  float humidity = dht.readHumidity();
-  // Read temperature as Celsius (the default)
-  float temp = dht.readTemperature();
+    ////////////// MQTT
+    // call poll() regularly to allow the library to send MQTT keep alives which
+    // avoids being disconnected by the broker
+    mqttClient.poll();
 
-  // Check if any reads failed and exit early (to try again).
-  if (isnan(humidity) || isnan(temp)) {
-    Serial.println(F("Failed to read from DHT sensor!"));
-    return;
-  }
-
-  // Compute heat index in Celsius (isFahreheit = false)
-  float heatindex = dht.computeHeatIndex(temp, humidity, false);
-
-  Serial.print(F("Humidity: "));
-  Serial.print(humidity);
-  Serial.print(F("%, "));
-  Serial.print(F("Temperature: "));
-  Serial.print(temp);
-  Serial.print(F("°C, "));
-  Serial.print(F("Heat index: "));
-  Serial.print(heatindex);
-  Serial.print(F("°C "));
-
-  ////////////// Motion
-  MotionStatePrevious = MotionStateCurrent; // store old state
-  MotionStateCurrent = digitalRead(DIG_PIN_MOTION);   // read new state
-  Serial.println("MotionStateCurrent: ");
-  Serial.println(MotionStateCurrent);
-  
-  // If movement is detected, up fan speed and immediately show led change
-  if (MotionStatePrevious == LOW && MotionStateCurrent == HIGH) {
-    incrementFanSpeed();
-    Serial.println("Motion detected! Fanspeed changed to ");
-    Serial.println(FanSpeed);
+    ////////////// Fan Speed
+    // Get current fan speed
+    // change led accordingly
     determineLedChange();
-  }
   
-  ////////////// delay for a second before running again
-  delay(2000);
+    ////////////// Motion
+    readMotion();
+
+    ////////////// Humidity
+    // Reading temperature or humidity takes about 250 milliseconds!
+    readDHT11();
+
+  }
 
 }
 
@@ -215,6 +232,39 @@ void printMacAddress(byte mac[]) {
   Serial.println();
 }
 
+//// void postString(String EventType, String PostData) {
+//void Post(String PostData) {
+//
+//  String MqttTopic = "Humidity";
+//
+//  IPAddress server(192,168,178,37);
+//  int port = 8123;
+//
+//  if (client.connect(server, port)) {
+//    client.println("POST /api/states/" + EventType + " HTTP/1.1");
+//    client.println("Host: 192.168.178.37");
+//    // client.println("User-Agent: Arduino/1.0");
+//    // client.println("Connection: close");
+//    client.print("Content-Length: ");
+//    client.println(PostData.length());
+//    client.println();
+//    client.println(PostData);
+//  }
+//}
+
+void publishMQTT(String topic, float data) {
+    Serial.print("Sending message to topic: ");
+    Serial.println(topic);
+    Serial.println(data);
+
+    // send message, the Print interface can be used to set the message contents
+    mqttClient.beginMessage(topic);
+    mqttClient.print(data);
+    mqttClient.endMessage();
+
+    Serial.println();
+}
+
 ////////////// Led based on Fan speed
 void determineLedChange() {
   
@@ -257,6 +307,51 @@ void RGB_color(int red_light_value, int green_light_value, int blue_light_value)
   analogWrite(blue_light_pin, blue_light_value);
 }
 
-////////////// Humidity
-
 ////////////// Motion
+void readMotion() {
+
+  MotionStatePrevious = MotionStateCurrent; // store old state
+  MotionStateCurrent = digitalRead(DIG_PIN_MOTION);   // read new state
+  Serial.println("MotionStateCurrent: ");
+  Serial.println(MotionStateCurrent);
+  
+  // If movement is detected, up fan speed and immediately show led change
+  if (MotionStatePrevious == LOW && MotionStateCurrent == HIGH) {
+    incrementFanSpeed();
+    Serial.println("Motion detected! Fanspeed changed to ");
+    Serial.println(FanSpeed);
+    determineLedChange();
+  }
+}
+
+////////////// Humidity & Temperature
+void readDHT11() {
+  
+  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+  float humidity = dht.readHumidity();
+  // Read temperature as Celsius (the default)
+  float temp = dht.readTemperature();
+
+  // Check if any reads failed and exit early (to try again).
+  if (isnan(humidity) || isnan(temp)) {
+    Serial.println(F("Failed to read from DHT sensor!"));
+    return;
+  }
+
+  // Compute heat index in Celsius (isFahreheit = false)
+  float heatindex = dht.computeHeatIndex(temp, humidity, false);
+
+  Serial.print(F("Humidity: "));
+  Serial.print(humidity);
+  Serial.print(F("%, "));
+  Serial.print(F("Temperature: "));
+  Serial.print(temp);
+  Serial.print(F("°C, "));
+  Serial.print(F("Heat index: "));
+  Serial.print(heatindex);
+  Serial.print(F("°C "));
+
+  publishMQTT("bathroom/humidity", humidity);
+  publishMQTT("bathroom/temperature", temp);
+
+}

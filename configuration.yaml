@@ -50,3 +50,11 @@ sensor:
   - platform: rest
     name: fan_speed
     resource: http://192.168.178.29:5000/get_speed
+  
+  - platform: mqtt
+    name: mqtt_bathroom_humidity
+    state_topic: "bathroom/humidity"
+  
+  - platform: mqtt
+    name: mqtt_bathroom_temperature
+    state_topic: "bathroom/temperature"
