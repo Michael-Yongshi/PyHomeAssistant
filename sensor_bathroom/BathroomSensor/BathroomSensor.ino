@@ -38,9 +38,6 @@ const char mqtt_password[] = SECRET_MQTT_PASS;
 WiFiClient wifiClient;
 MqttClient mqttClient(wifiClient);
 
-////////////// Fan speed
-int FanSpeed = 0;               // variable to store fan speed
-
 ////////////// Motion sensor
 const int DIG_PIN_MOTION = 8;   // the pin that OUTPUT pin of sensor is connected to
 int MotionStateCurrent   = LOW; // current state of pin
@@ -48,6 +45,9 @@ int MotionStatePrevious  = LOW; // previous state of pin
 
 ////////////// Humidity sensor
 DHT dht(2, DHT11);
+
+////////////// Fan speed
+int FanSpeed = 0;               // variable to store fan speed
 
 ////////////// Led
 const int red_light_pin= 11;
@@ -122,20 +122,16 @@ void setup() {
   Serial.println("You're connected to the MQTT broker!");
   Serial.println();
 
-  ////////////// Fan speed
-  // FanSpeed = result get fan speed
+  ////////////// Humidity
+  dht.begin();
   
   ////////////// Led
   pinMode(red_light_pin, OUTPUT);
   pinMode(green_light_pin, OUTPUT);
   pinMode(blue_light_pin, OUTPUT);
 
-  ////////////// Humidity
-  dht.begin();
-  
-  ////////////// Motion
-  pinMode(DIG_PIN_MOTION, INPUT); // set arduino pin to input mode to read value from OUTPUT pin of sensor
 
+  
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -164,12 +160,10 @@ void loop() {
 
     ////////////// Fan Speed
     // Get current fan speed
-    // change led accordingly
-    determineLedChange();
-  
-    ////////////// Motion
-    readMotion();
 
+    ////////////// Change LED
+    changeLed();
+  
     ////////////// Humidity
     // Reading temperature or humidity takes about 250 milliseconds!
     readDHT11();
@@ -232,26 +226,6 @@ void printMacAddress(byte mac[]) {
   Serial.println();
 }
 
-//// void postString(String EventType, String PostData) {
-//void Post(String PostData) {
-//
-//  String MqttTopic = "Humidity";
-//
-//  IPAddress server(192,168,178,37);
-//  int port = 8123;
-//
-//  if (client.connect(server, port)) {
-//    client.println("POST /api/states/" + EventType + " HTTP/1.1");
-//    client.println("Host: 192.168.178.37");
-//    // client.println("User-Agent: Arduino/1.0");
-//    // client.println("Connection: close");
-//    client.print("Content-Length: ");
-//    client.println(PostData.length());
-//    client.println();
-//    client.println(PostData);
-//  }
-//}
-
 void publishMQTT(String topic, float data) {
     Serial.print("Sending message to topic: ");
     Serial.println(topic);
@@ -265,66 +239,50 @@ void publishMQTT(String topic, float data) {
     Serial.println();
 }
 
-////////////// Led based on Fan speed
-void determineLedChange() {
+////////////// RGB Led based on Fan speed
+void changeLed() {
   
   if (FanSpeed == 0) {
     Serial.println("Fan is currently offline!");
-    RGB_color(0, 0, 0); // Off
+
+    // set light off
+    analogWrite(red_light_pin, 0);
+    analogWrite(green_light_pin, 0);
+    analogWrite(blue_light_pin, 0);
   }
+
   else
   if (FanSpeed == 1) {
     Serial.println("Fan is currently on speed 1!");
-    RGB_color(255, 255, 255); // Lightblue
+
+    // set lightblue / white
+    analogWrite(red_light_pin, 255);
+    analogWrite(green_light_pin, 255);
+    analogWrite(blue_light_pin, 255);
   }
+
   else
   if (FanSpeed == 2) {
     Serial.println("Fan is currently on speed 2!");
-    RGB_color(255, 0, 255); // Purple
+
+    // set purple
+    analogWrite(red_light_pin, 255);
+    analogWrite(green_light_pin, 0);
+    analogWrite(blue_light_pin, 255);
   }
+
   else
   if (FanSpeed == 3) {
     Serial.println("Fan is currently on speed 3!");
-    RGB_color(255, 0, 0); // Red
+
+    // set red
+    analogWrite(red_light_pin, 255);
+    analogWrite(green_light_pin, 0);
+    analogWrite(blue_light_pin, 0);
   }
 }
 
-////////////// increment Fan speed
-void incrementFanSpeed() {
-
-  FanSpeed = ++FanSpeed;
-  if (FanSpeed >= 4) {
-    Serial.println("Fan speed exceeded 3! Returning to 1!");
-    FanSpeed = 1;
-  }
-}
-
-////////////// LED
-void RGB_color(int red_light_value, int green_light_value, int blue_light_value)
- {
-  analogWrite(red_light_pin, red_light_value);
-  analogWrite(green_light_pin, green_light_value);
-  analogWrite(blue_light_pin, blue_light_value);
-}
-
-////////////// Motion
-void readMotion() {
-
-  MotionStatePrevious = MotionStateCurrent; // store old state
-  MotionStateCurrent = digitalRead(DIG_PIN_MOTION);   // read new state
-  Serial.println("MotionStateCurrent: ");
-  Serial.println(MotionStateCurrent);
-  
-  // If movement is detected, up fan speed and immediately show led change
-  if (MotionStatePrevious == LOW && MotionStateCurrent == HIGH) {
-    incrementFanSpeed();
-    Serial.println("Motion detected! Fanspeed changed to ");
-    Serial.println(FanSpeed);
-    determineLedChange();
-  }
-}
-
-////////////// Humidity & Temperature
+////////////// DHT11 sensor for Humidity & Temperature
 void readDHT11() {
   
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
