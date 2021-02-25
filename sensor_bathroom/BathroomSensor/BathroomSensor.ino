@@ -35,6 +35,10 @@ const int port = 1883;
 const char mqtt_user[] = SECRET_MQTT_USER;
 const char mqtt_password[] = SECRET_MQTT_PASS;
 
+const char outTopicHumid[] = "bathroom/humidity";
+const char outTopicTemp[] = "bathroom/temperature";
+const char inTopicFan[] = "fan/speed";
+
 WiFiClient wifiClient;
 MqttClient mqttClient(wifiClient);
 
@@ -122,6 +126,29 @@ void setup() {
   Serial.println("You're connected to the MQTT broker!");
   Serial.println();
 
+
+  // Subscribe to MQTT incoming messages
+  // set the message receive callback
+  mqttClient.onMessage(onMqttMessage);
+
+  Serial.print("Subscribing to topic: ");
+  Serial.println(inTopicFan);
+  Serial.println();
+
+  // subscribe to a topic
+  // the second parameter set's the QoS of the subscription,
+  // the the library supports subscribing at QoS 0, 1, or 2
+  int subscribeQos = 1;
+
+  mqttClient.subscribe(inTopicFan, subscribeQos);
+
+  // topics can be unsubscribed using:
+  // mqttClient.unsubscribe(inTopicFan);
+
+  Serial.print("Waiting for messages on topic: ");
+  Serial.println(inTopicFan);
+  Serial.println();
+
   ////////////// Humidity
   dht.begin();
   
@@ -129,8 +156,6 @@ void setup() {
   pinMode(red_light_pin, OUTPUT);
   pinMode(green_light_pin, OUTPUT);
   pinMode(blue_light_pin, OUTPUT);
-
-
   
 }
 
@@ -148,24 +173,17 @@ void loop() {
     // save the last time a message was sent
     previousMillis = currentMillis;
 
-
     ////////////// Wifi 
     // check the network connection:
     printCurrentNet();
   
     ////////////// MQTT
-    // call poll() regularly to allow the library to send MQTT keep alives which
-    // avoids being disconnected by the broker
+    // keep alive
     mqttClient.poll();
-
-    ////////////// Fan Speed
-    // Get current fan speed
-
-    ////////////// Change LED
-    changeLed();
   
     ////////////// Humidity
     // Reading temperature or humidity takes about 250 milliseconds!
+    // actively publish to mqtt broker
     readDHT11();
 
   }
@@ -226,6 +244,7 @@ void printMacAddress(byte mac[]) {
   Serial.println();
 }
 
+////////////// MQTT
 void publishMQTT(String topic, float data) {
     Serial.print("Sending message to topic: ");
     Serial.println(topic);
@@ -237,6 +256,36 @@ void publishMQTT(String topic, float data) {
     mqttClient.endMessage();
 
     Serial.println();
+}
+
+void onMqttMessage(int messageSize) {
+  // we received a message, print out the topic and contents
+  Serial.print("Received a message with topic ");
+  Serial.println(mqttClient.messageTopic());
+  Serial.print("duplicate = ");
+  Serial.println(mqttClient.messageDup() ? "true" : "false");
+  Serial.print("QoS = ");
+  Serial.println(mqttClient.messageQoS());
+  Serial.print("retained = ");
+  Serial.println(mqttClient.messageRetain() ? "true" : "false");
+  Serial.print("length = ");
+  Serial.println(messageSize);
+
+  // convert the received array of characters to a string
+  String msg; // a string
+    while (mqttClient.available()) { //read until all data arrives
+      msg = msg + (char)mqttClient.read();
+  }
+  Serial.print("message = ");
+  Serial.println(msg);
+
+  // match the topic to proceed with the right followup
+  if (mqttClient.messageTopic() == inTopicFan) {
+    // change fanspeed to received message and change led accordingly
+    FanSpeed = msg.toInt();
+    changeLed();
+  }
+  
 }
 
 ////////////// RGB Led based on Fan speed
