@@ -21,7 +21,7 @@ class WatchDoorbell(hass.Hass):
     # the method that is called when an event happens
     def event_happened(self, event_name, data, kwargs):
 
-        date_time = data["time"][0:18]
+        date_time = data["time"][0:19]
         message = f"I heard that someone is at the door! \nCurrent date and time is: {date_time}"
         
         # log the message
