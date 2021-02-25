@@ -21,16 +21,55 @@ class WatchFan(hass.Hass):
     def initialize(self):
 
         # Were keeping track of an override variable to keep override only on for a certain amount of time
-        self.override = 0
-        # self.humidity_level = 0
-        # self.smoke_level = 0
+        self.override = datetime.datetime.now() + datetime.timedelta(minutes=-30)
 
         # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received. 
         self.listen_state(self.fan_override, "input_number.fan_override")
-        # self.listen_event(self.humidity, "HUMIDITY")
-        # self.listen_event(self.smoke, "SMOKE")
+        self.listen_state(self.humidity, "sensor.mqtt_bathroom_humidity")
 
-    def send_request(self, speed):
+    # the method that is called when someone wants to override fan setting from home assistant itself
+    def fan_override(self, entity, attribute, old, new, kwargs):
+
+        # remember last time override has been used
+        self.override = datetime.datetime.now()
+
+        # convert the state to a valid integer
+        speed = int(new.split('.', 1)[0])
+        
+        # send fan command to set the speed to the new level
+        self.post_fan_speed(speed)
+
+        # log
+        self.log(f"Someone requested fan override, setting speed {old} => {new}! \nCurrent date and time is: {self.override}")
+
+    def humidity(self, entity, attribute, old, new, kwargs):
+        
+        current_time = datetime.datetime.now()
+        
+        # log the message
+        self.log(f"Measured humidity at level {new}! \nCurrent date and time is: {current_time}")
+        humidity_new = int(new.split('.', 1)[0])
+        humidity_old = int(old.split('.', 1)[0])
+
+        # automatically adjust fan speed based on sensor data, humidity and smoke
+        if self.override + datetime.timedelta(minutes=15) <= current_time:
+
+            # set to 3 if increased to above 80 from below 80 (2)
+            if humidity_new >= 80 and humidity_old < 80:
+                self.post_fan_speed(3)
+                self.log(f"level above 80%  observed, set fan to speed 3")
+
+            # set to 2 if humidity_new is between 60 - 80 (2) and humidity_old was below 60 (1) or above 80 (3)
+            elif (humidity_new >= 60 and humidity_new < 80) and (humidity_old < 60 or humidity_old >= 80):
+                self.post_fan_speed(2)
+                self.log(f"level between 60% and 80% observed, set fan to speed 2")
+
+            # set to 1 if new dropped below 60 (1) while humidity_old was higher than 60 (2 or 3) 
+            elif humidity_new < 60 and humidity_old >= 60:
+                self.post_fan_speed(1)
+                self.log(f"level below 60% observed, set fan to speed 1")
+
+    def post_fan_speed(self, speed):
         
         # address for the rest api
         url = "http://192.168.178.29:5000/post_speed"
@@ -48,77 +87,3 @@ class WatchFan(hass.Hass):
         response = requests.post(url=url, headers=headers, json=json)
 
         self.log(response.text)
-
-    # the method that is called when someone wants to override fan setting from home assistant itself
-    def fan_override(self, entity, attribute, old, new, kwargs):
-
-        # remember last time override has been used
-        self.override = datetime.datetime.now()
-
-        # convert the state to a valid integer
-        speed = int(new.split('.', 1)[0])
-        
-        # send fan command to set the speed to the new level
-        self.send_request(speed)
-
-        # log
-        message = f"Someone requested fan override, setting speed {old} => {new}! \nCurrent date and time is: {self.override}"
-        self.log(message)
-
-    # the method that is called if someone uses the motion detector
-    def motion(self, event_name, data, kwargs):
-
-        self.override = datetime.now()
-        speed = self.get_state("input_number.fan") + 1
-
-        message = f"Motion detected, setting speed to {speed}! \nCurrent date and time is: {self.override}"
-        
-        # Call rest api of the fan
-        self.set_fan_speed(speed=self.override)
-
-    # automatically adjust fan speed based on sensor data, humidity and smoke
-    def determine_setting(self):
-
-        # only automate if override is 0
-        # TODO add 30 min time to revoke the override here
-        if self.override != 0:
-
-            # # check if there is smoke outside, disable fan if so
-            # if self.smoke_level >= 600:
-            #     self.log(f"Smoke detected, switching off fan!")
-            #     # request speed 0
-            # else:
-
-            if self.humidity_level >= 500:
-                self.log(f"level 500 or higher observed, set fan to speed 3")
-                # request speed 3
-
-            elif self.humidity_level >= 300:
-                # request speed 2
-                self.log(f"level between 300 and 500 observed, set fan to speed 2")
-
-            else:
-                # request_speed 1
-                self.log(f"level 300 or lower observed, set fan to speed 1")
-
-    def humidity(self, event_name, data, kwargs):
-        
-        self.humidity_level = data["level"]
-        date_time = data["time"][0:18]
-        
-        # log the message
-        message = f"Measured humidity at level {self.humidity_level}! \nCurrent date and time is: {date_time}"
-        self.log(message)
-
-        self.determine_setting()
-
-    # def smoke(self, event_name, data, kwargs):
-        
-    #     level = data["level"]
-    #     date_time = data["time"][0:18]
-        
-    #     # log the message
-    #     message = f"Measured smoke at level {level}! \nCurrent date and time is: {date_time}"
-    #     self.log(message)
-
-    #     self.determine_setting()

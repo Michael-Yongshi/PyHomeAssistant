@@ -13,10 +13,10 @@
   ventilation:
     name: Ventilation
     entities:
+      - input_number.fan_override
+      - sensor.mqtt_fan_speed
       - sensor.mqtt_bathroom_humidity
       - sensor.mqtt_bathroom_temperature
-      - sensor.fan_speed
-      - input_number.fan_override
 
   vacuum:
     name: Vacuum
