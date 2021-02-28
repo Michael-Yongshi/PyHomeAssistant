@@ -1,3 +1,5 @@
+https://gathering.tweakers.net/forum/list_messages/1535288/152
+
 
 # Open Therm gateway
 Located between thermostat and heater, opens up (in this case) ability to monitor and influence signals from the thermostat to the heater. This 
