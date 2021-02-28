@@ -42,11 +42,6 @@ const char inTopicFan[] = "fan/speed";
 WiFiClient wifiClient;
 MqttClient mqttClient(wifiClient);
 
-////////////// Motion sensor
-const int DIG_PIN_MOTION = 8;   // the pin that OUTPUT pin of sensor is connected to
-int MotionStateCurrent   = LOW; // current state of pin
-int MotionStatePrevious  = LOW; // previous state of pin
-
 ////////////// Humidity sensor
 DHT dht(2, DHT11);
 
@@ -163,13 +158,16 @@ void setup() {
 // Loop
 ///////////////////////////////////////////////////////////////////////////////////////////
 void loop() {
-  
+ 
   ////////////// Delay
   // avoid having delays in loop, we'll use the strategy from BlinkWithoutDelay
   // see: File -> Examples -> 02.Digital -> BlinkWithoutDelay for more info
   unsigned long currentMillis = millis();
 
   if (currentMillis - previousMillis >= interval) {
+
+    Serial.println();
+      
     // save the last time a message was sent
     previousMillis = currentMillis;
 
@@ -248,6 +246,7 @@ void printMacAddress(byte mac[]) {
 void publishMQTT(String topic, float data) {
     Serial.print("Sending message to topic: ");
     Serial.println(topic);
+    Serial.print("Sending data: ");
     Serial.println(data);
 
     // send message, the Print interface can be used to set the message contents
@@ -255,37 +254,42 @@ void publishMQTT(String topic, float data) {
     mqttClient.print(data);
     mqttClient.endMessage();
 
-    Serial.println();
 }
 
 void onMqttMessage(int messageSize) {
   // we received a message, print out the topic and contents
-  Serial.print("Received a message with topic ");
-  Serial.println(mqttClient.messageTopic());
-  Serial.print("duplicate = ");
-  Serial.println(mqttClient.messageDup() ? "true" : "false");
-  Serial.print("QoS = ");
-  Serial.println(mqttClient.messageQoS());
-  Serial.print("retained = ");
-  Serial.println(mqttClient.messageRetain() ? "true" : "false");
-  Serial.print("length = ");
-  Serial.println(messageSize);
+//  Serial.print("Received a message with topic ");
+//  Serial.println(mqttClient.messageTopic());
+//  Serial.print("duplicate = ");
+//  Serial.println(mqttClient.messageDup() ? "true" : "false");
+//  Serial.print("QoS = ");
+//  Serial.println(mqttClient.messageQoS());
+//  Serial.print("retained = ");
+//  Serial.println(mqttClient.messageRetain() ? "true" : "false");
+//  Serial.print("length = ");
+//  Serial.println(messageSize);
 
+  // register topic
+  String topic = mqttClient.messageTopic();
+//  Serial.print("topic = ");
+//  Serial.println(topic);
+  
   // convert the received array of characters to a string
   String msg; // a string
     while (mqttClient.available()) { //read until all data arrives
       msg = msg + (char)mqttClient.read();
   }
-  Serial.print("message = ");
+  Serial.print("fan speed = ");
   Serial.println(msg);
 
   // match the topic to proceed with the right followup
-  if (mqttClient.messageTopic() == inTopicFan) {
-    // change fanspeed to received message and change led accordingly
-    FanSpeed = msg.toInt();
-    changeLed();
+  if (topic.compareTo(inTopicFan) == 0) {
+    if (FanSpeed != msg.toInt()) {
+      // change fanspeed to received message and change led accordingly
+      FanSpeed = msg.toInt();
+      changeLed();
+    }
   }
-  
 }
 
 ////////////// RGB Led based on Fan speed
@@ -348,15 +352,15 @@ void readDHT11() {
   // Compute heat index in Celsius (isFahreheit = false)
   float heatindex = dht.computeHeatIndex(temp, humidity, false);
 
-  Serial.print(F("Humidity: "));
-  Serial.print(humidity);
-  Serial.print(F("%, "));
-  Serial.print(F("Temperature: "));
-  Serial.print(temp);
-  Serial.print(F("°C, "));
-  Serial.print(F("Heat index: "));
-  Serial.print(heatindex);
-  Serial.print(F("°C "));
+//  Serial.print(F("Humidity: "));
+//  Serial.print(humidity);
+//  Serial.println(F("%, "));
+//  Serial.print(F("Temperature: "));
+//  Serial.print(temp);
+//  Serial.println(F("°C, "));
+//  Serial.print(F("Heat index: "));
+//  Serial.print(heatindex);
+//  Serial.println(F("°C "));
 
   publishMQTT("bathroom/humidity", humidity);
   publishMQTT("bathroom/temperature", temp);
