@@ -46,7 +46,7 @@ class WatchFan(hass.Hass):
 
         # log humidity level
         self.log(f"Measured humidity at {new}%!\n")
-        humidity_new = int(new.split('.', 1)[0])
+        humidity_level = int(new.split('.', 1)[0])
 
         # get fanspeed state
         speed = int(self.get_state("sensor.mqtt_fan_speed"))
@@ -58,24 +58,24 @@ class WatchFan(hass.Hass):
         self.log(f"Override expires at {override_expiration}\n")
         self.log(f"Current date and time is: {current_time}")
 
-        limit3 = 90
-        limit2 = 80
+        limit3 = 95
+        limit2 = 85
 
         # automatically adjust fan speed based on sensor data, humidity and smoke
         if override_expiration <= current_time:
             self.log(f"Override expired")
 
-            # set to 3 if increased to above 80 from below 80 (2)
-            # if humidity_new >= limit3:
-            #     setting = 3
-            #     if speed != setting:
-            #         self.post_fan_speed(setting)
-            #         self.log(f"level above {limit3}%  observed, set fan to speed {setting}")
-            #     else:
-            #         self.log(f"level above {limit3}%  observed, fan already at speed {setting}")
+            # set to 3 if humidity_level increased to above limit3
+            if humidity_level >= limit3:
+                setting = 3
+                if speed != setting:
+                    self.post_fan_speed(setting)
+                    self.log(f"level above {limit3}%  observed, set fan to speed {setting}")
+                else:
+                    self.log(f"level above {limit3}%  observed, fan already at speed {setting}")
             
-            # set to 2 if humidity_new is between 60 - 80 (2) and humidity_old was below 60 (1) or above 80 (3)
-            if humidity_new >= limit2:
+            # set to 2 if humidity_level is above limit2
+            elif humidity_level >= limit2:
                 setting = 2
                 if speed != setting:
                     self.post_fan_speed(setting)
@@ -83,8 +83,8 @@ class WatchFan(hass.Hass):
                 else:
                     self.log(f"level above {limit2}% observed, fan already at speed {setting}")
 
-            # set to 1 if new dropped below 60 (1) while humidity_old was higher than 60 (2 or 3) 
-            elif humidity_new < limit2:
+            # set to 1 if humidity_level is below limit2
+            elif humidity_level < limit2:
                 setting = 1
                 if speed != setting:
                     self.post_fan_speed(setting)
