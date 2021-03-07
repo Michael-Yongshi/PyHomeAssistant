@@ -40,12 +40,13 @@ class WatchFan(hass.Hass):
         self.post_fan_speed(speed)
 
         # log
-        self.log(f"Someone requested fan override, setting speed {old} => {new}! \nCurrent date and time is: {self.override}\n")
-
+        self.log(f"Someone requested fan override, setting speed {old} => {new}! \nCurrent date and time is: {self.override}")
+        self.log("")
+        
     def humidity(self, entity, attribute, old, new, kwargs):
 
         # log humidity level
-        self.log(f"Measured humidity at {new}%!\n")
+        self.log(f"Measured humidity at {new}%!")
         humidity_level = int(new.split('.', 1)[0])
 
         # get fanspeed state
@@ -91,6 +92,8 @@ class WatchFan(hass.Hass):
                     self.log(f"level below {limit2}% observed, set fan to speed {setting}")
                 else:
                     self.log(f"level below {limit2}% observed, fan already at speed {setting}")
+
+        self.log("")
 
     def get_fan_speed(self):
 
