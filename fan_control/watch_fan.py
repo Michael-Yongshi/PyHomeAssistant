@@ -58,24 +58,39 @@ class WatchFan(hass.Hass):
         self.log(f"Override expires at {override_expiration}\n")
         self.log(f"Current date and time is: {current_time}")
 
+        limit3 = 90
+        limit2 = 80
+
         # automatically adjust fan speed based on sensor data, humidity and smoke
         if override_expiration <= current_time:
             self.log(f"Override expired")
 
             # set to 3 if increased to above 80 from below 80 (2)
-            if humidity_new >= 80 and speed != 3:
-                self.post_fan_speed(3)
-                self.log(f"level above 80%  observed, set fan to speed 3")
-
+            # if humidity_new >= limit3:
+            #     setting = 3
+            #     if speed != setting:
+            #         self.post_fan_speed(setting)
+            #         self.log(f"level above {limit3}%  observed, set fan to speed {setting}")
+            #     else:
+            #         self.log(f"level above {limit3}%  observed, fan already at speed {setting}")
+            
             # set to 2 if humidity_new is between 60 - 80 (2) and humidity_old was below 60 (1) or above 80 (3)
-            elif (humidity_new >= 60 and humidity_new < 80) and speed != 2:
-                self.post_fan_speed(2)
-                self.log(f"level between 60% and 80% observed, set fan to speed 2")
+            if humidity_new >= limit2:
+                setting = 2
+                if speed != setting:
+                    self.post_fan_speed(setting)
+                    self.log(f"level above {limit2}% observed, set fan to speed {setting}")
+                else:
+                    self.log(f"level above {limit2}% observed, fan already at speed {setting}")
 
             # set to 1 if new dropped below 60 (1) while humidity_old was higher than 60 (2 or 3) 
-            elif humidity_new < 60 and speed != 1:
-                self.post_fan_speed(1)
-                self.log(f"level below 60% observed, set fan to speed 1")
+            elif humidity_new < limit2:
+                setting = 1
+                if speed != setting:
+                    self.post_fan_speed(setting)
+                    self.log(f"level below {limit2}% observed, set fan to speed {setting}")
+                else:
+                    self.log(f"level below {limit2}% observed, fan already at speed {setting}")
 
     def get_fan_speed(self):
 
