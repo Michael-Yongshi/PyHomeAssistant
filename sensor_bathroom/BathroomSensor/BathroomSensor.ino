@@ -43,7 +43,8 @@ WiFiClient wifiClient;
 MqttClient mqttClient(wifiClient);
 
 ////////////// Humidity sensor
-DHT dht(2, DHT11);
+const dht_pin = 2;
+DHT dht(dht_pin, DHT11, 15);
 
 ////////////// Fan speed
 int FanSpeed = 0;               // variable to store fan speed
@@ -68,9 +69,9 @@ void setup() {
 
   ////////////// Wifi 
   // wait for port to open:
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
+  //  while (!Serial) {
+  //    ; // wait for serial port to connect. Needed for native USB port only
+  //  }
 
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE) {
