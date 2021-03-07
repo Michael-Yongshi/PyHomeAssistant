@@ -40,9 +40,10 @@ class WatchFan(hass.Hass):
         self.post_fan_speed(speed)
 
         # log
-        self.log(f"Someone requested fan override, setting speed {old} => {new}! \nCurrent date and time is: {self.override}")
+        self.log(f"Someone requested fan override, setting speed {old} => {new}!")
+        self.log(f"Current date and time is: {self.override}")
         self.log("")
-        
+
     def humidity(self, entity, attribute, old, new, kwargs):
 
         # log humidity level
@@ -56,7 +57,7 @@ class WatchFan(hass.Hass):
         # timings
         override_expiration = self.override + datetime.timedelta(minutes=15)
         current_time = datetime.datetime.now()
-        self.log(f"Override expires at {override_expiration}\n")
+        self.log(f"Override expires at {override_expiration}")
         self.log(f"Current date and time is: {current_time}")
 
         limit3 = 95
