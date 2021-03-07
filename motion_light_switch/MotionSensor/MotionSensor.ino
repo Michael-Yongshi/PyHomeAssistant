@@ -14,15 +14,15 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////// Motion sensor
-const int DIG_PIN_MOTION = 8;   // the pin that OUTPUT pin of sensor is connected to
+const int motion_pin = 8;   // the pin that OUTPUT pin of sensor is connected to
 int MotionStateCurrent   = LOW; // current state of pin
 int MotionStatePrevious  = LOW; // previous state of pin
 
-////////////// Light
-const int light_pin = 11;
+////////////// Relay
+const int relay_pin = 4;
 
 ////////////// Delay
-const long interval = 900000; // (15 minutes x 60 = 900 seconds = 900 000 milliseconds)
+const long interval = 60000; // (15 minutes x 60 = 900 seconds, x 1000 = 900 000 milliseconds)
 unsigned long previousMillis = 0;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -34,10 +34,10 @@ void setup() {
   Serial.begin(9600);
    
   ////////////// Motion
-  pinMode(DIG_PIN_MOTION, INPUT);
+  pinMode(motion_pin, INPUT);
 
-  ////////////// Light
-  pinMode(light_pin, OUTPUT);
+  ////////////// Relay
+  pinMode(relay_pin, OUTPUT);
 
 }
 
@@ -48,7 +48,7 @@ void loop() {
     
   ////////////// Motion
   MotionStatePrevious = MotionStateCurrent; // store old state
-  MotionStateCurrent = digitalRead(DIG_PIN_MOTION);   // read new state
+  MotionStateCurrent = digitalRead(motion_pin);   // read new state
   Serial.println("MotionStateCurrent: ");
   Serial.println(MotionStateCurrent);
   
@@ -59,10 +59,9 @@ void loop() {
   if (MotionStatePrevious == LOW && MotionStateCurrent == HIGH) {
 
     Serial.println("Motion detected!");
-    Serial.println();
 
     // turn on light
-    digitalWrite(light_pin, HIGH); // Turns ON light
+    digitalWrite(relay_pin, HIGH); // Turns ON light
 
     // register when the light was last turned on
     previousMillis = currentMillis;
@@ -73,10 +72,21 @@ void loop() {
   // avoid having delays in loop, we'll use the strategy from BlinkWithoutDelay
   // see: File -> Examples -> 02.Digital -> BlinkWithoutDelay for more info
 
+  // set timer
+  unsigned long differenceMillis = millis();
+  differenceMillis = currentMillis - previousMillis;
+  
+  Serial.print("Current time: ");
+  Serial.println(currentMillis);
+  Serial.print("Previous time: ");
+  Serial.println(previousMillis);
+  Serial.print("Timer: ");
+  Serial.println(differenceMillis);
+  
   // if last registered motion was longer ago then the interval
-  if (currentMillis - previousMillis >= interval) {
+  if (differenceMillis >= interval) {
 
-    digitalWrite(light_pin, LOW); // Turns OFF light
+    digitalWrite(relay_pin, LOW); // Turns OFF light
 
   }
 
