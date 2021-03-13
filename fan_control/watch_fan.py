@@ -101,15 +101,6 @@ class WatchFan(hass.Hass):
         # address for the rest api
         url = "http://192.168.178.29:5000/get_speed"
 
-        # # denote that we are sending data in the form of a json string
-        # headers = {
-        #     "content-type": "application/json",
-        # }
-
-        # json = {
-        #     "speed": f"{speed}",
-        # }
-
         # send out the actual request to the api
         response = requests.get(url=url)
         speed = response.text
