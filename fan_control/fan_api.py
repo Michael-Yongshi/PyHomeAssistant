@@ -27,7 +27,7 @@ def get_speed():
     speed = fan.get_speed()
 
     # returns the current speed
-    return f"Current speed is {speed}"
+    return str(speed)
 
 # Define POST requests
 @app.route('/post_speed', methods=['POST'])
