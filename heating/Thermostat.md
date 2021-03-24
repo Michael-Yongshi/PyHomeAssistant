@@ -5,7 +5,7 @@ https://gathering.tweakers.net/forum/list_messages/1535288/152
 https://sanderkeet.nl/public:homeassistant:thermostat
 
 ## rpi thermometer sensor
-### 1 wire protocol
+<!-- ### 1 wire protocol
 enable 1 wire protocol permanently
 ```
 sudo nano /etc/modules
@@ -30,7 +30,10 @@ ls /sys/bus/w1/devices/
 test by printing its output
 ```
 cat /sys/bus/w1/devices/28-00000393268a/w1_slave
-```
+``` -->
+
+adafruit circuitpython dht something
+had to install libgio 2 or something
 
 # Open Therm
 

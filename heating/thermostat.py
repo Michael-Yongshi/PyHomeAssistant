@@ -28,6 +28,9 @@ class Thermostat(object):
 
     def __init__(self):
 
+        # set up logging
+        logging.basicConfig(level=logging.DEBUG)
+        
         # set a delay to avoid continuously running
         self.delay = 10
 
