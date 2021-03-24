@@ -24,9 +24,8 @@ class WatchDoorbell(hass.Hass):
         date_time = data["time"][0:19]
         message = f"I heard that someone is at the door! \nCurrent date and time is: {date_time}"
         
-        # log the message
+        # log the message before sending it
         self.log(message)
-        self.log(f"data = {data}")
 
         # Call telegram message service to send the message from the telegram bot
         self.call_service(
