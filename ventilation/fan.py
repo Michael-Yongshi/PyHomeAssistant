@@ -4,17 +4,22 @@ import time
 import logging
 
 class Fan(object):
+    """
+    Provdes calls to interface with the fan
+    """
+
     def __init__(self):
         """
-        My fan works on a 3 input basis, which means it expects a combination of power on L1, L2 and L3.
-        I think it should work with L1 == lowest speed, I assume they switched 3 and 1 around in my house...
+        Default fans (in NL) work on a 3 input basis, which means it expects a combination of power on L1, L2 and L3.
+        You can find often a switch in the kitchen and/or living room to control it. from those switches the Lx cables run to the fan
 
-        only L3:      lowest speed (1)
-        L3 and L2:    medium speed (2)
-        L3 and L1:    highest speed (3)
+        L1:                 lowest speed (1)
+        L1 and L2:          medium speed (2)
+        L1(, L2) and L3:    highest speed (3)
 
         """
 
+        # Pi relay hat uses below pins, active_high means the relays are by default turned on (in our case not ideal)
         self.channel1 = gpiozero.OutputDevice(pin=26, active_high=False)
         self.channel2 = gpiozero.OutputDevice(pin=20, active_high=False)
         self.channel3 = gpiozero.OutputDevice(pin=21, active_high=False)
