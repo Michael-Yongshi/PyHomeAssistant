@@ -88,37 +88,47 @@ class WatchFan(hass.Hass):
         if self.override_expiration <= current_time:
             self.log(f"Override expired")
 
-            # humidity level
-            humidity = self.get_state("sensor.mqtt_bathroom_humidity")
-            humidity_level = int(humidity.split('.', 1)[0])
-            self.log(f"Measured humidity at {humidity}%!")
-
-            # set to 3 if humidity_level increased to above limit3
-            if humidity_level >= limit3:
-                setting = 3
-                if speed != setting:
-                    self.post_fan_speed(setting)
-                    self.log(f"level above {limit3}%  observed, set fan to speed {setting}")
-                else:
-                    self.log(f"level above {limit3}%  observed, fan already at speed {setting}")
+            # humidity level (try block as sensor can be down)
+            try:
+                humidity = self.get_state("sensor.mqtt_bathroom_humidity")
+                humidity_level = int(humidity.split('.', 1)[0])
             
-            # set to 2 if humidity_level is above limit2
-            elif humidity_level >= limit2:
-                setting = 2
-                if speed != setting:
-                    self.post_fan_speed(setting)
-                    self.log(f"level above {limit2}% observed, set fan to speed {setting}")
-                else:
-                    self.log(f"level above {limit2}% observed, fan already at speed {setting}")
+                self.log(f"Measured humidity at {humidity}%!")
 
-            # set to 1 if humidity_level is below limit2
-            elif humidity_level < limit2:
+                # set to 3 if humidity_level increased to above limit3
+                if humidity_level >= limit3:
+                    setting = 3
+                    if speed != setting:
+                        self.post_fan_speed(setting)
+                        self.log(f"level above {limit3}%  observed, set fan to speed {setting}")
+                    else:
+                        self.log(f"level above {limit3}%  observed, fan already at speed {setting}")
+                
+                # set to 2 if humidity_level is above limit2
+                elif humidity_level >= limit2:
+                    setting = 2
+                    if speed != setting:
+                        self.post_fan_speed(setting)
+                        self.log(f"level above {limit2}% observed, set fan to speed {setting}")
+                    else:
+                        self.log(f"level above {limit2}% observed, fan already at speed {setting}")
+
+                # set to 1 if humidity_level is below limit2
+                elif humidity_level < limit2:
+                    setting = 1
+                    if speed != setting:
+                        self.post_fan_speed(setting)
+                        self.log(f"level below {limit2}% observed, set fan to speed {setting}")
+                    else:
+                        self.log(f"level below {limit2}% observed, fan already at speed {setting}")
+
+            # if sensor is down, return fan to lowest setting
+            except:
                 setting = 1
+                self.log(f"Couldn't observe humidity!")
                 if speed != setting:
                     self.post_fan_speed(setting)
-                    self.log(f"level below {limit2}% observed, set fan to speed {setting}")
-                else:
-                    self.log(f"level below {limit2}% observed, fan already at speed {setting}")
+                    self.log(f"Set fan to speed {setting}")
 
         else:
             until = self.override_expiration - current_time
