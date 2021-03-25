@@ -1,4 +1,4 @@
-title: Serenity
+title: Default
 views:
   - path: default_view
     title: Home
@@ -16,7 +16,6 @@ views:
         show_header_toggle: true
       - type: entities
         entities:
-          - input_number.fan_override
           - sensor.mqtt_fan_speed
           - sensor.mqtt_bathroom_humidity
           - sensor.mqtt_bathroom_temperature
@@ -63,22 +62,6 @@ views:
           - sensor.epson_et_4750_series_magenta_ink
           - sensor.epson_et_4750_series_yellow_ink
         title: Printer
-        show_header_toggle: true
-      - type: entities
-        entities:
-          - sensor.syncing
-          - sensor.mining
-          - sensor.lastblock
-          - sensor.ethnode_get_balance
-        title: Ethereum Mainnet
-        show_header_toggle: true
-      - type: entities
-        entities:
-          - sensor.syncing
-          - sensor.mining
-          - sensor.lastblock
-          - sensor.ethnode_get_balance
-        title: Ethereum Ropsten
         show_header_toggle: true
       - type: entities
         entities:

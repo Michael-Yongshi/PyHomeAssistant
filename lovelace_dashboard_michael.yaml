@@ -1,0 +1,179 @@
+title: Serenity
+views:
+  - path: default_view
+    title: Ventilation & Lights
+    icon: ''
+    badges: []
+    cards:
+      - type: vertical-stack
+        title: Ventilation
+        show_header_toggle: true
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: button
+                name: Fan1
+                icon: 'mdi:fan-speed-1'
+                show_name: false
+                icon_height: 30px
+                show_icon: true
+                tap_action:
+                  action: call-service
+                  service: script.fan_override_1
+                hold_action:
+                  action: call-service
+                  service: script.fan_override_off
+              - type: button
+                icon: 'mdi:fan-speed-2'
+                name: Fan2
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: script.fan_override_2
+                hold_action:
+                  action: call-service
+                  service: script.fan_override_0
+              - type: button
+                name: Fan3
+                icon: 'mdi:fan-speed-3'
+                icon_height: 30px
+                show_name: false
+                tap_action:
+                  action: call-service
+                  service: script.fan_override_3
+                hold_action:
+                  action: call-service
+                  service: script.fan_override_0
+          - type: gauge
+            entity: sensor.mqtt_fan_speed
+            min: 0
+            max: 3
+      - type: vertical-stack
+        title: Lights
+        show_header_toggle: true
+        cards:
+          - type: button
+            tap_action:
+              action: toggle
+            entity: light.bedroom_light
+            icon_height: 30px
+  - title: Climate
+    path: climate
+    icon: ''
+    badges: []
+    cards:
+      - type: entities
+        title: Temperature
+        entities:
+          - sensor.mqtt_living_temperature
+          - sensor.mqtt_bathroom_temperature
+
+      - type: entities
+        title: Humidity
+        entities: 
+          - sensor.mqtt_living_humidity
+          - sensor.mqtt_bathroom_humidity
+
+  - title: Energy
+    path: energy
+    icon: ''
+    badges: []
+    cards:
+      - type: gauge
+        title: Consumption
+        entity: sensor.power_consumption
+        min: 0
+        max: 10
+
+      - type: entities
+        title: Power
+        entities:
+          - sensor.power_consumption_phase_l1
+          - sensor.power_consumption_phase_l2
+          - sensor.power_consumption_phase_l3
+
+      - type: entities
+        title: Voltage
+        entities:
+          - sensor.voltage_phase_l1
+          - sensor.voltage_phase_l2
+          - sensor.voltage_phase_l3
+
+      - type: entities
+        title: Current
+        entities:
+          - sensor.current_phase_l1
+          - sensor.current_phase_l2
+          - sensor.current_phase_l3
+
+  - title: Devices
+    path: devices
+    icon: ''
+    badges: []
+    cards:
+      - type: entities
+        entities:
+          - vacuum.dusty
+          - binary_sensor.dusty_bin_full
+        title: Vacuum
+        show_header_toggle: true
+  - title: Media
+    path: media
+    icon: ''
+    badges: []
+    cards:
+      - type: vertical-stack
+        title: Apple TV
+        show_header_toggle: true
+        cards:
+          - type: media-control
+            entity: media_player.apple_tv_2
+          - type: entities
+            entities:
+              - remote.apple_tv_2
+  - title: DLT
+    path: dlt
+    icon: ''
+    badges: []
+    cards:
+      - type: vertical-stack
+        title: Bitcoin
+        show_header_toggle: false
+        cards:
+          - type: entities
+            title: Bitcoin Mainnet
+            show_header_toggle: true
+            entities:
+              - sensor.btcmain_syncing
+              - sensor.btcmain_mining
+              - sensor.btcmain_lastblock
+              - sensor.btcmain_get_balance
+          - type: entities
+            title: Bitcoin Testnet
+            show_header_toggle: true
+            entities:
+              - sensor.btctest_syncing
+              - sensor.btctest_mining
+              - sensor.btctest_lastblock
+              - sensor.btctest_get_balance
+      - type: vertical-stack
+        title: Ethereum
+        show_header_toggle: false
+        cards:
+          - type: entities
+            title: Ethereum Mainnet
+            show_header_toggle: true
+            entities:
+              - sensor.ethmain_syncing
+              - sensor.ethmain_mining
+              - sensor.ethmain_lastblock
+              - sensor.ethmain_get_balance
+          - type: entities
+            title: Ethereum Ropsten
+            show_header_toggle: true
+            entities:
+              - sensor.ropsten_syncing
+              - sensor.ropsten_mining
+              - sensor.ropsten_lastblock
+              - sensor.ropsten_get_balance
