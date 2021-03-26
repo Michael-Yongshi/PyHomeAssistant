@@ -4,12 +4,15 @@ import time
 import datetime
 import logging
 from time import daylight, strptime
+from queue import Queue
 
-# heater relay operates by gpio signal
-import gpiozero
+from paho.mqtt import client as mqtt_client
 
 # temperature sensor communicates through adafruit protocol
 import adafruit_dht
+
+# heater relay operates by gpio signal
+import gpiozero
 
 """ TODO
 mqtt push temperature and heating status to home assistant
@@ -17,6 +20,44 @@ mqtt push temperature and heating status to home assistant
 rest api to receive commands to activate heating or activate vacation mode
 rest api to change configuration
 """
+
+# MQTT stuff
+broker = '192.168.178.37'
+port = 1883
+client_id = 'rpi-fuse-pymqtt'
+username = "mqttpublisher"
+password = "publishmqtt"
+
+def connect_mqtt():
+
+    def on_connect(client, userdata, flags, rc):
+
+        if rc == 0:
+            logging.info("Connected to MQTT Broker!")
+        else:
+            logging.info("Failed to connect, return code %d\n", rc)
+
+    # Set Connecting Client ID
+    client = mqtt_client.Client(client_id)
+    client.username_pw_set(username, password)
+    client.on_connect = on_connect
+    client.connect(broker, port)
+
+    return client
+
+def publish(topic, value, client):
+
+    # publish it
+    result = client.publish(topic, value)
+
+    # first item in result array is the status, if this is 0 then the packet is send succesfully
+    if result[0] == 0:
+        logging.info(f"Send `{value}` to topic `{topic}`")
+    
+    # if not the message sending failed
+    else:
+        logging.info(f"Failed to send message to topic {topic}")
+
 
 class Thermostat(object):
     """
@@ -40,11 +81,18 @@ class Thermostat(object):
 
         print(self.days)
 
-        # initialize thermometer
+        # initialize
         self.thermometer = Thermometer()
-
-        # initialize heater
         self.heater = Heater()
+
+        # set up mqtt client
+        self.client = connect_mqtt()
+
+        # start loop, this will process the actual collection and sending of the messages
+        self.client.loop_start()
+
+        # publish sensor data every second    
+        self.msg_count = 0
 
         logging.debug('Thermostat object is initiated')
 
@@ -58,6 +106,46 @@ class Thermostat(object):
 
     def process(self):
 
+        # get sensor data
+        temp = self.thermometer.get_temp()
+        humid = self.thermometer.get_humid()
+        status = self.heater.get_status()
+
+        # get target temperature based on program
+        target_temp = self.get_target_temp()
+
+        # if heater is on (1), turn off only when temperature reaches the upper bound
+        if status == 1:
+            if temp >= target_temp:
+                logging.info(f"Target temperature rose above upper bound")
+                self.heater.switch.off()
+                logging.info(f"Turned off heater")
+            else:
+                logging.info(f"Target temperature still below upper bound")
+        
+        # if heater is off, turn on only when temperature reaches the lower bound
+        # (to prevent turning the heater on or off to often)
+        if status == 0:
+            if temp < target_temp - 1:
+                logging.info(f"Target temperature fell below lower bound")
+                self.heater.switch.on()
+                logging.info(f"Turned on heater")
+            else:
+                logging.info(f"Target temperature still within bounds")
+
+        # publish
+        publish("living/humidity", humid, self.client)
+        publish("living/temperature", temp, self.client)
+        publish("heater/status", status, self.client)
+        
+        # finish off with adding to the message count
+        self.msg_count += 1
+
+        # delay for a while
+        time.sleep(self.delay)      
+
+    def get_target_temp(self):
+        
         # get current day and associated program
         current_day = datetime.datetime.today().weekday()
         current_program_number = self.days[current_day]
@@ -65,9 +153,9 @@ class Thermostat(object):
 
         # load program
         current_program = self.programs[current_program_number]
-        logging.debug(f"Program loaded as: \n{current_program}")
+        # logging.debug(f"Program loaded as: \n{current_program}")
 
-        # check current target temperature
+        # check timeslot and target temperature
         target_temp = 0
         while target_temp == 0:
             
@@ -92,39 +180,13 @@ class Thermostat(object):
 
                     # set timeslot temperature as current target
                     target_temp = timeslot["temp"]
-                    logging.info(f"Target temperature is {current_program_number}")
+                    logging.info(f"Target temperature is {target_temp}")
 
                     break
 
             # if no target temperature is set, restart this progress until it is set
-
-        # get current temperature
-        temp = self.thermometer.get_temp()
-
-        # get heater status
-        status = self.heater.get_status()
-
-        # if heater is on (1), turn off only when temperature reaches the upper bound
-        if status == 1:
-            if temp >= target_temp:
-                logging.info(f"Target temperature rose above upper bound")
-                self.heater.switch.off()
-                logging.info(f"Turned off heater")
-            else:
-                logging.info(f"Target temperature still below upper bound")
         
-        # if heater is off, turn on only when temperature reaches the lower bound
-        # (to prevent turning the heater on or off to often)
-        if status == 0:
-            if temp < target_temp - 1:
-                logging.info(f"Target temperature fell below lower bound")
-                self.heater.switch.on()
-                logging.info(f"Turned on heater")
-            else:
-                logging.info(f"Target temperature still within bounds")
-
-        # delay for a while
-        time.sleep(self.delay)
+        return target_temp
 
     def load_json(self, filename):
         """Load settings json"""
@@ -171,17 +233,28 @@ class Thermometer(object):
             # Breaks if code reaches this part, so only if try succeeded
             break
 
-        # print(f"Temperature is {temperature}")
-        logging.info(f"Read DHT sensor {temperature}")
+        print(f"Temperature is {temperature}")
+        logging.info(f"Read temperature {temperature}")
 
         return temperature
 
     def get_humid(self):
 
-        humidity = self.sensor.humidity
+        # DHR sensor has a tendency to have timing errors, so we retry on this specific error until a valid return is received
+        while True:
+            # try to get a valid read
+            try:
+                humidity = self.sensor.humidity
+
+            # continue in the while loop if an error is returned
+            except RuntimeError:
+                continue
+
+            # Breaks if code reaches this part, so only if try succeeded
+            break
 
         print(f"humidity {humidity}")
-        logging.info(f"Read DHT sensor {humidity}")
+        logging.info(f"Read humidity {humidity}")
 
         return humidity
 
@@ -228,7 +301,7 @@ class Heater(object):
             status = self.switch.value
 
             print(f"Heater status is {status}")
-            logging.info(f"Read heater {status}")
+            logging.info(f"Read heater status as {status}")
             return status
 
         except:
@@ -237,14 +310,14 @@ class Heater(object):
 
 if __name__ == '__main__':
     
+    # thermometer = Thermometer()
+    # thermometer.get_temp()
+
     # heater = Heater()
     # heater.switch.on()
     # heater.get_status()
     # time.sleep(1)
     # heater.switch.off()
-
-    # thermometer = Thermometer()
-    # thermometer.get_temp()
 
     thermostat = Thermostat()
     thermostat.run()
