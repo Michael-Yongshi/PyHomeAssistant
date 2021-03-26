@@ -5,18 +5,16 @@
   #################################################################
   ## interactive devices
   #################################################################
-  lights:
-    name: Lights
-    entities:
-      - light.bedroom_light
 
   ventilation:
     name: Ventilation
     entities:
-      - input_number.fan_override
       - sensor.mqtt_fan_speed
-      - sensor.mqtt_bathroom_humidity
-      - sensor.mqtt_bathroom_temperature
+
+  lights:
+    name: Lights
+    entities:
+      - light.bedroom_light
 
   vacuum:
     name: Vacuum
@@ -27,22 +25,6 @@
   #################################################################
   ## Non interactive devices
   #################################################################
-  dsmr:
-    name: Energy Readings
-    entities:
-      - sensor.power_consumption_phase_l1
-      - sensor.power_consumption_phase_l2
-      - sensor.power_consumption_phase_l3
-      - sensor.voltage_phase_l1
-      - sensor.voltage_phase_l2
-      - sensor.voltage_phase_l3
-      - sensor.current_phase_l1
-      - sensor.current_phase_l2
-      - sensor.current_phase_l3
-      # - sensor.power_production_phase_l1
-      # - sensor.power_production_phase_l2
-      # - sensor.power_production_phase_l3
-      - sensor.hourly_gas_consumption
 
   nas:
     name: Network Attached Storage
@@ -66,23 +48,23 @@
       - sensor.epson_et_4750_series_magenta_ink
       - sensor.epson_et_4750_series_yellow_ink
 
-  ethmain:
-    name: Ethereum Mainnet
-    entities:
-      - sensor.syncing # true of false
-      - sensor.mining # true or false
-      - sensor.lastblock # integer
+  # ethmain:
+  #   name: Ethereum Mainnet
+  #   entities:
+  #     - sensor.syncing # true of false
+  #     - sensor.mining # true or false
+  #     - sensor.lastblock # integer
 
-      - sensor.ethnode_get_balance
+  #     - sensor.ethnode_get_balance
 
-  ethropsten:
-    name: Ethereum Ropsten
-    entities:
-      - sensor.syncing # true of false
-      - sensor.mining # true or false
-      - sensor.lastblock # integer
+  # ethropsten:
+  #   name: Ethereum Ropsten
+  #   entities:
+  #     - sensor.syncing # true of false
+  #     - sensor.mining # true or false
+  #     - sensor.lastblock # integer
 
-      - sensor.ethnode_get_balance
+  #     - sensor.ethnode_get_balance
 
   #################################################################
   ## Network
@@ -91,6 +73,37 @@
     name: Network
     entities:
       - sensor.fritz_netmonitor
+
+  #################################################################
+  ## Sensors
+  #################################################################
+  
+  temperature:
+    name: Temperature
+      - sensor.mqtt_bathroom_temperature
+      - sensor.mqtt_living_temperature
+
+  humidity:
+    name: Humidity
+      - sensor.mqtt_bathroom_humidity
+      - sensor.mqtt_living_humidity
+
+  dsmr:
+    name: Energy Readings
+    entities:
+      - sensor.power_consumption_phase_l1
+      - sensor.power_consumption_phase_l2
+      - sensor.power_consumption_phase_l3
+      - sensor.voltage_phase_l1
+      - sensor.voltage_phase_l2
+      - sensor.voltage_phase_l3
+      - sensor.current_phase_l1
+      - sensor.current_phase_l2
+      - sensor.current_phase_l3
+      # - sensor.power_production_phase_l1
+      # - sensor.power_production_phase_l2
+      # - sensor.power_production_phase_l3
+      - sensor.hourly_gas_consumption
 
   #################################################################
   ## Environment
