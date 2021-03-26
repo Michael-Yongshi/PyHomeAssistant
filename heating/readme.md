@@ -1,36 +1,12 @@
 https://gathering.tweakers.net/forum/list_messages/1535288/152
 
-
-# on/off
-https://sanderkeet.nl/public:homeassistant:thermostat
+## rpi set to local time
+timedatectl
+timedatectl list-timezones
+timedatectl set-timezone Europe/Amsterdam
+sudo timedatectl set-timezone Europe/Amsterdam
 
 ## rpi thermometer sensor
-<!-- ### 1 wire protocol
-enable 1 wire protocol permanently
-```
-sudo nano /etc/modules
-
-# add lines
-w1-gpio
-w1_therm
-```
-
-or add them manually one time with
-```
-sudo modprobe w1-gpio 
-sudo modprobe w1_therm
-``` 
-
-find your sensor
-```
-ls /sys/bus/w1/devices/
-# i.e. 28-00000393268a
-```
-
-test by printing its output
-```
-cat /sys/bus/w1/devices/28-00000393268a/w1_slave
-``` -->
 
 adafruit circuitpython dht something
 had to install libgio 2 or something
