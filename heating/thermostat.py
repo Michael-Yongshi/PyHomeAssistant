@@ -98,11 +98,13 @@ class Thermostat(object):
 
     def run(self):
 
-        # try:
-        while True:
-            self.process()
-        # except:
-        #     logging.critical("Thermostat stopped unexpectedly!")
+        try:
+            while True:
+                logging.info(f"-----Starting Process-----")
+                self.process()
+                logging.info(f"-----Finished Process-----\n")
+        except:
+            logging.critical("Thermostat stopped unexpectedly!")
 
     def process(self):
 
@@ -270,7 +272,8 @@ class Heater(object):
 
     def __init__(self):
         
-        self.switch = gpiozero.OutputDevice(pin=20, active_high=False)
+        # grove relay is default open, so active_high needs to be set to True (close if signal is given)
+        self.switch = gpiozero.OutputDevice(pin=20, active_high=True)
 
         logging.debug('Heater object is initiated')
 

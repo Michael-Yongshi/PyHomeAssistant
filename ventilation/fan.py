@@ -19,7 +19,7 @@ class Fan(object):
 
         """
 
-        # Pi relay hat uses below pins, active_high means the relays are by default turned on (in our case not ideal)
+        # Use active_high to invert the relay
         self.channel1 = gpiozero.OutputDevice(pin=26, active_high=False)
         self.channel2 = gpiozero.OutputDevice(pin=20, active_high=False)
         self.channel3 = gpiozero.OutputDevice(pin=21, active_high=False)
