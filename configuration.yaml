@@ -38,13 +38,18 @@ sensor:
     dsmr_version: 5
 
   # enable rest endpoint for ethnode with our account
-  - platform: rest
-    name: ethnode_get_balance
-    resource: http://192.168.178.39:5000/get_my_balance
+  # - platform: rest
+  #   name: ethnode_get_balance
+  #   resource: http://192.168.178.39:5000/get_my_balance
 
   - platform: mqtt
     name: mqtt_bathroom_humidity
     state_topic: "bathroom/humidity"
+    unit_of_measurement: '%'
+
+  - platform: mqtt
+    name: mqtt_living_humidity
+    state_topic: "living/humidity"
     unit_of_measurement: '%'
 
   - platform: mqtt
@@ -53,5 +58,14 @@ sensor:
     unit_of_measurement: '°C'
 
   - platform: mqtt
+    name: mqtt_living_temperature
+    state_topic: "living/temperature"
+    unit_of_measurement: '°C'
+
+  - platform: mqtt
     name: mqtt_fan_speed
     state_topic: 'fan/speed'
+
+  - platform: mqtt
+    name: mqtt_heater_status
+    state_topic: 'heater/status'

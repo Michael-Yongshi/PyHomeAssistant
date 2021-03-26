@@ -1,10 +1,37 @@
+sensor.external_ip:
+  icon: mdi:wan
 
-#################################################################
-## Customize
-#################################################################
+sensor.ethnode_get_balance:
+  icon: mdi:cash
 
-  sensor.external_ip:
-    icon: mdi:wan
+sensor.fan_speed:
+  icon: hass:fan
+  friendly_name: Fan
 
-  sensor.ethnode_get_balance:
-    icon: mdi:cash
+sensor.mqtt_bathroom_humidity:
+  icon: hass:water
+  unit_of_measurement: '%'
+  friendly_name: Bathroom
+
+sensor.mqtt_bathroom_temperature:
+  icon: hass:thermometer
+  unit_of_measurement: °C
+  friendly_name: Bathroom
+
+sensor.mqtt_living_humidity:
+  icon: hass:water
+  unit_of_measurement: '%'
+  friendly_name: Livingroom
+
+sensor.mqtt_living_temperature:
+  icon: hass:thermometer
+  unit_of_measurement: °C
+  friendly_name: Livingroom
+
+sensor.mqtt_fan_speed:
+  friendly_name: Fan Speed
+  icon: hass:fan
+
+sensor.mqtt_heater_status:
+  friendly_name: Heater Status
+  icon: hass:fire
