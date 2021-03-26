@@ -103,6 +103,9 @@ class Thermostat(object):
                 logging.info(f"-----Starting Process-----")
                 self.process()
                 logging.info(f"-----Finished Process-----\n")
+                
+                # delay for a while
+                time.sleep(self.delay)  
         except:
             logging.critical("Thermostat stopped unexpectedly!")
 
@@ -141,10 +144,7 @@ class Thermostat(object):
         publish("heater/status", status, self.client)
         
         # finish off with adding to the message count
-        self.msg_count += 1
-
-        # delay for a while
-        time.sleep(self.delay)      
+        self.msg_count += 1    
 
     def get_target_temp(self):
         
