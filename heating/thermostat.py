@@ -119,9 +119,9 @@ class Thermostat(object):
         self.determine_setting(temp, humid, status)
 
         # publish
-        publish("living/humidity", self.humid, self.client)
-        publish("living/temperature", self.temp, self.client)
-        publish("heater/status", self.status, self.client)
+        publish("living/humidity", humid, self.client)
+        publish("living/temperature", temp, self.client)
+        publish("heater/status", status, self.client)
         
         # finish off with adding to the message count
         self.msg_count += 1    
