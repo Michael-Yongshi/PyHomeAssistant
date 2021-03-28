@@ -75,13 +75,6 @@ class Thermostat(object):
         # set a delay to avoid continuously running
         self.delay = 10
 
-        # set settings from settings file
-        self.days = self.load_json("days")
-        self.programs = self.load_json("programs")
-        self.bound = 1
-
-        print(self.days)
-
         # initialize
         self.thermometer = Thermometer()
         self.heater = Heater()
@@ -112,10 +105,28 @@ class Thermostat(object):
 
     def process(self):
 
+        # set settings from settings file
+        self.days = self.load_json("days")
+        self.programs = self.load_json("programs")
+        self.bound = 1
+        
         # get sensor data
         temp = self.thermometer.get_temp()
         humid = self.thermometer.get_humid()
         status = self.heater.get_status()
+
+        # determine if change to heater is needed
+        self.determine_setting(temp, humid, status)
+
+        # publish
+        publish("living/humidity", self.humid, self.client)
+        publish("living/temperature", self.temp, self.client)
+        publish("heater/status", self.status, self.client)
+        
+        # finish off with adding to the message count
+        self.msg_count += 1    
+
+    def determine_setting(self, temp, humid, status):
 
         # get target temperature based on program
         target_temp = self.get_target_temp()
@@ -138,14 +149,6 @@ class Thermostat(object):
                 logging.info(f"Turned on heater")
             else:
                 logging.info(f"Target temperature still within bounds")
-
-        # publish
-        publish("living/humidity", humid, self.client)
-        publish("living/temperature", temp, self.client)
-        publish("heater/status", status, self.client)
-        
-        # finish off with adding to the message count
-        self.msg_count += 1    
 
     def get_target_temp(self):
         
