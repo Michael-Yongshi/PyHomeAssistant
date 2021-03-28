@@ -130,25 +130,29 @@ class Thermostat(object):
 
         # get target temperature based on program
         target_temp = self.get_target_temp()
+        lower_bound = target_temp - self.bound
+        upper_bound = target_temp + self.bound
 
         # if heater is on (1), turn off only when temperature reaches the upper bound
         if status == 1:
-            if temp >= target_temp + self.bound:
-                logging.info(f"Target temperature rose above upper bound")
+            
+            if temp >= upper_bound:
+                logging.info(f"Temperature ({temp}) rose above upper bound ({upper_bound})")
                 self.heater.switch.off()
                 logging.info(f"Turned off heater")
             else:
-                logging.info(f"Target temperature still below upper bound")
+                logging.info(f"Temperature ({temp}) is still below upper bound ({upper_bound})")
         
         # if heater is off, turn on only when temperature reaches the lower bound
         # (to prevent turning the heater on or off to often)
         if status == 0:
-            if temp < target_temp - self.bound:
-                logging.info(f"Target temperature fell below lower bound")
+            
+            if temp < lower_bound:
+                logging.info(f"Temperature ({temp}) fell below lower bound ({lower_bound})")
                 self.heater.switch.on()
                 logging.info(f"Turned on heater")
             else:
-                logging.info(f"Target temperature still within bounds")
+                logging.info(f"Temperature ({temp}) is still above lower bound ({lower_bound})")
 
     def get_target_temp(self):
         
