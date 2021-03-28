@@ -78,6 +78,7 @@ class Thermostat(object):
         # set settings from settings file
         self.days = self.load_json("days")
         self.programs = self.load_json("programs")
+        self.bound = 1
 
         print(self.days)
 
@@ -121,7 +122,7 @@ class Thermostat(object):
 
         # if heater is on (1), turn off only when temperature reaches the upper bound
         if status == 1:
-            if temp >= target_temp:
+            if temp >= target_temp + self.bound:
                 logging.info(f"Target temperature rose above upper bound")
                 self.heater.switch.off()
                 logging.info(f"Turned off heater")
@@ -131,7 +132,7 @@ class Thermostat(object):
         # if heater is off, turn on only when temperature reaches the lower bound
         # (to prevent turning the heater on or off to often)
         if status == 0:
-            if temp < target_temp - 1:
+            if temp < target_temp - self.bound:
                 logging.info(f"Target temperature fell below lower bound")
                 self.heater.switch.on()
                 logging.info(f"Turned on heater")
