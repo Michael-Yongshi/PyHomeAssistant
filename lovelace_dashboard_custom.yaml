@@ -1,7 +1,7 @@
 title: Serenity
 views:
   - path: default_view
-    title: Ventilation & Lights
+    title: Fan & Light
     icon: ''
     badges: []
     cards:
@@ -49,10 +49,6 @@ views:
             entity: sensor.mqtt_fan_speed
             min: 0
             max: 3
-      - type: vertical-stack
-        title: Lights
-        show_header_toggle: true
-        cards:
           - type: button
             tap_action:
               action: toggle
@@ -63,18 +59,34 @@ views:
     icon: ''
     badges: []
     cards:
-      - type: entities
+      - type: vertical-stack
         title: Temperature
-        entities:
-          - sensor.mqtt_living_temperature
-          - sensor.mqtt_bathroom_temperature
-
-      - type: entities
+        cards:
+          - type: sensor
+            entity: sensor.mqtt_living_temperature
+            graph: line
+            detail: 2
+          - type: sensor
+            entity: sensor.mqtt_bathroom_temperature
+            graph: line
+            detail: 2
+      - type: vertical-stack
         title: Humidity
-        entities: 
-          - sensor.mqtt_living_humidity
-          - sensor.mqtt_bathroom_humidity
-
+        cards:
+          - type: sensor
+            entity: sensor.mqtt_living_humidity
+            graph: line
+            detail: 2
+          - type: sensor
+            entity: sensor.mqtt_bathroom_humidity
+            graph: line
+            detail: 2
+      - type: history-graph
+        entities:
+          - entity: sensor.mqtt_heater_status
+        hours_to_show: 24
+        refresh_interval: 0
+        title: Heater Status
   - title: Energy
     path: energy
     icon: ''
@@ -85,28 +97,24 @@ views:
         entity: sensor.power_consumption
         min: 0
         max: 10
-
       - type: entities
         title: Power
         entities:
           - sensor.power_consumption_phase_l1
           - sensor.power_consumption_phase_l2
           - sensor.power_consumption_phase_l3
-
       - type: entities
         title: Voltage
         entities:
           - sensor.voltage_phase_l1
           - sensor.voltage_phase_l2
           - sensor.voltage_phase_l3
-
       - type: entities
         title: Current
         entities:
           - sensor.current_phase_l1
           - sensor.current_phase_l2
           - sensor.current_phase_l3
-
   - title: Devices
     path: devices
     icon: ''
@@ -118,11 +126,6 @@ views:
           - binary_sensor.dusty_bin_full
         title: Vacuum
         show_header_toggle: true
-  - title: Media
-    path: media
-    icon: ''
-    badges: []
-    cards:
       - type: vertical-stack
         title: Apple TV
         show_header_toggle: true
