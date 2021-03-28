@@ -108,7 +108,7 @@ class Thermostat(object):
         # set settings from settings file
         self.days = self.load_json("days")
         self.programs = self.load_json("programs")
-        self.bound = 1
+        self.bound = 0.5
         
         # get sensor data
         temp = self.thermometer.get_temp()
