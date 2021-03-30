@@ -1,7 +1,30 @@
 title: Serenity
 views:
-  - path: default_view
-    title: Fan & Light
+  - title: Light & Devices
+    path: default_view
+    icon: ''
+    badges: []
+    cards:
+      - type: entities
+        entities:
+          - light.bedroom_light
+        title: Lights
+        show_header_toggle: true
+      - type: entities
+        entities:
+          - vacuum.dusty
+          - binary_sensor.dusty_bin_full
+        title: Vacuum
+      - type: vertical-stack
+        title: Apple TV
+        cards:
+          - type: media-control
+            entity: media_player.apple_tv_2
+          - type: entities
+            entities:
+              - remote.apple_tv_2
+  - title: Fan
+    path: fan
     icon: ''
     badges: []
     cards:
@@ -16,7 +39,6 @@ views:
                 icon: 'mdi:fan-speed-1'
                 show_name: false
                 icon_height: 30px
-                show_icon: true
                 tap_action:
                   action: call-service
                   service: script.fan_override_1
@@ -33,15 +55,26 @@ views:
                   service: script.fan_override_2
                 hold_action:
                   action: call-service
-                  service: script.fan_override_0
+                  service: script.fan_override_off
               - type: button
                 name: Fan3
                 icon: 'mdi:fan-speed-3'
-                icon_height: 30px
                 show_name: false
+                icon_height: 30px
                 tap_action:
                   action: call-service
                   service: script.fan_override_3
+                hold_action:
+                  action: call-service
+                  service: script.fan_override_off
+              - type: button
+                name: Fan0
+                icon: 'hass:fan'
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: script.fan_override_off
                 hold_action:
                   action: call-service
                   service: script.fan_override_0
@@ -49,13 +82,19 @@ views:
             entity: sensor.mqtt_fan_speed
             min: 0
             max: 3
-          - type: button
-            tap_action:
-              action: toggle
-            entity: light.bedroom_light
-            icon_height: 30px
-  - title: Climate
-    path: climate
+      - type: vertical-stack
+        title: Humidity
+        cards:
+          - type: sensor
+            entity: sensor.mqtt_living_humidity
+            graph: line
+            detail: 2
+          - type: sensor
+            entity: sensor.mqtt_bathroom_humidity
+            graph: line
+            detail: 2
+  - title: Heater
+    path: heater
     icon: ''
     badges: []
     cards:
@@ -70,17 +109,6 @@ views:
             entity: sensor.mqtt_bathroom_temperature
             graph: line
             detail: 2
-      - type: vertical-stack
-        title: Humidity
-        cards:
-          - type: sensor
-            entity: sensor.mqtt_living_humidity
-            graph: line
-            detail: 2
-          - type: sensor
-            entity: sensor.mqtt_bathroom_humidity
-            graph: line
-            detail: 2
       - type: history-graph
         entities:
           - entity: sensor.mqtt_heater_status
@@ -92,49 +120,32 @@ views:
     icon: ''
     badges: []
     cards:
-      - type: gauge
-        title: Consumption
-        entity: sensor.power_consumption
-        min: 0
-        max: 10
-      - type: entities
-        title: Power
-        entities:
-          - sensor.power_consumption_phase_l1
-          - sensor.power_consumption_phase_l2
-          - sensor.power_consumption_phase_l3
-      - type: entities
-        title: Voltage
-        entities:
-          - sensor.voltage_phase_l1
-          - sensor.voltage_phase_l2
-          - sensor.voltage_phase_l3
-      - type: entities
-        title: Current
-        entities:
-          - sensor.current_phase_l1
-          - sensor.current_phase_l2
-          - sensor.current_phase_l3
-  - title: Devices
-    path: devices
-    icon: ''
-    badges: []
-    cards:
-      - type: entities
-        entities:
-          - vacuum.dusty
-          - binary_sensor.dusty_bin_full
-        title: Vacuum
-        show_header_toggle: true
       - type: vertical-stack
-        title: Apple TV
-        show_header_toggle: true
+        title: Power
         cards:
-          - type: media-control
-            entity: media_player.apple_tv_2
+          - type: sensor
+            entity: sensor.power_consumption
+            graph: line
+            name: Power
           - type: entities
             entities:
-              - remote.apple_tv_2
+              - sensor.power_consumption_phase_l1
+              - sensor.power_consumption_phase_l2
+              - sensor.power_consumption_phase_l3
+      - type: vertical-stack
+        cards:
+          - type: entities
+            title: Voltage
+            entities:
+              - sensor.voltage_phase_l1
+              - sensor.voltage_phase_l2
+              - sensor.voltage_phase_l3
+          - type: entities
+            title: Current
+            entities:
+              - sensor.current_phase_l1
+              - sensor.current_phase_l2
+              - sensor.current_phase_l3
   - title: DLT
     path: dlt
     icon: ''
