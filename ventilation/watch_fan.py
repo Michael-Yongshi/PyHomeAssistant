@@ -25,14 +25,14 @@ class WatchFan(hass.Hass):
         self.override_interval = 10
 
         # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received. 
-        self.listen_event(self.fan_override, "FAN_OVERRIDE")
-        self.listen_state(self.humidity, "sensor.mqtt_bathroom_humidity")
+        self.listen_event(self.override, "FAN_OVERRIDE")
+        self.listen_state(self.mqtt_update, "sensor.mqtt_bathroom_humidity")
 
         # enforce determining setting even if humidity is unchanged every minute
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
 
     # the method that is called when someone wants to override fan setting from home assistant itself
-    def fan_override(self, event_name, data, kwargs):
+    def override(self, event_name, data, kwargs):
 
         speed = int(data["speed"])
         oldspeed = int(self.get_fan_speed())
@@ -81,7 +81,7 @@ class WatchFan(hass.Hass):
         self.log("")
 
     # determine setting when humidity changed
-    def humidity(self, entity, attribute, old, new, kwargs):
+    def mqtt_update(self, entity, attribute, old, new, kwargs):
 
         self.determine_setting(kwargs)
 
