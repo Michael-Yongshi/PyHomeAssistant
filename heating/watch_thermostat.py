@@ -38,10 +38,12 @@ class WatchThermostat(hass.Hass):
         # enforce determining setting even if humidity is unchanged every minute
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
 
-    def override(self, status):
+    def override(self, event_name, data, kwargs):
 
-        oldstatus = int(self.heater.get_status())
+        status = int(data["status"])
+        oldstatus = int(self.get_heater_status())
         current_time = datetime.datetime.now()
+        self.log(f"status is {status} with old status {oldstatus}")
 
         # if override is active (and status is the same as previous override) extend the override
         if status == oldstatus and self.override_expiration > current_time:
@@ -52,23 +54,23 @@ class WatchThermostat(hass.Hass):
             # log
             self.log(f"Someone requested thermostat override, extending the override by {self.override_interval} minutes!")
 
-        elif status == 2:
-            # if override is currently not active (for this status) override is set anew
-            self.override_expiration = current_time + datetime.timedelta(minutes=self.override_interval)
-
-            # log
-            self.log(f"Someone requested thermostat override, setting status {oldstatus} => {status}!")
-            
-            # send thermostat command to set the status to the new level
-            if status == 1:
-                self.heater.switch.on()
-            elif status == 2:
-                self.heater.switch.off()
-
         else:
-            # disable override by setting expiration to current time
-            self.override_expiration = current_time
-            self.log(f"Thermostat override lifted!")
+
+            if status >= 2:
+                # disable override by setting expiration to current time
+                self.override_expiration = current_time
+                self.log(f"Thermostat override lifted!")
+
+            else:
+
+                # if override is currently not active (for this status) override is set anew
+                self.override_expiration = current_time + datetime.timedelta(minutes=self.override_interval)
+
+                # send thermostat command to set the status to the new level
+                self.post_heater_status(status)
+
+                # log
+                self.log(f"Someone requested heater override, setting status {oldstatus} => {status}!")
 
         self.log(f"Current date and time is: {current_time}")
         self.log("")
@@ -103,7 +105,7 @@ class WatchThermostat(hass.Hass):
                 
                 if temp >= upper_bound:
                     self.log(f"Temperature ({temp}) rose above upper bound ({upper_bound})")
-                    self.heater.switch.off()
+                    self.post_heater_status(status=0)
                     self.log(f"Turned off heater")
                 else:
                     self.log(f"Temperature ({temp}) is still below upper bound ({upper_bound})")
@@ -114,7 +116,7 @@ class WatchThermostat(hass.Hass):
                 
                 if temp < lower_bound:
                     self.log(f"Temperature ({temp}) fell below lower bound ({lower_bound})")
-                    self.heater.switch.on()
+                    self.post_heater_status(status=1)
                     self.log(f"Turned on heater")
                 else:
                     self.log(f"Temperature ({temp}) is still above lower bound ({lower_bound})")
@@ -124,8 +126,8 @@ class WatchThermostat(hass.Hass):
             #     setting = 0
             #     self.log(f"Couldn't observe temperature!")
             #     if status != setting:
-            #         self.post_fan_speed(setting)
-            #         self.log(f"Set fan to speed {setting}")
+            #         self.post_fan_status(setting)
+            #         self.log(f"Set fan to status {setting}")
 
     def get_target_temp(self):
         
