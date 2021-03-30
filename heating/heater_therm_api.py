@@ -21,11 +21,10 @@ def get_status():
     # returns the current status
     return str(status)
 
-@app.route('/post_override', methods=['POST'])
-def post_override():
+@app.route('/post_status', methods=['POST'])
+def post_status():
     """
-    Overrides the thermostat for an hour. Expects input "status" = 1 to override to on and 0 to turn off the heater.
-    If receiving any other integer, it removes any
+    Starts or stops the heater. Expects input "status" = 1 to turn on and 0 to turn off the heater.
     
     :param integer status:
 
