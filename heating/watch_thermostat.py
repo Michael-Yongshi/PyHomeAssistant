@@ -59,6 +59,10 @@ class WatchThermostat(hass.Hass):
             if status >= 2:
                 # disable override by setting expiration to current time
                 self.override_expiration = current_time
+                
+                # immediately run automatically setting the fan as override is stopped
+                self.determine_setting(kwargs)
+
                 self.log(f"Thermostat override lifted!")
 
             else:
