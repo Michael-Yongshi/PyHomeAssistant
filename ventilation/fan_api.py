@@ -10,14 +10,6 @@ fan = Fan()
 app = Flask(__name__)
 
 # Define GET requests
-@app.route('/test_relay', methods=['GET'])
-def test_relay():
-    """
-    Test if the relay works and return result
-    """
-
-    fan.test_relay()
-
 @app.route('/get_speed', methods=['GET'])
 def get_speed():
     """
