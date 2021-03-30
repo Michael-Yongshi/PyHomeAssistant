@@ -21,7 +21,7 @@ class WatchFan(hass.Hass):
     def initialize(self):
         
         # Were keeping track of an override variable to keep override only on for a certain amount of time
-        self.override_expiration = datetime.datetime.now() + datetime.timedelta(minutes=-30)
+        self.override_expiration = datetime.datetime.now()
         self.override_interval = 10
 
         # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received. 
@@ -149,6 +149,7 @@ class WatchFan(hass.Hass):
             
         self.log("")
 
+    # get the current speed of the fan
     def get_fan_speed(self):
 
         # address for the rest api
@@ -160,6 +161,7 @@ class WatchFan(hass.Hass):
 
         return speed
 
+    # set the speed of the fan
     def post_fan_speed(self, speed):
         
         # address for the rest api
