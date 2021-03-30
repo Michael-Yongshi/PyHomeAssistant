@@ -39,11 +39,14 @@ class WatchFan(hass.Hass):
 
         current_time = datetime.datetime.now()
 
-        # check if override is requested to be disable
+        # check if override is requested to be disabled
         if speed == 9:
             # disable override by setting expiration to current time
             self.override_expiration = current_time
-            self.log(f"Stopping fan override!")
+            self.log(f"Fan override lifted!")
+
+            # immediately run automatically setting the fan as override is stopped
+            self.determine_setting(kwargs)
 
         # if override is active (and speed is the same as previous override) extend the override
         elif speed == oldspeed and self.override_expiration > current_time:
@@ -56,13 +59,23 @@ class WatchFan(hass.Hass):
 
         else:
             # if override is currently not active (for this speed) override is set anew
-            self.override_expiration = current_time + datetime.timedelta(minutes=self.override_interval)
-           
+            
+            if speed == 0:
+                # override to shut off the fan for longer period of time or until override is lifted or changed. 
+                self.override_expiration = current_time + datetime.timedelta(days=1)
+
+                # log
+                self.log(f"Someone requested stopping the fan, shutting off the fan for the time being!")
+
+            else:
+                # overrides in the off setting for by default a day. 
+                self.override_expiration = current_time + datetime.timedelta(minutes=self.override_interval)
+
+                # log
+                self.log(f"Someone requested fan override, setting speed {oldspeed} => {speed}!")
+            
             # send fan command to set the speed to the new level
             self.post_fan_speed(speed)
-
-            # log
-            self.log(f"Someone requested fan override, setting speed {oldspeed} => {speed}!")
 
         self.log(f"Current date and time is: {current_time}")
         self.log("")
