@@ -11,6 +11,7 @@ class Heater(object):
 
     The self.switch variable contains a on() and off() method to manipulate the heater.
     so calling 'heater.switch.on()' turns the heater on.
+
     """
 
     def __init__(self):
@@ -56,32 +57,15 @@ class Heater(object):
 
     def set_status(self, status):
 
-        try:
+    # try:
+        logging.info(f"Setting status to {status}")
+        if status == 1:
+            self.switch.on()
+        elif status == 0:
+            self.switch.off()
 
-            logging.info(f"Setting status to {status}")
-            if status == 0:
-                self.channel1.off()
-                self.channel2.off()
-                self.channel3.off()
+        return status
 
-            elif status == 1:
-                self.channel1.on()
-                self.channel2.off()
-                self.channel3.off()
-            
-            else:
-                logging.info(f"Received invalid status {status}.")
-
-                return status
-            
-            logging.info(f"Set status to {status}!")
-
-            # Wait for heater to process the change before accepting a new change
-            time.sleep(1)
-
-            return status
-        
-        except:
-
-            logging.info(f"Couldnt set status {status}.")
-            return -1
+    # except:
+        logging.error(f"Couldn't set heater!")
+        return -1
