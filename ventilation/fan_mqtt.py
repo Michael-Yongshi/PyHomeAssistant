@@ -1,5 +1,5 @@
+import logging
 import time
-from queue import Queue
 
 from paho.mqtt import client as mqtt_client
 
@@ -17,6 +17,9 @@ username = "mqttpublisher"
 password = "publishmqtt"
 
 def run():
+
+    # set up logging
+    logging.basicConfig(level=logging.DEBUG)
 
     # set up mqtt client
     client = connect_mqtt()
@@ -42,9 +45,9 @@ def connect_mqtt():
     def on_connect(client, userdata, flags, rc):
 
         if rc == 0:
-            print("Connected to MQTT Broker!")
+            logging.info("Connected to MQTT Broker!")
         else:
-            print("Failed to connect, return code %d\n", rc)
+            logging.critical("Failed to connect, return code %d\n", rc)
 
     # Set Connecting Client ID
     client = mqtt_client.Client(client_id)
@@ -64,11 +67,11 @@ def publish(client):
 
         # first item in result array is the status, if this is 0 then the packet is send succesfully
         if result[0] == 0:
-            print(f"Send `{speed}` to topic `{topic}`")
+            logging.info(f"Send `{speed}` to topic `{topic}`")
         
         # if not the message sending failed
         else:
-            print(f"Failed to send message to topic {topic}")
+            logging.critical(f"Failed to send message to topic {topic}")
 
 
 if __name__ == '__main__':

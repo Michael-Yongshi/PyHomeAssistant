@@ -103,13 +103,12 @@ class WatchFan(hass.Hass):
 
             # humidity level (try block as sensor can be down)
             try:
-                humidity = self.get_state("sensor.mqtt_bathroom_humidity")
-                humidity_level = int(humidity.split('.', 1)[0])
+                humidity = float(self.get_state("sensor.mqtt_bathroom_humidity"))
             
                 self.log(f"Measured humidity at {humidity}%!")
 
-                # set to 3 if humidity_level increased to above limit3
-                if humidity_level >= limit3:
+                # set to 3 if humidity increased to above limit3
+                if humidity >= limit3:
                     setting = 3
                     if speed != setting:
                         self.post_fan_speed(setting)
@@ -117,8 +116,8 @@ class WatchFan(hass.Hass):
                     else:
                         self.log(f"level above {limit3}%  observed, fan already at speed {setting}")
                 
-                # set to 2 if humidity_level is above limit2
-                elif humidity_level >= limit2:
+                # set to 2 if humidity is above limit2
+                elif humidity >= limit2:
                     setting = 2
                     if speed != setting:
                         self.post_fan_speed(setting)
@@ -126,8 +125,8 @@ class WatchFan(hass.Hass):
                     else:
                         self.log(f"level above {limit2}% observed, fan already at speed {setting}")
 
-                # set to 1 if humidity_level is below limit2
-                elif humidity_level < limit2:
+                # set to 1 if humidity is below limit2
+                elif humidity < limit2:
                     setting = 1
                     if speed != setting:
                         self.post_fan_speed(setting)
