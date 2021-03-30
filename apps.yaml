@@ -9,3 +9,7 @@ watch_doorbell:
 watch_fan:
   module: watch_fan
   class: WatchFan
+
+watch_thermostat:
+  module: watch_thermostat
+  class: WatchThermostat
