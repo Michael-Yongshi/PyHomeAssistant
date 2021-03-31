@@ -11,7 +11,6 @@ fan = Fan()
 # MQTT stuff
 broker = '192.168.178.37'
 port = 1883
-topic = "fan/speed"
 client_id = 'rpi-fan-pymqtt'
 username = "mqttpublisher"
 password = "publishmqtt"
@@ -34,8 +33,13 @@ def run():
         # every second
         time.sleep(1)
         
+        topic = "fan/speed"
+
+        # get fan speed
+        value = fan.get_speed()
+
         # publish
-        publish(client)
+        publish(client, topic, value)
 
         # finish off with adding to the message count
         msg_count += 1
@@ -57,17 +61,14 @@ def connect_mqtt():
 
     return client
 
-def publish(client):
-
-        # get fan speed
-        speed = fan.get_speed()
+def publish(client, topic, value):
 
         # publish it
-        result = client.publish(topic, speed)
+        result = client.publish(topic, value)
 
         # first item in result array is the status, if this is 0 then the packet is send succesfully
         if result[0] == 0:
-            logging.info(f"Send `{speed}` to topic `{topic}`")
+            logging.info(f"Send `{value}` to topic `{topic}`")
         
         # if not the message sending failed
         else:
