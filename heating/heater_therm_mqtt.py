@@ -33,7 +33,7 @@ def run():
     
     while True:
         # every second
-        time.sleep(5)
+        time.sleep(1)
         
         topic = "heater/status"
         value = heater.get_status()
@@ -69,6 +69,7 @@ def connect_mqtt():
 
 def publish(client, topic, value):
 
+        # publish it
         result = client.publish(topic, value)
 
         # first item in result array is the status, if this is 0 then the packet is send succesfully
