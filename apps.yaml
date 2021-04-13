@@ -1,7 +1,3 @@
-watch_active_source:
-  module: watch_active_source
-  class: WatchActiveSource
-
 watch_doorbell:
   module: watch_doorbell
   class: WatchDoorbell
@@ -13,3 +9,7 @@ watch_fan:
 watch_thermostat:
   module: watch_thermostat
   class: WatchThermostat
+
+# watch_light:
+#   module: watch_light
+#   class: WatchLight
