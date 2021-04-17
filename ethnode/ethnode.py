@@ -35,7 +35,7 @@ url = "127.0.0.1"
 port = "8501"
 
 class EthereumHandler(object):
-    def __init__(self, network=""):
+    def __init__(self, url=url, port=port):
         super().__init__()
 
         """Initialize a Web3 connection to the local node, if connect_type is given set up a non-http connection (websocket or local)
@@ -148,6 +148,10 @@ class EthereumHandler(object):
     def get_balance(self, wallet_public_key):
         balance = self.w3.eth.getBalance(wallet_public_key)
         return balance
+
+    def get_sync_status(self):
+        status = self.w3.eth.syncing
+        return status
 
     @staticmethod
     def get_public_key(wallet_private_key):

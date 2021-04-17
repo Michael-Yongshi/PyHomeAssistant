@@ -1,0 +1,12 @@
+[Unit]
+Description=Bitcoin Node MQTT
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/
+ExecStart=python3 /home/ubuntu/btcnode_mqtt.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=Ethereum Node API
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/
+ExecStart=python3 /home/ubuntu/ethnode/ethnode_api.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

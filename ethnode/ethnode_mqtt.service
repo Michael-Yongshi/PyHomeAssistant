@@ -1,11 +1,11 @@
 [Unit]
-Description=Ethereum Node
+Description=Ethereum Node MQTT
 After=network.target
 
 [Service]
-User=pi
+User=ubuntu
 WorkingDirectory=/
-ExecStart=python3 /home/ethereum/ethnode/ethnode_api.py
+ExecStart=python3 /home/ubuntu/ethnode/ethnode_mqtt.py
 Restart=always
 
 [Install]
