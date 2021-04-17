@@ -150,7 +150,13 @@ class EthereumHandler(object):
         return balance
 
     def get_sync_status(self):
+
         status = self.w3.eth.syncing
+
+        # status["isSyncing"] = self.w3.eth.is_syncing
+        # status["isMining"] = self.w3.eth.is_mining
+        # status["peerCount"] = self.w3.net.peerCount
+
         return status
 
     @staticmethod

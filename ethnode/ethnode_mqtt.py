@@ -71,16 +71,45 @@ def publish(client, topic, value):
 
 def process(client):
 
-    sync_main = eth_main.get_sync_status()
-    sync_ropsten = eth_ropsten.get_sync_status()
-    # print(f"sync main = {sync_main}")
-    # print(f"sync ropsten = {sync_ropsten}")
+    try:
+        sync_main = eth_main.get_sync_status()
+        check = sync_main['currentBlock']
+        
+    except:
+        sync_main = {
+            "currentBlock": 0,
+            "highestBlock": 0,
+            "knownStates": 0,
+            "pulledStates": 0,
+            "startingBlock": 0,
+            # "isSyncing": 0,
+            # "isMining": 0,
+            # "peerCount": 0,
+        }
 
+    # print(f"sync main = {sync_main}")
     publish(client, "ethmain/current_block", sync_main["currentBlock"])
     publish(client, "ethmain/highest_block", sync_main["highestBlock"])
     publish(client, "ethmain/pulled_states", sync_main["pulledStates"])
     publish(client, "ethmain/known_states", sync_main["knownStates"])
+    # publish(client, "ethmain/is_syncing", sync_main["isSyncing"])
+    # publish(client, "ethmain/is_mining", sync_main["isMining"])
+    # publish(client, "ethmain/peer_count", sync_main["peerCount"])
 
+    try:
+        sync_ropsten = eth_ropsten.get_sync_status()
+        check = sync_ropsten['currentBlock']
+
+    except:
+        sync_ropsten = {
+            "currentBlock": 0,
+            "highestBlock": 0,
+            "knownStates": 0,
+            "pulledStates": 0,
+            "startingBlock": 0
+        }
+
+    # print(f"sync ropsten = {sync_ropsten}")
     publish(client, "ethropsten/current_block", sync_ropsten["currentBlock"])
     publish(client, "ethropsten/highest_block", sync_ropsten["highestBlock"])
     publish(client, "ethropsten/pulled_states", sync_ropsten["pulledStates"])
