@@ -35,17 +35,7 @@ def run():
         # every second
         time.sleep(1)
         
-        topic = "heater/status"
-        value = heater.get_status()
-        publish(client, topic, value)
-
-        topic = "living/temperature"
-        value = thermometer.get_temp()
-        publish(client, topic, value)
-
-        topic = "living/humidity"
-        value = thermometer.get_humid()
-        publish(client, topic, value)
+        process(client)
 
         # finish off with adding to the message count
         msg_count += 1
@@ -80,6 +70,19 @@ def publish(client, topic, value):
         else:
             logging.critical(f"Failed to send message to topic {topic}")
 
+def process(client):
+
+    topic = "heater/status"
+    value = heater.get_status()
+    publish(client, topic, value)
+
+    topic = "living/temperature"
+    value = thermometer.get_temp()
+    publish(client, topic, value)
+
+    topic = "living/humidity"
+    value = thermometer.get_humid()
+    publish(client, topic, value)
 
 if __name__ == '__main__':
     run()
