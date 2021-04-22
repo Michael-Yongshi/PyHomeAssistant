@@ -6,6 +6,9 @@ connect like the picture
 connect with wifi to shelly's ssid
 set up shelly to connect to your wifi
 set up some other settings how you are using it
+- device type to light
+- device name to something memorable
+
 optionally set up a username and password
 go to home assistant - configuration - integrations - add - shelly - your device
 
