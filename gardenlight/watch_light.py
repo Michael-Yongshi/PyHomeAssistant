@@ -1,113 +1,210 @@
-import appdaemon.plugins.hass.hassapi as hass
+import os
+import json
 import datetime
+import pytz
+
+from pytz import utc
+import appdaemon.plugins.hass.hassapi as hass
+
 
 class WatchLight(hass.Hass):
     """
     Type of class:
-    - State Listener
+    - State Manager
 
     Method called:
-    - Set light.decorative_garden based on rising and setting of the sun
+    - check_light automatically manages the state of the entity denoted in the config file according to the program denoted there.
 
     """
 
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
 
+        # check config and fetch settings
+        config_filename = "watch_light_config"
+        self.config = self.load_json(config_filename)
+
+        # set timezone
+        self.timezone = pytz.timezone(self.config["timezone"])
+        self.log(self.timezone)
+
         # define the actual (light) entities used in home assistant
-        self.entity = "light.garden_lights"
+        self.entity = self.config["entity"]
+        self.log(self.entity)
 
         """
-        Following calls are needed to turn on the lights on sunset and turn off the lights on sunrise
+        Following call runs every minute to check if something needs to happen
         """
-        # turn on lights before the sun is setting
-        evening_start_offset = -1800 # <= 0, in seconds
-        self.run_at_sunset(self.light_on, offset=evening_start_offset)
+        self.run_minutely(self.check_light, datetime.time(0, 0, 10))
 
-        # turn off lights after sun has risen
-        morning_end_offset = 1800 # >= 0, in seconds
-        self.run_at_sunrise(self.light_off, offset=morning_end_offset)
-
-
+    def check_light(self, kwargs):
         """
-        Following calls are needed if we want the lights to not burn through the night
-        Appdaemon can only run functions everyday without exception, 
-        so we create seperate functions and give a list of days to run and filter in the functions themselves accordingly
+        Checks if the time is currently between sundown and evening end time or between start time and sunrise.
+        If so turns on /off light if needed.
+
+        in order to run lights always when its dark, set evening end to 1 o clock and morning start at 23 o clock
         """
 
-        """
-        in the evening we shut them down when we expect to go to sleep
-        """
-        # Day before a weekday I dont stay up late
-        self.run_daily(self.evening_end, datetime.time(hour=23, minute=0), valid=[1,2,3,4,7],)
+        # get current status and skip if status of the entity is unavailable
+        status = self.get_state(self.entity)
+        if status == "unavailable":
+            self.log(f"status is unavailable, skipping for now...")
+            return
 
-        # On friday and saturday I can stay up later
-        self.run_daily(self.evening_end, datetime.time(hour=0, minute=0), valid=[5,6],)
+        # current (date)time
+        current_datetime = datetime.datetime.now(tz=utc)
+        self.log(f"current datetime is {current_datetime}")
 
-        """
-        in the morning we turn them on again when we wake up (if we wake up when sun is still down)
-        """
-        # On weekdays I have to get up early
-        self.run_daily(self.morning_start, datetime.time(hour=6, minute=0), valid=[1,2,3,4,5],)
+        # check when is sunrise and sundown and noon
+        sun_set_str = self.get_state("sun.sun", attribute="next_setting")
+        sun_set = self.convert_string_utc_to_dt_utc_aware(sun_set_str)
+        self.log(f"Next sun set is at {sun_set}")
 
-        # In weekend I can sleep in
-        self.run_daily(self.morning_start, datetime.time(hour=7, minute=0), valid=[6,7],)
+        sun_rise_str = self.get_state("sun.sun", attribute="next_rising")
+        sun_rise = self.convert_string_utc_to_dt_utc_aware(sun_rise_str)
+        self.log(f"Next sun rise is at {sun_rise}")
 
+        noon_str = self.get_state("sun.sun", attribute="next_noon")
+        noon = self.convert_string_utc_to_dt_utc_aware(noon_str)
+        hours_until_noon = noon - current_datetime
+        self.log(f"Next noon {noon} is in {hours_until_noon}")
 
-    def evening_end(self, valid):
-        """
-        Set the weekdays for the evening program and call the verify function with the light turn off call
-        """
+        # get today, tomorrow, yesterday and weekday
+        today = current_datetime.date()
+        tomorrow = current_datetime.date() + datetime.timedelta(days=1)
+        yesterday = current_datetime.date() - datetime.timedelta(days=1)
+        weekday = current_datetime.weekday()
 
-        # check if the call is valid on this day, filter out the non-matching calls
-        self.verify_call( 
-            valid = valid,
-            call = self.light.off
-            )
+        # check which settings are applicable (weekday start at 0 / monday, so today is just weekday number in lookup in the array)
+        self.program = self.config["program"]
+        tomorrows_program = self.program[weekday + 1]
+        todays_program = self.program[weekday]
+        yesterdays_program = self.program[weekday - 1] if weekday > 0 else self.program[6]
 
+        # take the settings with noon as the delimiter (as sun is up and lights are definitely supposed to be off)
+        if hours_until_noon > datetime.timedelta(hours=12):
 
-    def morning_start(self, valid):
-        """
-        Set the weekdays for the morning program and call the verify function with the light turn on call
-        But additional check if sun isnt already up:
-        otherwise the program first turns off during sunrise and turn on will be called afterwards and will never be turned off again
-        """
-
-        # In the morning, only do something if sun is still down
-        if self.sun_up():
-            self.log(f"Morning call invalid as sun has already risen!")
+            # its post-noon program (between noon and midnight)
+            self.log("Post-Noon programming for this evening and tomorrow morning")
+            evening_program = todays_program["evening_end"]
+            evening_day = today
+            morning_program = tomorrows_program["morning_start"]
+            morning_day = tomorrow
 
         else:
-            # check if the call is valid on this day, filter out the non-matching calls
-            self.verify_call(
-                valid = valid, 
-                call = self.light.on
-                )
 
-    def verify_call(self, valid, call):
-        """
-        Contains the logic to filter out unmatching calls, as appdaemon cant run daily functions on specific days of the week
-        So we run both a weekend function and weekday function and only execute when they are applicable
-        """
+            # its night or morning (between midnight and noon)
+            self.log("Pre-Noon programming for yesterday evening and this morning")
 
-        # current day of the week
-        weekday = datetime.datetime.now().weekday()
+            evening_program = yesterdays_program["evening_end"]
+            evening_day = yesterday
+            morning_program = todays_program["morning_start"]
+            morning_day = today
 
-        # if the current day is in the list of days that are applicable then its a valid call
-        if (weekday in valid):
-            self.log(f"This call was valid with current day {weekday} and valid days {valid}, calling {call}!")
-            call()
+        # convert the settings of local time to a utc timezone aware datetime
+        evening_time = self.convert_string_local_to_t_local_naive(evening_program)
+        evening_end_naive = datetime.datetime.combine(evening_day, evening_time.time())
+        evening_end = self.convert_dt_local_naive_to_dt_utc_aware(evening_end_naive)
+        self.log(f"Evening end is {evening_end}")
+
+        morning_time = self.convert_string_local_to_t_local_naive(morning_program)
+        morning_start_naive = datetime.datetime.combine(morning_day, morning_time.time())
+        morning_start = self.convert_dt_local_naive_to_dt_utc_aware(morning_start_naive)
+        self.log(f"Morning start is {morning_start}")
+
+        # check current datetime is between morning start and sunrise (with an extra check for today as it would be valid if next sunrise is tomorrow!)
+        if (current_datetime >= morning_start and current_datetime <= sun_rise) and (current_datetime.day == sun_rise.day):
+            self.log(f"current datetime {current_datetime} is between morning start {morning_start} and todays sunrise {sun_rise}")
+            within_program = True
+
+        # check current datetime is between sunset and evening end
+        elif (current_datetime >= sun_set and current_datetime <= evening_end):
+            self.log(f"current datetime {current_datetime} is between sunset {sun_set} and evening end {evening_end}")
+            within_program = True
 
         else:
-            self.log(f"This call was invalid with current day {weekday} and valid days {valid}!")
+            self.log(f"current datetime is outside of program")
+            within_program = False
+        
+        # if within program make sure lights are on
+        if within_program == True and status == "off":
+            self.light_on()
+
+        # otherwise make sure lights are off
+        elif within_program == False and status == "on":
+            self.light_off()
+
+        # else do nothing (can be left out, here just for explicit clarity)
+        else:
             pass
 
-    def light_off(self, kwargs):
-        # actual call to turn off lights
+    def light_off(self):
+        """
+        actual call to turn off lights
+        """
+
         self.call_service("light/turn_off", entity_id = self.entity)
         self.log(f"Turned off lights")
 
-    def light_on(self, kwargs):
-        # turn on lights
+    def light_on(self):
+        """
+        actual call to turn on lights
+        """
+
         self.call_service("light/turn_on", entity_id = self.entity)
         self.log(f"Turned on lights")
+
+    def load_json(self, filename):
+        """Load settings json"""
+
+        path = os.path.join(os.sep, "config", "appdaemon", "apps")
+
+        # check if directory already exists
+        if not os.path.exists(path):
+            self.log(f"cant find path '{path}'")
+
+        else:
+            complete_path = os.path.join(path, filename + ".json")
+
+            # open json and return as an array
+            with open(complete_path, 'r') as infile:
+                contents = json.load(infile)
+        
+            return contents
+
+    def convert_string_utc_to_dt_utc_aware(self, string_utc):
+        """
+        Converts a string of UTC time to a (timezone aware) datetime object
+        Home assistant works with UTC datetime strings, including the UTC timezone attribute
+        """
+        dt_utc_aware = datetime.datetime.strptime(string_utc, "%Y-%m-%dT%H:%M:%S%z")
+
+        return dt_utc_aware
+
+    def convert_string_local_to_t_local_naive(self, string_local):
+        """
+        Used to convert a string notation of a time stamp into a python datetime object 
+
+        Used to convert a setting from a json file (or other user / manual source) into a manipulatable object
+        Usually these settings are user controlled and thus in local time
+
+        date or timezone info still needs to be added!
+        """
+
+        dt_local_naive = datetime.datetime.strptime(string_local, "%H:%M:%S")
+
+        return dt_local_naive
+
+    def convert_dt_local_naive_to_dt_utc_aware(self, dt_local_naive):
+        """
+        receives a local naive datetime and transforms it in utc aware datetime
+        Once we converted a user setting to a naive datetime object we still need to add timezone info and transform to UTC time
+        """
+
+        # adds timezone info only in order to make the datetime object aware of the timezone it represents
+        dt_local_aware = self.timezone.localize(dt_local_naive)
+
+        # converts a timezone aware datetime object to universal time (utc)
+        dt_utc_aware = dt_local_aware.astimezone(tz=utc)
+
+        return dt_utc_aware
