@@ -55,14 +55,18 @@ class WatchLight(hass.Hass):
         current_datetime = datetime.datetime.now(tz=utc)
         self.log(f"current datetime is {current_datetime}")
 
-        # check when is sunrise and sundown and noon
-        sun_set_str = self.get_state("sun.sun", attribute="next_setting")
-        sun_set = self.convert_string_utc_to_dt_utc_aware(sun_set_str)
-        self.log(f"Next sun set is at {sun_set}")
+        # sun status
+        sun_status = self.get_state("sun.sun")
+        self.log(f"sun is {sun_status}")
 
-        sun_rise_str = self.get_state("sun.sun", attribute="next_rising")
-        sun_rise = self.convert_string_utc_to_dt_utc_aware(sun_rise_str)
-        self.log(f"Next sun rise is at {sun_rise}")
+        # # check when is sunrise and sundown and noon
+        # sun_set_str = self.get_state("sun.sun", attribute="next_setting")
+        # sun_set = self.convert_string_utc_to_dt_utc_aware(sun_set_str)
+        # self.log(f"Next sun set is at {sun_set}")
+
+        # sun_rise_str = self.get_state("sun.sun", attribute="next_rising")
+        # sun_rise = self.convert_string_utc_to_dt_utc_aware(sun_rise_str)
+        # self.log(f"Next sun rise is at {sun_rise}")
 
         noon_str = self.get_state("sun.sun", attribute="next_noon")
         noon = self.convert_string_utc_to_dt_utc_aware(noon_str)
@@ -112,27 +116,56 @@ class WatchLight(hass.Hass):
         morning_start = self.convert_dt_local_naive_to_dt_utc_aware(morning_start_naive)
         self.log(f"Morning start is {morning_start}")
 
-        # check current datetime is between morning start and sunrise (with an extra check for today as it would be valid if next sunrise is tomorrow!)
-        if (current_datetime >= morning_start and current_datetime <= sun_rise) and (current_datetime.day == sun_rise.day):
-            self.log(f"current datetime {current_datetime} is between morning start {morning_start} and todays sunrise {sun_rise}")
-            within_program = True
 
-        # check current datetime is between sunset and evening end
-        elif (current_datetime >= sun_set and current_datetime <= evening_end):
-            self.log(f"current datetime {current_datetime} is between sunset {sun_set} and evening end {evening_end}")
-            within_program = True
+        if sun_status == "below_horizon":
+            self.log(f"Sun is down, now checking if its in exclusion frame...")
+            
+            if current_datetime <= evening_end:
+                message = f"Time {current_datetime} is before evening end {evening_end}, turning on lights"
+                within_program = True
+
+            elif current_datetime >= morning_start:
+                message = f"Time {current_datetime} is after morning start {morning_start}, turning on lights"
+                within_program = True
+
+            else:
+                message = f"Time {current_datetime} is between between evening end {evening_end} and morning start {morning_start}, turning off lights"
+                
+                within_program = False
 
         else:
-            self.log(f"current datetime is outside of program")
+            message = f"Sun is up"
             within_program = False
+
+        self.log(message)
+
+        # # check current datetime is between morning start and sunrise (with an extra check for today as it would be valid if next sunrise is tomorrow!)
+        # if (current_datetime >= morning_start and sun_status == "below_horizon"):
+        #     self.log(f"current datetime {current_datetime} is between morning start {morning_start} and todays sunrise {sun_rise}")
+        #     within_program = True
+
+        # else:
+        #     self.log(f"current datetime {current_datetime} is NOT between morning start {morning_start} and todays sunrise {sun_rise}")
+        #     within_program = False
+
+        # # check current datetime is between sunset and evening end
+        # if (sun_status == "above_horizon" and current_datetime <= evening_end):
+        #     self.log(f"current datetime {current_datetime} is between sunset {sun_set} and evening end {evening_end}")
+        #     within_program = True
+
+        # else:
+        #     self.log(f"current datetime {current_datetime} is NOT between sunset {sun_set} and evening end {evening_end}")
+        #     within_program = False
         
         # if within program make sure lights are on
         if within_program == True and status == "off":
             self.light_on()
+            self.event_happened(message)
 
         # otherwise make sure lights are off
         elif within_program == False and status == "on":
             self.light_off()
+            self.event_happened(message)
 
         # else do nothing (can be left out, here just for explicit clarity)
         else:
@@ -153,6 +186,17 @@ class WatchLight(hass.Hass):
 
         self.call_service("light/turn_on", entity_id = self.entity)
         self.log(f"Turned on lights")
+
+    # the method that is called when an event happens
+    def event_happened(self, message):
+
+        # log the message before sending it
+        # self.log(message)
+
+        # Call telegram message service to send the message from the telegram bot
+        self.call_service(
+            "telegram_bot/send_message", message=message,
+        )
 
     def load_json(self, filename):
         """Load settings json"""

@@ -6,19 +6,19 @@
     [
         {
             "morning_start": "6:00:00",
-            "evening_end": "23:00:00"
+            "evening_end": "22:30:00"
         },
         {
             "morning_start": "6:00:00",
-            "evening_end": "23:00:00"
+            "evening_end": "22:30:00"
         },
         {
             "morning_start": "6:00:00",
-            "evening_end": "23:00:00"
+            "evening_end": "22:30:00"
         },
         {
             "morning_start": "6:00:00",
-            "evening_end": "23:00:00"
+            "evening_end": "22:30:00"
         },
         {
             "morning_start": "6:00:00",
@@ -30,7 +30,7 @@
         },
         {
             "morning_start": "7:00:00",
-            "evening_end": "23:00:00"
+            "evening_end": "22:30:00"
         }
     ]
 }
