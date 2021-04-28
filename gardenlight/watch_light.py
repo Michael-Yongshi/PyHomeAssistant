@@ -55,15 +55,15 @@ class WatchLight(hass.Hass):
         sun_status = self.get_state("sun.sun")
         self.log(f"sun is {sun_status}")
 
+        # current (date)time
+        current_datetime = datetime.datetime.now(tz=utc)
+        self.log(f"current datetime is {current_datetime}")
+
         # get today, tomorrow, yesterday and weekday
         today = current_datetime.date()
         tomorrow = current_datetime.date() + datetime.timedelta(days=1)
         yesterday = current_datetime.date() - datetime.timedelta(days=1)
         weekday = current_datetime.weekday()
-
-        # current (date)time
-        current_datetime = datetime.datetime.now(tz=utc)
-        self.log(f"current datetime is {current_datetime}")
 
         # establish noon
         noon = datetime.datetime.combine(today, datetime.time(hours=12))
