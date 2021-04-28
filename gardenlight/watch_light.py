@@ -51,33 +51,23 @@ class WatchLight(hass.Hass):
             self.log(f"status is unavailable, skipping for now...")
             return
 
-        # current (date)time
-        current_datetime = datetime.datetime.now(tz=utc)
-        self.log(f"current datetime is {current_datetime}")
-
         # sun status
         sun_status = self.get_state("sun.sun")
         self.log(f"sun is {sun_status}")
-
-        # # check when is sunrise and sundown and noon
-        # sun_set_str = self.get_state("sun.sun", attribute="next_setting")
-        # sun_set = self.convert_string_utc_to_dt_utc_aware(sun_set_str)
-        # self.log(f"Next sun set is at {sun_set}")
-
-        # sun_rise_str = self.get_state("sun.sun", attribute="next_rising")
-        # sun_rise = self.convert_string_utc_to_dt_utc_aware(sun_rise_str)
-        # self.log(f"Next sun rise is at {sun_rise}")
-
-        noon_str = self.get_state("sun.sun", attribute="next_noon")
-        noon = self.convert_string_utc_to_dt_utc_aware(noon_str)
-        hours_until_noon = noon - current_datetime
-        self.log(f"Next noon {noon} is in {hours_until_noon}")
 
         # get today, tomorrow, yesterday and weekday
         today = current_datetime.date()
         tomorrow = current_datetime.date() + datetime.timedelta(days=1)
         yesterday = current_datetime.date() - datetime.timedelta(days=1)
         weekday = current_datetime.weekday()
+
+        # current (date)time
+        current_datetime = datetime.datetime.now(tz=utc)
+        self.log(f"current datetime is {current_datetime}")
+
+        # establish noon
+        noon = datetime.datetime.combine(today, datetime.time(hours=12))
+        self.log(f"Noon {noon}")
 
         # check which settings are applicable (weekday start at 0 / monday, so today is just weekday number in lookup in the array)
         self.program = self.config["program"]
@@ -86,7 +76,7 @@ class WatchLight(hass.Hass):
         yesterdays_program = self.program[weekday - 1] if weekday > 0 else self.program[6]
 
         # take the settings with noon as the delimiter (as sun is up and lights are definitely supposed to be off)
-        if hours_until_noon > datetime.timedelta(hours=12):
+        if current_datetime > noon:
 
             # its post-noon program (between noon and midnight)
             self.log("Post-Noon programming for this evening and tomorrow morning")
@@ -138,24 +128,6 @@ class WatchLight(hass.Hass):
             within_program = False
 
         self.log(message)
-
-        # # check current datetime is between morning start and sunrise (with an extra check for today as it would be valid if next sunrise is tomorrow!)
-        # if (current_datetime >= morning_start and sun_status == "below_horizon"):
-        #     self.log(f"current datetime {current_datetime} is between morning start {morning_start} and todays sunrise {sun_rise}")
-        #     within_program = True
-
-        # else:
-        #     self.log(f"current datetime {current_datetime} is NOT between morning start {morning_start} and todays sunrise {sun_rise}")
-        #     within_program = False
-
-        # # check current datetime is between sunset and evening end
-        # if (sun_status == "above_horizon" and current_datetime <= evening_end):
-        #     self.log(f"current datetime {current_datetime} is between sunset {sun_set} and evening end {evening_end}")
-        #     within_program = True
-
-        # else:
-        #     self.log(f"current datetime {current_datetime} is NOT between sunset {sun_set} and evening end {evening_end}")
-        #     within_program = False
         
         # if within program make sure lights are on
         if within_program == True and status == "off":
