@@ -66,7 +66,8 @@ class WatchLight(hass.Hass):
         weekday = current_datetime.weekday()
 
         # establish noon
-        noon = datetime.datetime.combine(today, datetime.time(hours=12))
+        noon = datetime.datetime.combine(today, datetime.time(hour=12))
+        noon = noon.replace(tzinfo=utc)
         self.log(f"Noon {noon}")
 
         # check which settings are applicable (weekday start at 0 / monday, so today is just weekday number in lookup in the array)
