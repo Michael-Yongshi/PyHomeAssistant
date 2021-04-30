@@ -155,13 +155,16 @@ class WatchLight(hass.Hass):
             morning_day = today
 
         # convert the settings of local time to a utc timezone aware datetime
+
         evening_time = self.convert_string_local_to_t_local_naive(evening_program)
-        evening_end_naive = datetime.datetime.combine(evening_day, evening_time.time())
+        evening_day_correction = 0 if evening_time.time() > datetime.time(hour=12) else 1
+        evening_end_naive = datetime.datetime.combine(evening_day + datetime.timedelta(days=evening_day_correction), evening_time.time())
         evening_end = self.convert_dt_local_naive_to_dt_utc_aware(evening_end_naive)
         self.log(f"Evening end is {evening_end}")
 
         morning_time = self.convert_string_local_to_t_local_naive(morning_program)
-        morning_start_naive = datetime.datetime.combine(morning_day, morning_time.time())
+        morning_day_correction = 1 if morning_time.time() > datetime.time(hour=12) else 0
+        morning_start_naive = datetime.datetime.combine(morning_day - datetime.timedelta(days=morning_day_correction), morning_time.time())
         morning_start = self.convert_dt_local_naive_to_dt_utc_aware(morning_start_naive)
         self.log(f"Morning start is {morning_start}")
 
