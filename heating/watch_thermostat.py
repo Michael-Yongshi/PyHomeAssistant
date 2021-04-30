@@ -90,48 +90,42 @@ class WatchThermostat(hass.Hass):
         
         current_time = datetime.datetime.now()
 
-        # only does something if override is expired
-        if self.override_expiration <= current_time:
-            self.log(f"Override expired")
+        # check if override is active
+        if self.override_expiration >= current_time:
+            until = self.override_expiration - current_time
+            self.log(f"Override active, expires in {until}")
+            return
             
-            # # humidity level (try block as sensor can be down)
-            # try:
-            temp = float(self.get_state("sensor.mqtt_living_temperature"))
-            self.log(f"Measured temperature at {temp}C!")
+        # # humidity level (try block as sensor can be down)
+        # try:
+        temp = float(self.get_state("sensor.mqtt_living_temperature"))
+        self.log(f"Measured temperature at {temp}C!")
 
-            # get target temperature based on program
-            target_temp = self.get_target_temp()
-            lower_bound = target_temp - self.bound
-            upper_bound = target_temp + self.bound
+        # get target temperature based on program
+        target_temp = self.get_target_temp()
+        lower_bound = target_temp - self.bound
+        upper_bound = target_temp + self.bound
 
-            # if heater is on (1), turn off only when temperature reaches the upper bound
-            if status == 1:
-                
-                if temp >= upper_bound:
-                    self.log(f"Temperature ({temp}) rose above upper bound ({upper_bound})")
-                    self.post_heater_status(status=0)
-                    self.log(f"Turned off heater")
-                else:
-                    self.log(f"Temperature ({temp}) is still below upper bound ({upper_bound})")
+        # if heater is on (1), turn off only when temperature reaches the upper bound
+        if status == 1:
             
-            # if heater is off, turn on only when temperature reaches the lower bound
-            # (to prevent turning the heater on or off to often)
-            if status == 0:
-                
-                if temp < lower_bound:
-                    self.log(f"Temperature ({temp}) fell below lower bound ({lower_bound})")
-                    self.post_heater_status(status=1)
-                    self.log(f"Turned on heater")
-                else:
-                    self.log(f"Temperature ({temp}) is still above lower bound ({lower_bound})")
-
-            # # if sensor is down, return heater to off
-            # except:
-            #     setting = 0
-            #     self.log(f"Couldn't observe temperature!")
-            #     if status != setting:
-            #         self.post_fan_status(setting)
-            #         self.log(f"Set fan to status {setting}")
+            if temp >= upper_bound:
+                self.log(f"Temperature ({temp}) rose above upper bound ({upper_bound})")
+                self.post_heater_status(status=0)
+                self.log(f"Turned off heater")
+            else:
+                self.log(f"Temperature ({temp}) is still below upper bound ({upper_bound})")
+        
+        # if heater is off, turn on only when temperature reaches the lower bound
+        # (to prevent turning the heater on or off to often)
+        if status == 0:
+            
+            if temp < lower_bound:
+                self.log(f"Temperature ({temp}) fell below lower bound ({lower_bound})")
+                self.post_heater_status(status=1)
+                self.log(f"Turned on heater")
+            else:
+                self.log(f"Temperature ({temp}) is still above lower bound ({lower_bound})")
 
     def get_target_temp(self):
         

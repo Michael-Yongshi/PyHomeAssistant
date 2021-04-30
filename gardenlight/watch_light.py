@@ -13,12 +13,20 @@ class WatchLight(hass.Hass):
     - State Manager
 
     Method called:
-    - check_light automatically manages the state of the entity denoted in the config file according to the program denoted there.
+    - determine_setting automatically manages the state of the entity denoted in the config file according to the program denoted there.
 
+    If you manage the light also with a physical switch, make sure you let the switch fire an override event, otherwise the automatic program will
+    switch it back as the automatic program is not overridden without it.
     """
 
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
+
+        self.override_expiration = datetime.datetime.now()
+        self.override_interval = 12
+
+        # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received. 
+        self.listen_event(self.override, "LIGHT_OVERRIDE")
 
         # check config and fetch settings
         config_filename = "watch_light_config"
@@ -35,15 +43,65 @@ class WatchLight(hass.Hass):
         """
         Following call runs every minute to check if something needs to happen
         """
-        self.run_minutely(self.check_light, datetime.time(0, 0, 10))
+        self.run_minutely(self.determine_setting, datetime.time(0, 0, 10))
 
-    def check_light(self, kwargs):
+
+    # the method that is called when someone wants to override lights setting from home assistant itself
+    def override(self, event_name, data, kwargs):
+
+        if data["entity"] == self.entity:
+
+            current_time = datetime.datetime.now()
+            status = data["status"]
+            oldstatus = self.get_state(self.entity)
+
+            if status == "auto":
+                # disable override by setting expiration to current time
+                self.override_expiration = current_time
+                self.log(f"Lights override lifted!")
+
+                # immediately run automatically setting the lights as override is stopped
+                self.determine_setting(kwargs)
+
+            # if override is active (and speed is the same as previous override) extend the override
+            elif status == oldstatus and self.override_expiration > current_time:
+
+                # extend the override parameter
+                self.override_expiration += datetime.timedelta(hours=self.override_interval)
+                
+                # log
+                self.log(f"Someone requested lights override, extending the override by {self.override_interval} hours!")
+
+            else:
+                # if override is currently not active (for this status) override is set anew
+                self.override_expiration = current_time + datetime.timedelta(hours=self.override_interval)
+
+                # log
+                self.log(f"Someone requested lights override, setting status {oldstatus} => {status}!")
+                
+                # send lights command to set the status to the new level
+                self.post_light_status(status)
+
+            self.log(f"Current date and time is: {current_time}")
+
+        else:
+            pass
+
+    def determine_setting(self, kwargs):
         """
         Checks if the time is currently between sundown and evening end time or between start time and sunrise.
         If so turns on /off light if needed.
 
         in order to run lights always when its dark, set evening end to 1 o clock and morning start at 23 o clock
         """
+
+        current_time = datetime.datetime.now()
+
+        # check if override is active
+        if self.override_expiration >= current_time:
+            until = self.override_expiration - current_time
+            self.log(f"Override active, expires in {until}")
+            return
 
         # get current status and skip if status of the entity is unavailable
         status = self.get_state(self.entity)
@@ -112,16 +170,15 @@ class WatchLight(hass.Hass):
             self.log(f"Sun is down, now checking if its in exclusion frame...")
             
             if current_datetime <= evening_end:
-                message = f"Time {current_datetime} is before evening end {evening_end}, turning on lights"
+                message = f"Sun is down, time {current_datetime} is before evening end {evening_end}, lights should be on"
                 within_program = True
 
             elif current_datetime >= morning_start:
-                message = f"Time {current_datetime} is after morning start {morning_start}, turning on lights"
+                message = f"Sun is down, time {current_datetime} is after morning start {morning_start}, lights should be on"
                 within_program = True
 
             else:
-                message = f"Time {current_datetime} is between between evening end {evening_end} and morning start {morning_start}, turning off lights"
-                
+                message = f"Time {current_datetime} is between between evening end {evening_end} and morning start {morning_start}, lights should be off"
                 within_program = False
 
         else:
@@ -129,20 +186,28 @@ class WatchLight(hass.Hass):
             within_program = False
 
         self.log(message)
-        
+
         # if within program make sure lights are on
         if within_program == True and status == "off":
             self.light_on()
-            self.event_happened(message)
+            self.event_happened(message + ". Turning on lights")
 
         # otherwise make sure lights are off
         elif within_program == False and status == "on":
             self.light_off()
-            self.event_happened(message)
+            self.event_happened(message + ". Turning off lights")
 
         # else do nothing (can be left out, here just for explicit clarity)
         else:
             pass
+
+    def post_light_status(self, status):
+
+        if status == "on":
+            self.light_on()
+        elif status == "off":
+            self.light_off()
+
 
     def light_off(self):
         """
