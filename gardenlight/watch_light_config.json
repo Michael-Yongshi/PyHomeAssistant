@@ -5,32 +5,46 @@
     "program": 
     [
         {
+            "weekday": 0,
+            "day": "Monday",
             "morning_start": "6:00:00",
-            "evening_end": "22:30:00"
+            "evening_end": "22:00:00"
         },
         {
+            "weekday": 1,
+            "day": "Tuesday",
             "morning_start": "6:00:00",
-            "evening_end": "22:30:00"
+            "evening_end": "22:00:00"
         },
         {
+            "weekday": 2,
+            "day": "Wednesday",
             "morning_start": "6:00:00",
-            "evening_end": "22:30:00"
+            "evening_end": "22:00:00"
         },
         {
+            "weekday": 3,
+            "day": "Thursday",
             "morning_start": "6:00:00",
-            "evening_end": "22:30:00"
+            "evening_end": "22:00:00"
         },
         {
+            "weekday": 4,
+            "day": "Friday",
             "morning_start": "6:00:00",
-            "evening_end": "0:00:00"
+            "evening_end": "23:00:00"
         },
         {
+            "weekday": 5,
+            "day": "Saturday",
             "morning_start": "7:00:00",
-            "evening_end": "0:00:00"
+            "evening_end": "23:00:00"
         },
         {
+            "weekday": 6,
+            "day": "Sunday",
             "morning_start": "7:00:00",
-            "evening_end": "22:30:00"
+            "evening_end": "22:00:00"
         }
     ]
 }
