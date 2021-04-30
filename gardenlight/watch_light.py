@@ -123,7 +123,7 @@ class WatchLight(hass.Hass):
         yesterday = current_datetime.date() - datetime.timedelta(days=1)
         weekday = current_datetime.weekday()
 
-        # establish noon
+        # establish noon as a datetime aware object
         noon = datetime.datetime.combine(today, datetime.time(hour=12))
         noon = noon.replace(tzinfo=utc)
         self.log(f"Noon {noon}")
