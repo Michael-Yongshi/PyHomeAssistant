@@ -22,7 +22,7 @@ class WatchLight(hass.Hass):
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
 
-        self.override_expiration = datetime.datetime.now()
+        self.override_expiration = datetime.datetime.now(tz=utc)
         self.override_interval = 12
 
         # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received. 
@@ -51,20 +51,23 @@ class WatchLight(hass.Hass):
 
         if data["entity"] == self.entity:
 
-            current_time = datetime.datetime.now()
+            # current (date)time
+            current_datetime = datetime.datetime.now(tz=utc)
+            self.log(f"current datetime is {current_datetime}")
+
             status = data["status"]
             oldstatus = self.get_state(self.entity)
 
             if status == "auto":
                 # disable override by setting expiration to current time
-                self.override_expiration = current_time
+                self.override_expiration = current_datetime
                 self.log(f"Lights override lifted!")
 
                 # immediately run automatically setting the lights as override is stopped
                 self.determine_setting(kwargs)
 
             # if override is active (and speed is the same as previous override) extend the override
-            elif status == oldstatus and self.override_expiration > current_time:
+            elif status == oldstatus and self.override_expiration > current_datetime:
 
                 # extend the override parameter
                 self.override_expiration += datetime.timedelta(hours=self.override_interval)
@@ -74,15 +77,13 @@ class WatchLight(hass.Hass):
 
             else:
                 # if override is currently not active (for this status) override is set anew
-                self.override_expiration = current_time + datetime.timedelta(hours=self.override_interval)
+                self.override_expiration = self.convert_string_utc_to_dt_utc_aware(self.get_state('sun.sun', 'next_noon'))
 
                 # log
                 self.log(f"Someone requested lights override, setting status {oldstatus} => {status}!")
                 
                 # send lights command to set the status to the new level
                 self.post_light_status(status)
-
-            self.log(f"Current date and time is: {current_time}")
 
         else:
             pass
@@ -95,11 +96,13 @@ class WatchLight(hass.Hass):
         in order to run lights always when its dark, set evening end to 1 o clock and morning start at 23 o clock
         """
 
-        current_time = datetime.datetime.now()
+        # current (date)time
+        current_datetime = datetime.datetime.now(tz=utc)
+        self.log(f"current datetime is {current_datetime}")
 
         # check if override is active
-        if self.override_expiration >= current_time:
-            until = self.override_expiration - current_time
+        if self.override_expiration >= current_datetime:
+            until = self.override_expiration - current_datetime
             self.log(f"Override active, expires in {until}")
             return
 
@@ -112,10 +115,6 @@ class WatchLight(hass.Hass):
         # sun status
         sun_status = self.get_state("sun.sun")
         self.log(f"sun is {sun_status}")
-
-        # current (date)time
-        current_datetime = datetime.datetime.now(tz=utc)
-        self.log(f"current datetime is {current_datetime}")
 
         # get today, tomorrow, yesterday and weekday
         today = current_datetime.date()
