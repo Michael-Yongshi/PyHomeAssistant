@@ -23,7 +23,7 @@ class WatchLight(hass.Hass):
     def initialize(self):
 
         self.override_expiration = datetime.datetime.now(tz=utc)
-        self.override_interval = 12
+        self.override_interval = 1
 
         # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received. 
         self.listen_event(self.override, "LIGHT_OVERRIDE")
@@ -70,10 +70,10 @@ class WatchLight(hass.Hass):
             elif status == oldstatus and self.override_expiration > current_datetime:
 
                 # extend the override parameter
-                self.override_expiration += datetime.timedelta(hours=self.override_interval)
+                self.override_expiration += datetime.timedelta(days=self.override_interval)
                 
                 # log
-                self.log(f"Someone requested lights override, extending the override by {self.override_interval} hours!")
+                self.log(f"Someone requested lights override, extending the override to {self.override_expiration}!")
 
             else:
                 # if override is currently not active (for this status) override is set anew
