@@ -129,7 +129,7 @@ class WatchLight(hass.Hass):
 
         # check which settings are applicable (weekday start at 0 / monday, so today is just weekday number in lookup in the array)
         self.program = self.config["program"]
-        tomorrows_program = self.program[weekday + 1]
+        tomorrows_program = self.program[weekday + 1] if weekday < 6 else self.program[0]
         todays_program = self.program[weekday]
         yesterdays_program = self.program[weekday - 1] if weekday > 0 else self.program[6]
 
