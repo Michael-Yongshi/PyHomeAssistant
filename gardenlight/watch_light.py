@@ -13,16 +13,18 @@ class WatchLight(hass.Hass):
     - State Manager
 
     Method called:
-    - determine_setting automatically manages the state of the entity denoted in the config file according to the program denoted there.
+    - process automatically manages the state of the entity denoted in the config file according to the program denoted there.
 
     If you manage the light also with a physical switch, make sure you let the switch fire an override event, otherwise the automatic program will
     switch it back as the automatic program is not overridden without it.
     """
 
-    # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
+        """
+        Next, we will define our initialize function, which is how AppDaemon starts our app. 
+        """
 
-        self.override_expiration = datetime.datetime.now(tz=utc)
+        self.override_expiration_utc = datetime.datetime.now(tz=utc)
         self.override_interval = 1
 
         # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received. 
@@ -43,41 +45,44 @@ class WatchLight(hass.Hass):
         """
         Following call runs every minute to check if something needs to happen
         """
-        self.run_minutely(self.determine_setting, datetime.time(0, 0, 10))
+        self.run_minutely(self.process, datetime.time(0, 0, 10))
 
-
-    # the method that is called when someone wants to override lights setting from home assistant itself
     def override(self, event_name, data, kwargs):
+        """
+        the method that is called when someone wants to override lights setting from home assistant itself
+        """
 
         if data["entity"] == self.entity:
 
             # current (date)time
-            current_datetime = datetime.datetime.now(tz=utc)
-            self.log(f"current datetime is {current_datetime}")
+            current_datetime_utc = datetime.datetime.now(tz=utc)
+            current_datetime_local = self.convert_dt_utc_aware_to_local_aware(current_datetime_utc)
+            self.log(f"current datetime in is {current_datetime_local}")
 
             status = data["status"]
             oldstatus = self.get_state(self.entity)
 
             if status == "auto":
                 # disable override by setting expiration to current time
-                self.override_expiration = current_datetime
+                self.override_expiration_utc = current_datetime_utc
                 self.log(f"Lights override lifted!")
 
                 # immediately run automatically setting the lights as override is stopped
-                self.determine_setting(kwargs)
+                self.process(kwargs)
 
             # if override is active (and speed is the same as previous override) extend the override
-            elif status == oldstatus and self.override_expiration > current_datetime:
+            elif status == oldstatus and self.override_expiration_utc > current_datetime_utc:
 
                 # extend the override parameter
-                self.override_expiration += datetime.timedelta(days=self.override_interval)
+                self.override_expiration_utc += datetime.timedelta(days=self.override_interval)
                 
                 # log
-                self.log(f"Someone requested lights override, extending the override to {self.override_expiration}!")
+                override_expiration_local = self.convert_dt_utc_aware_to_local_aware(self.override_expiration_utc)
+                self.log(f"Someone requested lights override, extending the override to {self.override_expiration_local}!")
 
             else:
                 # if override is currently not active (for this status) override is set anew
-                self.override_expiration = self.convert_string_utc_to_dt_utc_aware(self.get_state('sun.sun', 'next_noon'))
+                self.override_expiration_utc = self.convert_string_utc_to_dt_utc_aware(self.get_state('sun.sun', 'next_noon'))
 
                 # log
                 self.log(f"Someone requested lights override, setting status {oldstatus} => {status}!")
@@ -88,7 +93,7 @@ class WatchLight(hass.Hass):
         else:
             pass
 
-    def determine_setting(self, kwargs):
+    def process(self, kwargs):
         """
         Checks if the time is currently between sundown and evening end time or between start time and sunrise.
         If so turns on /off light if needed.
@@ -97,13 +102,16 @@ class WatchLight(hass.Hass):
         """
 
         # current (date)time
-        current_datetime = datetime.datetime.now(tz=utc)
-        self.log(f"current datetime is {current_datetime}")
+        current_datetime_utc = datetime.datetime.now(tz=utc)
+        # self.log(f"current datetime utc is {current_datetime_utc}")
+        current_datetime_local = self.convert_dt_utc_aware_to_local_aware(current_datetime_utc)
+        self.log(f"current datetime is {current_datetime_local}")
 
         # check if override is active
-        if self.override_expiration >= current_datetime:
-            until = self.override_expiration - current_datetime
-            self.log(f"Override active, expires in {until}")
+        if self.override_expiration_utc >= current_datetime_utc:
+            until_utc = self.override_expiration_utc - current_datetime_utc
+            until_local = self.convert_dt_utc_aware_to_local_aware(until_utc)
+            self.log(f"Override active, expires in {until_local}")
             return
 
         # get current status and skip if status of the entity is unavailable
@@ -116,71 +124,21 @@ class WatchLight(hass.Hass):
         sun_status = self.get_state("sun.sun")
         self.log(f"sun is {sun_status}")
 
-        # get today, tomorrow, yesterday and weekday
-        today = current_datetime.date()
-        tomorrow = current_datetime.date() + datetime.timedelta(days=1)
-        yesterday = current_datetime.date() - datetime.timedelta(days=1)
-        weekday = current_datetime.weekday()
-
-        # establish noon as a datetime aware object
-        noon = datetime.datetime.combine(today, datetime.time(hour=12))
-        noon = noon.replace(tzinfo=utc)
-        self.log(f"Noon {noon}")
-
-        # check which settings are applicable (weekday start at 0 / monday, so today is just weekday number in lookup in the array)
-        self.program = self.config["program"]
-        tomorrows_program = self.program[weekday + 1] if weekday < 6 else self.program[0]
-        todays_program = self.program[weekday]
-        yesterdays_program = self.program[weekday - 1] if weekday > 0 else self.program[6]
-
-        # take the settings with noon as the delimiter (as sun is up and lights are definitely supposed to be off)
-        if current_datetime > noon:
-
-            # its post-noon program (between noon and midnight)
-            self.log("Post-Noon programming for this evening and tomorrow morning")
-            evening_program = todays_program["evening_end"]
-            evening_day = today
-            morning_program = tomorrows_program["morning_start"]
-            morning_day = tomorrow
-
-        else:
-
-            # its night or morning (between midnight and noon)
-            self.log("Pre-Noon programming for yesterday evening and this morning")
-
-            evening_program = yesterdays_program["evening_end"]
-            evening_day = yesterday
-            morning_program = todays_program["morning_start"]
-            morning_day = today
-
-        # convert the settings of local time to a utc timezone aware datetime
-
-        evening_time = self.convert_string_local_to_t_local_naive(evening_program)
-        evening_day_correction = 0 if evening_time.time() > datetime.time(hour=12) else 1
-        evening_end_naive = datetime.datetime.combine(evening_day + datetime.timedelta(days=evening_day_correction), evening_time.time())
-        evening_end = self.convert_dt_local_naive_to_dt_utc_aware(evening_end_naive)
-        self.log(f"Evening end is {evening_end}")
-
-        morning_time = self.convert_string_local_to_t_local_naive(morning_program)
-        morning_day_correction = 1 if morning_time.time() > datetime.time(hour=12) else 0
-        morning_start_naive = datetime.datetime.combine(morning_day - datetime.timedelta(days=morning_day_correction), morning_time.time())
-        morning_start = self.convert_dt_local_naive_to_dt_utc_aware(morning_start_naive)
-        self.log(f"Morning start is {morning_start}")
-
-
         if sun_status == "below_horizon":
             self.log(f"Sun is down, now checking if its in exclusion frame...")
-            
-            if current_datetime <= evening_end:
-                message = f"Sun is down, time {current_datetime} is before evening end {evening_end}, lights should be on"
+
+            morning_start_utc, morning_start_local, evening_end_utc, evening_end_local = self.determine_setting(current_datetime_utc, current_datetime_local)
+
+            if current_datetime_utc <= evening_end_utc:
+                message = f"Sun is down, time {current_datetime_local} is before evening end {evening_end_local}, lights should be on"
                 within_program = True
 
-            elif current_datetime >= morning_start:
-                message = f"Sun is down, time {current_datetime} is after morning start {morning_start}, lights should be on"
+            elif current_datetime_utc >= morning_start_utc:
+                message = f"Sun is down, time {current_datetime_local} is after morning start {morning_start_local}, lights should be on"
                 within_program = True
 
             else:
-                message = f"Time {current_datetime} is between between evening end {evening_end} and morning start {morning_start}, lights should be off"
+                message = f"Time {current_datetime_local} is between between evening end {evening_end_local} and morning start {morning_start_local}, lights should be off"
                 within_program = False
 
         else:
@@ -203,13 +161,72 @@ class WatchLight(hass.Hass):
         else:
             pass
 
+    def determine_setting(self, current_datetime_utc, current_datetime_local):
+        """
+        Finds the correct setting based on the config file and the current datetime
+        """
+
+        # establish noon as a datetime aware object (based on today in local time, but expressed in UTC)
+        noontime = self.convert_string_local_to_t_local_naive("12:00:00")
+        noon = datetime.datetime.combine(current_datetime_local.date(), noontime.time())
+        noon_utc = self.convert_dt_local_naive_to_dt_utc_aware(noon)
+        self.log(f"Noon UTC is at {noon_utc}")
+
+        # get today, tomorrow, yesterday and weekday in utc times
+        today = current_datetime_utc.date()
+        tomorrow = current_datetime_utc.date() + datetime.timedelta(days=1)
+        yesterday = current_datetime_utc.date() - datetime.timedelta(days=1)
+        weekday = current_datetime_utc.weekday()
+
+        # get settings for yesterday, today and tomorrow (weekday start at 0 / monday, so today is just weekday number in lookup in the array)
+        self.program = self.config["program"]
+        tomorrows_program = self.program[weekday + 1] if weekday < 6 else self.program[0]
+        todays_program = self.program[weekday]
+        yesterdays_program = self.program[weekday - 1] if weekday > 0 else self.program[6]
+
+        # take the correct settings with noon as the delimiter (as sun is up and lights are definitely supposed to be off, in contrast to midnight...)
+        if current_datetime_utc > noon_utc:
+
+            # its post-noon program (between noon and midnight)
+            self.log("Post-Noon programming for this evening and tomorrow morning")
+            evening_program = todays_program["evening_end"]
+            evening_day = today
+            morning_program = tomorrows_program["morning_start"]
+            morning_day = tomorrow
+
+        else:
+
+            # its night or morning (between midnight and noon)
+            self.log("Pre-Noon programming for yesterday evening and this morning")
+
+            evening_program = yesterdays_program["evening_end"]
+            evening_day = yesterday
+            morning_program = todays_program["morning_start"]
+            morning_day = today
+
+        # convert the settings that are written by the user in local time to both a utc and local timezone aware datetime
+        evening_time = self.convert_string_local_to_t_local_naive(evening_program)
+        evening_day_correction = 0 if evening_time.time() > datetime.time(hour=12) else 1
+        evening_end_naive = datetime.datetime.combine(evening_day + datetime.timedelta(days=evening_day_correction), evening_time.time())
+        evening_end_utc = self.convert_dt_local_naive_to_dt_utc_aware(evening_end_naive)
+        evening_end_local = self.convert_dt_utc_aware_to_local_aware(evening_end_utc)
+        self.log(f"Evening end is {evening_end_local}")
+
+        morning_time = self.convert_string_local_to_t_local_naive(morning_program)
+        morning_day_correction = 1 if morning_time.time() > datetime.time(hour=12) else 0
+        morning_start_naive = datetime.datetime.combine(morning_day - datetime.timedelta(days=morning_day_correction), morning_time.time())
+        morning_start_utc = self.convert_dt_local_naive_to_dt_utc_aware(morning_start_naive)
+        morning_start_local = self.convert_dt_utc_aware_to_local_aware(morning_start_utc)
+        self.log(f"Morning start is {morning_start_local}")
+
+        return morning_start_utc, morning_start_local, evening_end_utc, evening_end_local
+
     def post_light_status(self, status):
 
         if status == "on":
             self.light_on()
         elif status == "off":
             self.light_off()
-
 
     def light_off(self):
         """
@@ -227,8 +244,10 @@ class WatchLight(hass.Hass):
         self.call_service("light/turn_on", entity_id = self.entity)
         self.log(f"Turned on lights")
 
-    # the method that is called when an event happens
     def event_happened(self, message):
+        """
+        the method that is called when an event happens
+        """
 
         # log the message before sending it
         # self.log(message)
@@ -237,24 +256,6 @@ class WatchLight(hass.Hass):
         self.call_service(
             "telegram_bot/send_message", message=message,
         )
-
-    def load_json(self, filename):
-        """Load settings json"""
-
-        path = os.path.join(os.sep, "config", "appdaemon", "apps")
-
-        # check if directory already exists
-        if not os.path.exists(path):
-            self.log(f"cant find path '{path}'")
-
-        else:
-            complete_path = os.path.join(path, filename + ".json")
-
-            # open json and return as an array
-            with open(complete_path, 'r') as infile:
-                contents = json.load(infile)
-        
-            return contents
 
     def convert_string_utc_to_dt_utc_aware(self, string_utc):
         """
@@ -279,6 +280,16 @@ class WatchLight(hass.Hass):
 
         return dt_local_naive
 
+    def convert_dt_utc_aware_to_local_aware(self, dt_utc_aware):
+        """
+        receives a utc aware datetime and transforms it in local aware datetime
+        """
+
+        # converts a timezone aware datetime object to local time (based on timezone established in config)
+        dt_local_aware = dt_utc_aware.astimezone(tz=self.timezone)
+
+        return dt_local_aware
+
     def convert_dt_local_naive_to_dt_utc_aware(self, dt_local_naive):
         """
         receives a local naive datetime and transforms it in utc aware datetime
@@ -292,3 +303,23 @@ class WatchLight(hass.Hass):
         dt_utc_aware = dt_local_aware.astimezone(tz=utc)
 
         return dt_utc_aware
+
+    def load_json(self, filename):
+        """
+        Load settings json
+        """
+
+        path = os.path.join(os.sep, "config", "appdaemon", "apps")
+
+        # check if directory already exists
+        if not os.path.exists(path):
+            self.log(f"cant find path '{path}'")
+
+        else:
+            complete_path = os.path.join(path, filename + ".json")
+
+            # open json and return as an array
+            with open(complete_path, 'r') as infile:
+                contents = json.load(infile)
+        
+            return contents
