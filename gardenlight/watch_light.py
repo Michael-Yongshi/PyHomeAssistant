@@ -149,12 +149,12 @@ class WatchLight(hass.Hass):
 
         # if within program make sure lights are on
         if within_program == True and status == "off":
-            self.light_on()
+            # self.light_on()
             self.event_happened(message + ". Turning on lights")
 
         # otherwise make sure lights are off
         elif within_program == False and status == "on":
-            self.light_off()
+            # self.light_off()
             self.event_happened(message + ". Turning off lights")
 
         # else do nothing (can be left out, here just for explicit clarity)
@@ -170,13 +170,14 @@ class WatchLight(hass.Hass):
         noontime = self.convert_string_local_to_t_local_naive("12:00:00")
         noon = datetime.datetime.combine(current_datetime_local.date(), noontime.time())
         noon_utc = self.convert_dt_local_naive_to_dt_utc_aware(noon)
-        self.log(f"Noon UTC is at {noon_utc}")
+        noon_local = self.convert_dt_utc_aware_to_local_aware(noon_utc)
+        self.log(f"Noon Local is at {noon_local}")
 
-        # get today, tomorrow, yesterday and weekday in utc times
-        today = current_datetime_utc.date()
-        tomorrow = current_datetime_utc.date() + datetime.timedelta(days=1)
-        yesterday = current_datetime_utc.date() - datetime.timedelta(days=1)
-        weekday = current_datetime_utc.weekday()
+        # get today, tomorrow, yesterday and weekday in local times (otherwise date is off)
+        today = current_datetime_local.date()
+        tomorrow = current_datetime_local.date() + datetime.timedelta(days=1)
+        yesterday = current_datetime_local.date() - datetime.timedelta(days=1)
+        weekday = current_datetime_local.weekday()
 
         # get settings for yesterday, today and tomorrow (weekday start at 0 / monday, so today is just weekday number in lookup in the array)
         self.program = self.config["program"]
@@ -185,7 +186,7 @@ class WatchLight(hass.Hass):
         yesterdays_program = self.program[weekday - 1] if weekday > 0 else self.program[6]
 
         # take the correct settings with noon as the delimiter (as sun is up and lights are definitely supposed to be off, in contrast to midnight...)
-        if current_datetime_utc > noon_utc:
+        if current_datetime_local > noon_local:
 
             # its post-noon program (between noon and midnight)
             self.log("Post-Noon programming for this evening and tomorrow morning")
