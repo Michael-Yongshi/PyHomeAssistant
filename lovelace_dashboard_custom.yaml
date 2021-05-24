@@ -7,13 +7,51 @@ views:
     cards:
       - type: entities
         entities:
-          - light.bedroom_light
+          - entity: light.bedroom_light
+          - entity: light.garden_lights
         title: Lights
         show_header_toggle: true
+      - type: horizontal-stack
+        title: Garden Lights
+        cards:
+          - type: button
+            name: GardenLightOn
+            icon: 'mdi:lightbulb-on'
+            show_name: false
+            icon_height: 30px
+            tap_action:
+              action: call-service
+              service: script.garden_lights_override_on
+            hold_action:
+              action: call-service
+              service: script.garden_lights_override_auto
+          - type: button
+            icon: 'mdi:lightbulb-off-outline'
+            name: GardenLightOff
+            show_name: false
+            icon_height: 30px
+            tap_action:
+              action: call-service
+              service: script.garden_lights_override_off
+            hold_action:
+              action: call-service
+              service: script.garden_lights_override_auto
+          - type: button
+            name: GardenLightAuto
+            icon: 'mdi:lightbulb'
+            show_name: false
+            icon_height: 30px
+            tap_action:
+              action: call-service
+              service: script.garden_lights_override_auto
+            hold_action:
+              action: call-service
+              service: script.garden_lights_override_auto
       - type: entities
         entities:
           - vacuum.dusty
           - binary_sensor.dusty_bin_full
+          - sensor.dusty_battery_level
         title: Vacuum
       - type: vertical-stack
         title: Apple TV
@@ -89,15 +127,62 @@ views:
             entity: sensor.mqtt_living_humidity
             graph: line
             detail: 2
+            hours_to_show: 24
           - type: sensor
             entity: sensor.mqtt_bathroom_humidity
             graph: line
             detail: 2
+            hours_to_show: 24
   - title: Heater
     path: heater
     icon: ''
     badges: []
     cards:
+      - type: vertical-stack
+        title: Heater
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: button
+                name: Heater1
+                icon: 'mdi:fire-alert'
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: script.heater_override_1
+                hold_action:
+                  action: call-service
+                  service: script.heater_override_off
+              - type: button
+                icon: 'mdi:fire-off'
+                name: Heater0
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: script.heater_override_0
+                hold_action:
+                  action: call-service
+                  service: script.heater_override_off
+              - type: button
+                name: HeaterOff
+                icon: 'hass:fire'
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: script.heater_override_off
+          - type: history-graph
+            entities:
+              - entity: sensor.mqtt_heater_status
+            hours_to_show: 24
+            refresh_interval: 0
+            title: Heater Status
+          - type: gauge
+            entity: sensor.mqtt_heater_status
+            min: 0
+            max: 1
       - type: vertical-stack
         title: Temperature
         cards:
@@ -105,16 +190,12 @@ views:
             entity: sensor.mqtt_living_temperature
             graph: line
             detail: 2
+            hours_to_show: 24
           - type: sensor
             entity: sensor.mqtt_bathroom_temperature
             graph: line
             detail: 2
-      - type: history-graph
-        entities:
-          - entity: sensor.mqtt_heater_status
-        hours_to_show: 24
-        refresh_interval: 0
-        title: Heater Status
+            hours_to_show: 24
   - title: Energy
     path: energy
     icon: ''
@@ -126,14 +207,20 @@ views:
           - type: sensor
             entity: sensor.power_consumption
             graph: line
-            name: Power
+            name: Consumption
+            detail: 2
+          - type: sensor
+            entity: sensor.power_production
+            graph: line
+            name: Production
+            detail: 2
+      - type: vertical-stack
+        cards:
           - type: entities
             entities:
               - sensor.power_consumption_phase_l1
               - sensor.power_consumption_phase_l2
               - sensor.power_consumption_phase_l3
-      - type: vertical-stack
-        cards:
           - type: entities
             title: Voltage
             entities:
@@ -159,18 +246,14 @@ views:
             title: Bitcoin Mainnet
             show_header_toggle: true
             entities:
-              - sensor.btcmain_syncing
-              - sensor.btcmain_mining
-              - sensor.btcmain_lastblock
-              - sensor.btcmain_get_balance
+              - sensor.mqtt_btcmain_current_block
+              - sensor.mqtt_btcmain_highest_block
+              - sensor.mqtt_btcmain_connections
           - type: entities
             title: Bitcoin Testnet
             show_header_toggle: true
             entities:
               - sensor.btctest_syncing
-              - sensor.btctest_mining
-              - sensor.btctest_lastblock
-              - sensor.btctest_get_balance
       - type: vertical-stack
         title: Ethereum
         show_header_toggle: false
@@ -179,15 +262,15 @@ views:
             title: Ethereum Mainnet
             show_header_toggle: true
             entities:
-              - sensor.ethmain_syncing
-              - sensor.ethmain_mining
-              - sensor.ethmain_lastblock
-              - sensor.ethmain_get_balance
+              - sensor.mqtt_ethmain_current_block
+              - sensor.mqtt_ethmain_highest_block
+              - sensor.mqtt_ethmain_pulled_states
+              - sensor.mqtt_ethmain_known_states
           - type: entities
             title: Ethereum Ropsten
             show_header_toggle: true
             entities:
-              - sensor.ropsten_syncing
-              - sensor.ropsten_mining
-              - sensor.ropsten_lastblock
-              - sensor.ropsten_get_balance
+              - sensor.mqtt_ethropsten_current_block
+              - sensor.mqtt_ethropsten_highest_block
+              - sensor.mqtt_ethropsten_pulled_states
+              - sensor.mqtt_ethropsten_known_states
