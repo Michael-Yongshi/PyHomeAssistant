@@ -149,12 +149,12 @@ class WatchLight(hass.Hass):
 
         # if within program make sure lights are on
         if within_program == True and status == "off":
-            # self.light_on()
+            self.light_on()
             self.event_happened(message + ". Turning on lights")
 
         # otherwise make sure lights are off
         elif within_program == False and status == "on":
-            # self.light_off()
+            self.light_off()
             self.event_happened(message + ". Turning off lights")
 
         # else do nothing (can be left out, here just for explicit clarity)
