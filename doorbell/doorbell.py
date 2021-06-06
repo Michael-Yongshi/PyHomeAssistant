@@ -4,7 +4,7 @@ from time import sleep
 from signal import pause
 import logging
 import requests
-from gpiozero import LED, Button
+from gpiozero import Button
 import simpleaudio
 
 class Doorbell(object):
@@ -14,8 +14,13 @@ class Doorbell(object):
         # set up logging
         logging.basicConfig(level=logging.DEBUG)
 
+        # configure which GPIO connector transmits to the button
+        self.GPIO_doorbell = 17
+        # Connect the return cable to GROUND, as the GPIO button will try to provide power!!
+        # you can check this by only connecting the GPIO_button jumper and touch the return cable with you bare hand (grounding the circuit with your body)
+
         # set the doorbell as a button
-        self.button = Button(17, hold_time=2.5)
+        self.button = Button(self.GPIO_doorbell, hold_time=2.5)
         self.button.when_pressed = self.button_pressed
         self.button.when_held = self.button_held
         self.button.when_released = self.button_released
@@ -34,7 +39,7 @@ class Doorbell(object):
             self.token = text_file.read().strip("\n")
 
         # Define delay to wait before continuing after activation
-        self.delay = 5
+        self.delay = 10
 
         logging.debug('Doorbell object is initiated')
 
@@ -46,6 +51,8 @@ class Doorbell(object):
         pause()
 
     def button_pressed(self):
+
+        logging.debug(f'Found grounded circuit on GPIO {self.GPIO_doorbell}')
 
         # play sound (asynchronous, will immediately proceed further after starting the audio)
         self.play_sound()
