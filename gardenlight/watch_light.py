@@ -105,13 +105,11 @@ class WatchLight(hass.Hass):
 
             # extend the override parameter
             self.override_expiration_utc += datetime.timedelta(days=self.override_interval)
-            
-            # log
-            override_expiration_local = self.convert_dt_utc_aware_to_local_aware(self.override_expiration_utc)
-            self.log(f"Someone requested lights override, extending the override to {override_expiration_local}!")
+            self.log(f"Someone requested lights override, extending the override!")
 
         else:
-            # if override is currently not active (for this status) override is set anew
+
+            # override is set anew
             self.override_expiration_utc = self.convert_string_utc_to_dt_utc_aware(self.get_state('sun.sun', 'next_noon'))
 
             # log
@@ -136,8 +134,9 @@ class WatchLight(hass.Hass):
 
         # check if override is active
         if self.override_expiration_utc >= current_datetime_utc:
-            time = self.override_expiration_utc - current_datetime_utc
-            self.log(f"Override active, expires in {time}")
+            expire_time = self.override_expiration_utc - current_datetime_utc
+            override_expiration_local = self.convert_dt_utc_aware_to_local_aware(self.override_expiration_utc)
+            self.log(f"Override active, expires in {expire_time} at {override_expiration_local}")
             return
 
         # get current status and skip if status of the entity is unavailable
