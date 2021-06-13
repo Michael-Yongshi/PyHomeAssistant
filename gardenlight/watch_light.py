@@ -113,7 +113,7 @@ class WatchLight(hass.Hass):
             self.override_expiration_utc = self.convert_string_utc_to_dt_utc_aware(self.get_state('sun.sun', 'next_noon'))
 
             # log
-            self.log(f"Someone requested lights override, setting status {current_status} => {set_state}!")
+            self.log(f"Someone requested lights override!")
             
             # send lights command to set the status to the new level
             self.post_light_status(set_state)
