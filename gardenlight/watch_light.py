@@ -13,7 +13,8 @@ class WatchLight(hass.Hass):
     - State Manager
 
     Method called:
-    - process automatically manages the state of the entity denoted in the config file according to the program denoted there.
+    - process automatically manages the state of the entity denoted in the config file according to the program denoted there
+    - override makes sure process is stopped for a certain time
 
     If you manage the light also with a physical switch, make sure you let the switch fire an override event, otherwise the automatic program will
     switch it back as the automatic program is not overridden without it.
@@ -27,8 +28,10 @@ class WatchLight(hass.Hass):
         self.override_expiration_utc = datetime.datetime.now(tz=utc)
         self.override_interval = 1
 
-        # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received. 
-        self.listen_event(self.override, "LIGHT_OVERRIDE")
+        # define the actual (light) entities used in home assistant and the events to watch for
+        self.entity = "light.garden_lights"
+        self.switch = "binary_sensor.garden_lights_input"
+        self.event = "GARDEN_LIGHTS_OVERRIDE"
 
         # check config and fetch settings
         config_filename = "watch_light_config"
@@ -38,62 +41,85 @@ class WatchLight(hass.Hass):
         self.timezone = pytz.timezone(self.config["timezone"])
         self.log(self.timezone)
 
-        # define the actual (light) entities used in home assistant
-        self.entity = self.config["entity"]
-        self.log(self.entity)
+        # tells appdaemon we want to call a certain method upon event or state change
+        self.listen_event(self.override_event, self.event)
+        self.listen_state(self.override_switch, self.switch)
 
         """
         Following call runs every minute to check if something needs to happen
         """
-        self.run_minutely(self.process, datetime.time(0, 0, 10))
+        self.run_minutely(self.periodic_process, datetime.time(0, 0, 10))
 
-    def override(self, event_name, data, kwargs):
+    def override_switch(self):
+        """
+        the method that is called when someone overrides with the manual external (physical) switch
+
+        As shelly already switched the lights on or off, we just have to add an override and leaves the 'set_state' field blank
+        """
+
+        # only do something when the sensor has valid values, i.e. when it is 'unavailable' it shouldnt do anything
+        if self.get_state(self.entity) == "on" or "off":
+            self.override()
+
+    def override_event(self, event_name, data, kwargs):
         """
         the method that is called when someone wants to override lights setting from home assistant itself
+
+        override
         """
 
-        if data["entity"] == self.entity:
+        self.override(data["status"])
 
-            # current (date)time
-            current_datetime_utc = datetime.datetime.now(tz=utc)
-            current_datetime_local = self.convert_dt_utc_aware_to_local_aware(current_datetime_utc)
-            self.log(f"current datetime in is {current_datetime_local}")
+    def periodic_process(self, kwargs):
+        """
+        Only here to redirect without the kwargs variable as process is also called from another method in this script
+        """
 
-            status = data["status"]
-            oldstatus = self.get_state(self.entity)
+        self.process()
 
-            if status == "auto":
-                # disable override by setting expiration to current time
-                self.override_expiration_utc = current_datetime_utc
-                self.log(f"Lights override lifted!")
+    def override(self, set_state=""):
+        """
+        if no set_state is given
+        """
 
-                # immediately run automatically setting the lights as override is stopped
-                self.process(kwargs)
+        # current (date)time
+        current_datetime_utc = datetime.datetime.now(tz=utc)
+        current_datetime_local = self.convert_dt_utc_aware_to_local_aware(current_datetime_utc)
+        self.log(f"current datetime is {current_datetime_local}")
 
-            # if override is active (and speed is the same as previous override) extend the override
-            elif status == oldstatus and self.override_expiration_utc > current_datetime_utc:
+        # get current status of the entity
+        current_status = self.get_state(self.entity)
 
-                # extend the override parameter
-                self.override_expiration_utc += datetime.timedelta(days=self.override_interval)
-                
-                # log
-                override_expiration_local = self.convert_dt_utc_aware_to_local_aware(self.override_expiration_utc)
-                self.log(f"Someone requested lights override, extending the override to {override_expiration_local}!")
+        if set_state == "auto":
 
-            else:
-                # if override is currently not active (for this status) override is set anew
-                self.override_expiration_utc = self.convert_string_utc_to_dt_utc_aware(self.get_state('sun.sun', 'next_noon'))
+            # disable override by setting expiration to current time
+            self.override_expiration_utc = current_datetime_utc
+            self.log(f"Lights override lifted!")
 
-                # log
-                self.log(f"Someone requested lights override, setting status {oldstatus} => {status}!")
-                
-                # send lights command to set the status to the new level
-                self.post_light_status(status)
+            # immediately run automatically setting the lights as override is stopped
+            self.process()
+
+        # if override is active (and speed is the same as previous override) extend the override
+        elif set_state == current_status and self.override_expiration_utc > current_datetime_utc:
+
+            # extend the override parameter
+            self.override_expiration_utc += datetime.timedelta(days=self.override_interval)
+            
+            # log
+            override_expiration_local = self.convert_dt_utc_aware_to_local_aware(self.override_expiration_utc)
+            self.log(f"Someone requested lights override, extending the override to {override_expiration_local}!")
 
         else:
-            pass
+            # if override is currently not active (for this status) override is set anew
+            self.override_expiration_utc = self.convert_string_utc_to_dt_utc_aware(self.get_state('sun.sun', 'next_noon'))
 
-    def process(self, kwargs):
+            # log
+            self.log(f"Someone requested lights override, setting status {current_status} => {set_state}!")
+            
+            # send lights command to set the status to the new level
+            self.post_light_status(set_state)
+
+    def process(self):
         """
         Checks if the time is currently between sundown and evening end time or between start time and sunrise.
         If so turns on /off light if needed.
