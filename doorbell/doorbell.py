@@ -16,7 +16,7 @@ class Doorbell(object):
 
         # configure which GPIO connector transmits to the button
         self.GPIO_doorbell = 17
-        # Connect the return cable to GROUND, as the GPIO button will try to provide power!!
+        # Connect the return cable to GROUND, as the GPIO button will try to provide power and grounding it triggers the press!!
         # you can check this by only connecting the GPIO_button jumper and touch the return cable with you bare hand (grounding the circuit with your body)
 
         # set the doorbell as a button
