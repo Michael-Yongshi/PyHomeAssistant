@@ -50,7 +50,7 @@ class WatchLight(hass.Hass):
         """
         self.run_minutely(self.periodic_process, datetime.time(0, 0, 10))
 
-    def override_switch(self):
+    def override_switch(self, entity, attribute, old, new, kwargs):
         """
         the method that is called when someone overrides with the manual external (physical) switch
 
@@ -58,6 +58,7 @@ class WatchLight(hass.Hass):
         """
 
         # only do something when the sensor has valid values, i.e. when it is 'unavailable' it shouldnt do anything
+        self.log(f"{old} changed to {new}")
         if self.get_state(self.entity) == "on" or "off":
             self.override()
 
@@ -135,9 +136,8 @@ class WatchLight(hass.Hass):
 
         # check if override is active
         if self.override_expiration_utc >= current_datetime_utc:
-            until_utc = self.override_expiration_utc - current_datetime_utc
-            until_local = self.convert_dt_utc_aware_to_local_aware(until_utc)
-            self.log(f"Override active, expires in {until_local}")
+            time = self.override_expiration_utc - current_datetime_utc
+            self.log(f"Override active, expires in {time}")
             return
 
         # get current status and skip if status of the entity is unavailable
