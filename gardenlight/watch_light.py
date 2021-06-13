@@ -54,11 +54,17 @@ class WatchLight(hass.Hass):
         """
         the method that is called when someone overrides with the manual external (physical) switch, which works by observing the switch state
         As shelly already switched the lights on or off, we just have to add an override and leaves the 'set_state' field blank
+
+        only do something when the sensor has valid values, i.e. when it is 'unavailable' it shouldnt do anything
+        both from and to unavalability status need to be prevented as this represents the shelly being unreachable for now
+        but doesnt signify a real change in status
+         
+        old = valid status to new = unavailable
+        old = unavailable to new = valid status
         """
 
         self.log(f"{old} changed to {new}")
 
-        # only do something when the sensor has valid values, i.e. when it is 'unavailable' it shouldnt do anything
         valid = ["on", "off"]
         if old in valid and new in valid:
             self.override()
