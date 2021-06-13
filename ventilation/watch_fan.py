@@ -20,9 +20,13 @@ class WatchFan(hass.Hass):
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
         
+        # we set some humidity variables
+        self.limit3 = 95
+        self.limit2 = 85
+
         # Were keeping track of an override variable to keep override only on for a certain amount of time
         self.override_expiration = datetime.datetime.now()
-        self.override_interval = 10
+        self.override_interval = 30
 
         # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received. 
         self.listen_event(self.override, "FAN_OVERRIDE")
@@ -93,14 +97,26 @@ class WatchFan(hass.Hass):
 
         current_time = datetime.datetime.now()
 
-        limit3 = 95
-        limit2 = 85
-
         # check if override is active
         if self.override_expiration >= current_time:
             until = self.override_expiration - current_time
             self.log(f"Override active, expires in {until}")
             return
+
+        # Collect requested settings
+        settings = []
+        settings += self.determine_humidity()
+        settings += self.determine_cooling()
+
+        # retrieve highest setting from the array (sort and get last element)
+        setting = sorted(settings)[-1]
+
+        self.post_fan_speed(setting)
+
+    def determine_humidity(self):
+        """
+        Requests a setting to exhaust moisture
+        """
 
         # humidity level (try block as sensor can be down)
         try:
@@ -109,44 +125,47 @@ class WatchFan(hass.Hass):
             self.log(f"Measured humidity at {humidity}%!")
 
             # set to 3 if humidity increased to above limit3
-            if humidity >= limit3:
+            if humidity >= self.limit3:
                 setting = 3
-                if speed != setting:
-                    self.post_fan_speed(setting)
-                    self.log(f"level above {limit3}%  observed, set fan to speed {setting}")
-                else:
-                    self.log(f"level above {limit3}%  observed, fan already at speed {setting}")
+                self.log(f"level above {self.limit3}%  observed, set fan to speed {setting}")
             
             # set to 2 if humidity is above limit2
-            elif humidity >= limit2:
+            elif humidity >= self.limit2:
                 setting = 2
-                if speed != setting:
-                    self.post_fan_speed(setting)
-                    self.log(f"level above {limit2}% observed, set fan to speed {setting}")
-                else:
-                    self.log(f"level above {limit2}% observed, fan already at speed {setting}")
+                self.log(f"level above {self.limit2}% observed, set fan to speed {setting}")
 
             # set to 1 if humidity is below limit2
-            elif humidity < limit2:
+            elif humidity < self.limit2:
                 setting = 1
-                if speed != setting:
-                    self.post_fan_speed(setting)
-                    self.log(f"level below {limit2}% observed, set fan to speed {setting}")
-                else:
-                    self.log(f"level below {limit2}% observed, fan already at speed {setting}")
+                self.log(f"level below {self.limit2}% observed, set fan to speed {setting}")
 
         # if sensor is down, return fan to lowest setting
         except:
             setting = 1
             self.log(f"Couldn't observe humidity!")
-            if speed != setting:
-                self.post_fan_speed(setting)
-                self.log(f"Set fan to speed {setting}")
-            
-        self.log("")
+        
+        return setting
+    
+    def determine_cooling(self):
+        """
+        Requests a higher setting in order to cool
+        """
 
-    # get the current speed of the fan
+        # get inside and outside temp
+        # inside_temp = something
+        # outside_temp = something else
+
+        # if inside_temp > 22 and outside_temp < 20:
+        # setting = 2
+        # else:
+        setting = 1
+
+        return setting
+
     def get_fan_speed(self):
+        """
+        get the current speed of the fan
+        """
 
         # address for the rest api
         url = "http://192.168.178.29:5000/get_speed"
