@@ -52,21 +52,20 @@ class WatchLight(hass.Hass):
 
     def override_switch(self, entity, attribute, old, new, kwargs):
         """
-        the method that is called when someone overrides with the manual external (physical) switch
-
+        the method that is called when someone overrides with the manual external (physical) switch, which works by observing the switch state
         As shelly already switched the lights on or off, we just have to add an override and leaves the 'set_state' field blank
         """
 
-        # only do something when the sensor has valid values, i.e. when it is 'unavailable' it shouldnt do anything
         self.log(f"{old} changed to {new}")
-        if self.get_state(self.entity) == "on" or "off":
+
+        # only do something when the sensor has valid values, i.e. when it is 'unavailable' it shouldnt do anything
+        valid = ["on", "off"]
+        if old in valid and new in valid:
             self.override()
 
     def override_event(self, event_name, data, kwargs):
         """
-        the method that is called when someone wants to override lights setting from home assistant itself
-
-        override
+        the method that is called when someone wants to override lights setting from home assistant itself, which works through firing events
         """
 
         self.override(data["status"])
