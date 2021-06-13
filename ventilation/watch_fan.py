@@ -105,8 +105,8 @@ class WatchFan(hass.Hass):
 
         # Collect requested settings
         settings = []
-        settings += self.determine_humidity()
-        settings += self.determine_cooling()
+        settings += [self.determine_humidity()]
+        settings += [self.determine_cooling()]
 
         # retrieve highest setting from the array (sort and get last element)
         setting = sorted(settings)[-1]
