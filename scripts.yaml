@@ -1,0 +1,101 @@
+fan_override_0:
+  alias: Fan Override Off
+  sequence:
+  - event: FAN_OVERRIDE
+    event_data:
+      speed: '0'
+  mode: queued
+  icon: hass:fan
+  max: 10
+fan_override_1:
+  alias: Fan Override Low
+  sequence:
+  - event: FAN_OVERRIDE
+    event_data:
+      speed: '1'
+  mode: queued
+  icon: mdi:fan-speed-1
+  max: 10
+fan_override_2:
+  alias: Fan Override Medium
+  sequence:
+  - event: FAN_OVERRIDE
+    event_data:
+      speed: '2'
+  mode: queued
+  icon: mdi:fan-speed-2
+  max: 10
+fan_override_3:
+  alias: Fan Override High
+  sequence:
+  - event: FAN_OVERRIDE
+    event_data:
+      speed: '3'
+  mode: queued
+  icon: mdi:fan-speed-3
+  max: 10
+fan_override_off:
+  alias: Fan Override Auto
+  sequence:
+  - event: FAN_OVERRIDE
+    event_data:
+      speed: '9'
+  mode: queued
+  icon: hass:refresh
+  max: 10
+heater_override_0:
+  alias: Heater Override Off
+  sequence:
+  - event: HEATER_OVERRIDE
+    event_data:
+      status: '0'
+  mode: queued
+  icon: hass:cancel
+  max: 10
+heater_override_1:
+  alias: Heater_Override_On
+  sequence:
+  - event: HEATER_OVERRIDE
+    event_data:
+      status: '1'
+  mode: queued
+  icon: hass:fire
+  max: 10
+heater_override_off:
+  alias: Heater_Override_Auto
+  sequence:
+  - event: HEATER_OVERRIDE
+    event_data:
+      status: '9'
+  mode: queued
+  icon: hass:refresh
+  max: 10
+garden_lights_override_on:
+  alias: Garden Lights Override On
+  sequence:
+  - event: LIGHT_OVERRIDE
+    event_data:
+      entity: light.garden_lights
+      status: 'on'
+  mode: queued
+  icon: mdi:lightbulb-on
+  max: 10
+garden_lights_override_off:
+  alias: Garden Lights Override Off
+  sequence:
+  - event: LIGHT_OVERRIDE
+    event_data:
+      entity: light.garden_lights
+      status: 'off'
+  mode: queued
+  icon: mdi:lightbulb-off-outline
+  max: 10
+garden_lights_override_auto:
+  alias: Garden Lights Override Auto
+  sequence:
+  - event: LIGHT_OVERRIDE
+    event_data:
+      entity: light.garden_lights
+      status: auto
+  mode: single
+  icon: mdi:refresh
