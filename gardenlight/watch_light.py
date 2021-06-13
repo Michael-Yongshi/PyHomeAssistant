@@ -78,7 +78,7 @@ class WatchLight(hass.Hass):
                 
                 # log
                 override_expiration_local = self.convert_dt_utc_aware_to_local_aware(self.override_expiration_utc)
-                self.log(f"Someone requested lights override, extending the override to {self.override_expiration_local}!")
+                self.log(f"Someone requested lights override, extending the override to {override_expiration_local}!")
 
             else:
                 # if override is currently not active (for this status) override is set anew
