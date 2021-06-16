@@ -111,7 +111,11 @@ class WatchFan(hass.Hass):
         # retrieve highest setting from the array (sort and get last element)
         setting = sorted(settings)[-1]
 
-        self.post_fan_speed(setting)
+        if speed != setting:
+            self.log(f"Setting fan speed to {setting}!")
+            self.post_fan_speed(setting)
+        else:
+            self.log(f"Fan speed is already at {setting}!")
 
     def determine_humidity(self):
         """
@@ -127,17 +131,17 @@ class WatchFan(hass.Hass):
             # set to 3 if humidity increased to above limit3
             if humidity >= self.limit3:
                 setting = 3
-                self.log(f"level above {self.limit3}%  observed, set fan to speed {setting}")
+                self.log(f"level above {self.limit3}%  observed!")
             
             # set to 2 if humidity is above limit2
             elif humidity >= self.limit2:
                 setting = 2
-                self.log(f"level above {self.limit2}% observed, set fan to speed {setting}")
+                self.log(f"level above {self.limit2}%, but below {self.limit3}, observed!")
 
             # set to 1 if humidity is below limit2
             elif humidity < self.limit2:
                 setting = 1
-                self.log(f"level below {self.limit2}% observed, set fan to speed {setting}")
+                self.log(f"level below {self.limit2}% observed!")
 
         # if sensor is down, return fan to lowest setting
         except:
@@ -151,14 +155,27 @@ class WatchFan(hass.Hass):
         Requests a higher setting in order to cool
         """
 
-        # get inside and outside temp
-        # inside_temp = something
-        # outside_temp = something else
+        try:
+            comfort_temp = 12
+            inside_temp = float(self.get_state("sensor.mqtt_living_temperature"))
+            outside_temp = float(self.get_state(entity_id="weather.serenity", attribute="temperature"))
+            self.log(f"Inside temperature is {inside_temp} versus outside temperature of {outside_temp}")
 
-        # if inside_temp > 22 and outside_temp < 20:
-        # setting = 2
-        # else:
-        setting = 1
+            if inside_temp > 23:
+                self.log(f"Inside temperature is high")
+                if inside_temp > outside_temp:
+                    setting = 2
+                    self.log(f"Outside temperature is low enough to cool!")
+                else:
+                    setting = 1
+                    self.log(f"Outside temperature is too high!")
+            else:
+                setting = 1
+                self.log(f"Inside temperature reached target")
+
+        except:
+            setting = 1
+            self.log(f"Couldn't observe temperature!")
 
         return setting
 
