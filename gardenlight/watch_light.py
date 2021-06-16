@@ -114,8 +114,15 @@ class WatchLight(hass.Hass):
 
         else:
 
+            # to get to noon next day or today
+            # i.e. 21 o clock, then 15 hours have to be added to get to tomorrows noon. 36 - 21 = 15
+            # i.e. 7 o clock, then only 5 hours have to be added to get to todays noon. 12 - 7 = 5
+            extension = 36 if current_datetime_local.hour > 12 else 12
+            expiration_time_delta = datetime.timedelta(hours=(extension-current_datetime_local.hour))
+
             # override is set anew
-            self.override_expiration_utc = self.convert_string_utc_to_dt_utc_aware(self.get_state('sun.sun', 'next_noon'))
+            self.override_expiration_utc = current_datetime_local + expiration_time_delta
+            # self.override_expiration_utc = self.convert_string_utc_to_dt_utc_aware(self.get_state('sun.sun', 'next_noon'))
 
             # log
             self.log(f"Someone requested lights override!")
