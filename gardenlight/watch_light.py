@@ -152,7 +152,7 @@ class WatchLight(hass.Hass):
 
         # sun status
         sun_status = self.get_state("sun.sun")
-        self.log(f"sun is {sun_status}")
+        # self.log(f"sun is {sun_status}")
 
         if sun_status == "below_horizon":
             self.log(f"Sun is down, now checking if its in exclusion frame...")
