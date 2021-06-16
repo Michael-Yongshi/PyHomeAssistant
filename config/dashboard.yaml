@@ -8,7 +8,6 @@ views:
       - type: entities
         entities:
           - entity: light.bedroom_light
-          - entity: light.garden_lights
         title: Lights
         show_header_toggle: true
       - type: horizontal-stack
