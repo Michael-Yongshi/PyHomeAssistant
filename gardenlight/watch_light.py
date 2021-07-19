@@ -85,7 +85,7 @@ class WatchLight(hass.Hass):
 
     def override(self, set_state=""):
         """
-        if no set_state is given
+        if no set_state is given it will default to "auto"
         """
 
         # current (date)time
@@ -96,7 +96,7 @@ class WatchLight(hass.Hass):
         # get current status of the entity
         current_status = self.get_state(self.entity)
 
-        if set_state == "auto":
+        if set_state == "auto" or set_state == "":
 
             # disable override by setting expiration to current time
             self.override_expiration_utc = current_datetime_utc
