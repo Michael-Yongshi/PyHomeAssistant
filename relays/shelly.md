@@ -18,3 +18,4 @@ current shelly's:
 - michaels kamer: ip 192.168.178.71
 - didis kamer: ip 192.168.178.28
 - tuin: ip 192.168.178.54
+- bedroom: ip 192.168.178.69
