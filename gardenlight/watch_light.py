@@ -100,7 +100,10 @@ class WatchLight(hass.Hass):
 
             # disable override by setting expiration to current time
             self.override_expiration_utc = current_datetime_utc
-            self.log(f"Lights override lifted!")
+
+            # log
+            message = f"Lights override lifted!"
+            self.event_happened(message)
 
             # immediately run automatically setting the lights as override is stopped
             self.process()
@@ -110,7 +113,10 @@ class WatchLight(hass.Hass):
 
             # extend the override parameter
             self.override_expiration_utc += datetime.timedelta(days=self.override_interval)
-            self.log(f"Someone requested lights override, extending the override!")
+
+            # log
+            message = f"Someone requested lights override, extending the override!"
+            self.event_happened(message)
 
         else:
 
@@ -125,8 +131,9 @@ class WatchLight(hass.Hass):
             # self.override_expiration_utc = self.convert_string_utc_to_dt_utc_aware(self.get_state('sun.sun', 'next_noon'))
 
             # log
-            self.log(f"Someone requested lights override!")
-            
+            message = f"Someone requested lights override!"
+            self.event_happened(message)
+
             # send lights command to set the status to the new level
             self.post_light_status(set_state)
 
@@ -140,7 +147,6 @@ class WatchLight(hass.Hass):
 
         # current (date)time
         current_datetime_utc = datetime.datetime.now(tz=utc)
-        # self.log(f"current datetime utc is {current_datetime_utc}")
         current_datetime_local = self.convert_dt_utc_aware_to_local_aware(current_datetime_utc)
         self.log(f"current datetime is {current_datetime_local}")
 
@@ -149,12 +155,18 @@ class WatchLight(hass.Hass):
             expire_time = self.override_expiration_utc - current_datetime_utc
             override_expiration_local = self.convert_dt_utc_aware_to_local_aware(self.override_expiration_utc)
             self.log(f"Override active, expires in {expire_time} at {override_expiration_local}")
+
+            # override is active, return without doing anything
             return
 
         # get current status and skip if status of the entity is unavailable
         status = self.get_state(self.entity)
         if status == "unavailable":
-            self.log(f"status is unavailable, skipping for now...")
+            message = f"status is unavailable, skipping for now..."
+
+            # signal whenever the state cant be received
+            self.event_happened(message)
+
             return
 
         # sun status
@@ -166,31 +178,36 @@ class WatchLight(hass.Hass):
 
             morning_start_utc, morning_start_local, evening_end_utc, evening_end_local = self.determine_setting(current_datetime_utc, current_datetime_local)
 
+            # check if time is before evening end (evening window)
             if current_datetime_utc <= evening_end_utc:
-                message = f"Sun is down, time {current_datetime_local} is before evening end {evening_end_local}, lights should be on"
-                within_program = True
+                message = f"Sun is down, time {self.pretty_datetime(current_datetime_local)} is before evening end {self.pretty_datetime(evening_end_local)}, lights should be on"
+                within_lights_window = True
 
+            # check if time is after morning start (morning window)
             elif current_datetime_utc >= morning_start_utc:
-                message = f"Sun is down, time {current_datetime_local} is after morning start {morning_start_local}, lights should be on"
-                within_program = True
+                message = f"Sun is down, time {self.pretty_datetime(current_datetime_local)} is after morning start {self.pretty_datetime(morning_start_local)}, lights should be on"
+                within_lights_window = True
 
+            # check if time is in between evening end and morning start (exclusion frame)
             else:
-                message = f"Time {current_datetime_local} is between between evening end {evening_end_local} and morning start {morning_start_local}, lights should be off"
-                within_program = False
+                message = f"Sun is down, time {self.pretty_datetime(current_datetime_local)} is between between evening end {self.pretty_datetime(evening_end_local)} and morning start {self.pretty_datetime(morning_start_local)}, lights should be off"
+                within_lights_window = False
 
+        # sun is up, lights should be off regardless
         else:
-            message = f"Sun is up"
-            within_program = False
+            message = f"Sun is up, time {self.pretty_datetime(current_datetime_local)}"
+            within_lights_window = False
 
+        # log for debugging of every decision
         self.log(message)
 
-        # if within program make sure lights are on
-        if within_program == True and status == "off":
+        # if within a light window, but lights are off, turn them on
+        if within_lights_window == True and status == "off":
             self.light_on()
             self.event_happened(message + ". Turning on lights")
 
-        # otherwise make sure lights are off
-        elif within_program == False and status == "on":
+        # if sun is up or time within the exclusion frame, but lights are on, turn them off
+        elif within_lights_window == False and status == "on":
             self.light_off()
             self.event_happened(message + ". Turning off lights")
 
@@ -288,7 +305,7 @@ class WatchLight(hass.Hass):
         """
 
         # log the message before sending it
-        # self.log(message)
+        self.log(message)
 
         # Call telegram message service to send the message from the telegram bot
         self.call_service(
@@ -341,6 +358,13 @@ class WatchLight(hass.Hass):
         dt_utc_aware = dt_local_aware.astimezone(tz=utc)
 
         return dt_utc_aware
+
+    def pretty_datetime(datetime):
+
+        # Format datetime string
+        pretty_dt = datetime.strftime("%Y-%m-%d %H:%M:%S")
+
+        return pretty_dt
 
     def load_json(self, filename):
         """
