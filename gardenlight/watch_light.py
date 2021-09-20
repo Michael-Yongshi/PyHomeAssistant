@@ -359,7 +359,7 @@ class WatchLight(hass.Hass):
 
         return dt_utc_aware
 
-    def pretty_datetime(datetime):
+    def pretty_datetime(self, datetime):
 
         # Format datetime string
         pretty_dt = datetime.strftime("%Y-%m-%d %H:%M:%S")
