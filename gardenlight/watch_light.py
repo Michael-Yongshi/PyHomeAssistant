@@ -67,7 +67,7 @@ class WatchLight(hass.Hass):
 
         valid = ["on", "off"]
         if old in valid and new in valid:
-            self.override()
+            self.override(set_state=new)
 
     def override_event(self, event_name, data, kwargs):
         """
