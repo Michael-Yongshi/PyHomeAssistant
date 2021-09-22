@@ -8,6 +8,9 @@ views:
       - type: entities
         entities:
           - entity: light.bedroom_light
+          - entity: light.office_didi
+          - entity: light.office_mike_light
+          - entity: light.garden_lights
         title: Lights
         show_header_toggle: true
       - type: horizontal-stack
@@ -15,7 +18,7 @@ views:
         cards:
           - type: button
             name: GardenLightOn
-            icon: 'mdi:lightbulb-on'
+            icon: mdi:lightbulb-on
             show_name: false
             icon_height: 30px
             tap_action:
@@ -25,7 +28,7 @@ views:
               action: call-service
               service: script.garden_lights_override_auto
           - type: button
-            icon: 'mdi:lightbulb-off-outline'
+            icon: mdi:lightbulb-off-outline
             name: GardenLightOff
             show_name: false
             icon_height: 30px
@@ -37,7 +40,7 @@ views:
               service: script.garden_lights_override_auto
           - type: button
             name: GardenLightAuto
-            icon: 'mdi:lightbulb'
+            icon: mdi:lightbulb
             show_name: false
             icon_height: 30px
             tap_action:
@@ -60,8 +63,8 @@ views:
           - type: entities
             entities:
               - remote.apple_tv_2
-  - title: Fan
-    path: fan
+  - title: Climate
+    path: climate
     icon: ''
     badges: []
     cards:
@@ -73,7 +76,7 @@ views:
             cards:
               - type: button
                 name: Fan1
-                icon: 'mdi:fan-speed-1'
+                icon: mdi:fan-speed-1
                 show_name: false
                 icon_height: 30px
                 tap_action:
@@ -83,7 +86,7 @@ views:
                   action: call-service
                   service: script.fan_override_off
               - type: button
-                icon: 'mdi:fan-speed-2'
+                icon: mdi:fan-speed-2
                 name: Fan2
                 show_name: false
                 icon_height: 30px
@@ -95,7 +98,7 @@ views:
                   service: script.fan_override_off
               - type: button
                 name: Fan3
-                icon: 'mdi:fan-speed-3'
+                icon: mdi:fan-speed-3
                 show_name: false
                 icon_height: 30px
                 tap_action:
@@ -106,7 +109,7 @@ views:
                   service: script.fan_override_off
               - type: button
                 name: Fan0
-                icon: 'hass:fan'
+                icon: hass:cog
                 show_name: false
                 icon_height: 30px
                 tap_action:
@@ -120,6 +123,52 @@ views:
             min: 0
             max: 3
       - type: vertical-stack
+        title: Heater
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: button
+                name: Heater1
+                icon: mdi:fire-alert
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: script.heater_override_1
+                hold_action:
+                  action: call-service
+                  service: script.heater_override_off
+              - type: button
+                icon: mdi:fire-off
+                name: Heater0
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: script.heater_override_0
+                hold_action:
+                  action: call-service
+                  service: script.heater_override_off
+              - type: button
+                name: HeaterOff
+                icon: hass:cog
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: script.heater_override_off
+          - type: gauge
+            entity: sensor.mqtt_heater_status
+            min: 0
+            max: 1
+      - type: vertical-stack
+        title: Weather
+        cards:
+          - type: weather-forecast
+            entity: weather.serenity
+            show_forecast: false
+            secondary_info_attribute: temperature
+      - type: vertical-stack
         title: Humidity
         cards:
           - type: sensor
@@ -132,56 +181,6 @@ views:
             graph: line
             detail: 2
             hours_to_show: 24
-  - title: Heater
-    path: heater
-    icon: ''
-    badges: []
-    cards:
-      - type: vertical-stack
-        title: Heater
-        cards:
-          - type: horizontal-stack
-            cards:
-              - type: button
-                name: Heater1
-                icon: 'mdi:fire-alert'
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: script.heater_override_1
-                hold_action:
-                  action: call-service
-                  service: script.heater_override_off
-              - type: button
-                icon: 'mdi:fire-off'
-                name: Heater0
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: script.heater_override_0
-                hold_action:
-                  action: call-service
-                  service: script.heater_override_off
-              - type: button
-                name: HeaterOff
-                icon: 'hass:fire'
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: script.heater_override_off
-          - type: history-graph
-            entities:
-              - entity: sensor.mqtt_heater_status
-            hours_to_show: 24
-            refresh_interval: 0
-            title: Heater Status
-          - type: gauge
-            entity: sensor.mqtt_heater_status
-            min: 0
-            max: 1
       - type: vertical-stack
         title: Temperature
         cards:
