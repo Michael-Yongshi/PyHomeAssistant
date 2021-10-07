@@ -1,3 +1,7 @@
+"""
+Contains api's to be run on a device that turns the heater (CV / boiler / heatpump) on or off and request current status
+depends on heater_therm_api.service in order to get run on reboot of the device
+"""
 
 from flask import Flask, request
 
@@ -37,11 +41,11 @@ def post_status():
     # make sure its a valid integer
     status=int(json["status"])
 
-    # send to the thermostat
+    # send to the Heater
     result = heater.set_status(status)
 
     # returns the current status
-    return f"Thermostat is set to {result}"
+    return f"Heater is set to {result}"
 
 if __name__ == '__main__':
 

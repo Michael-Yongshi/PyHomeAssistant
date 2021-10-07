@@ -1,3 +1,7 @@
+"""
+Contains logic to check and set a GPIO pin connected to a relay that turns the heater (CV / boiler / heatpump) on or off and request current status
+"""
+
 import time
 import logging
 

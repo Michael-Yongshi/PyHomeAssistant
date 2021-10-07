@@ -1,3 +1,8 @@
+"""
+Broadcasts MQTT telemetry to an MQTT server and expects to be run on a device that can check the status of the heater (CV / boiler / heatpump) and the thermometer
+depends on heater_therm_mqtt.service in order to get run on reboot of the device
+"""
+
 import logging
 import time
 

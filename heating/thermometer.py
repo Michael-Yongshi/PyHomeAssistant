@@ -1,3 +1,7 @@
+"""
+Contains logic to check a GPIO pin connected to a DHT thermometer / humidity and provides methods to access these status'
+"""
+
 import logging
 
 # temperature sensor communicates through adafruit protocol

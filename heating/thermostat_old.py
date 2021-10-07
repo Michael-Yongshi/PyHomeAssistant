@@ -1,3 +1,9 @@
+"""
+Not used, moved to HASS (watch_thermostat)
+
+depends on thermostat.service in order to get run on reboot of the device
+"""
+
 import os
 import json
 import time
