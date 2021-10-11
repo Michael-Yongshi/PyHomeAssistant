@@ -20,6 +20,9 @@ class WatchFan(hass.Hass):
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
         
+        # The device that controls the ventilator
+        self.ventilator = "http://192.168.178.29:5000"
+
         # we set some humidity variables
         self.limit3 = 95
         self.limit2 = 85
@@ -47,7 +50,7 @@ class WatchFan(hass.Hass):
         if speed == 9:
             # disable override by setting expiration to current time
             self.override_expiration = current_time
-            self.log(f"Fan override lifted!")
+            self.event_happened(f"Fan override lifted!")
 
             # immediately run automatically setting the fan as override is stopped
             self.determine_setting(kwargs)
@@ -59,7 +62,7 @@ class WatchFan(hass.Hass):
             self.override_expiration += datetime.timedelta(minutes=self.override_interval)
             
             # log
-            self.log(f"Someone requested fan override, extending the override by {self.override_interval} minutes!")
+            self.event_happened(f"Someone requested fan override, extending the override by {self.override_interval} minutes!")
 
         else:
             # if override is currently not active (for this speed) override is set anew
@@ -69,14 +72,14 @@ class WatchFan(hass.Hass):
                 self.override_expiration = current_time + datetime.timedelta(days=1)
 
                 # log
-                self.log(f"Someone requested stopping the fan, shutting off the fan for the time being!")
+                self.event_happened(f"Someone requested stopping the fan, shutting off the fan for the time being!")
 
             else:
                 # overrides in the off setting for by default a day. 
                 self.override_expiration = current_time + datetime.timedelta(minutes=self.override_interval)
 
                 # log
-                self.log(f"Someone requested fan override, setting speed {oldspeed} => {speed}!")
+                self.event_happened(f"Someone requested fan override, setting speed {oldspeed} => {speed}!")
             
             # send fan command to set the speed to the new level
             self.post_fan_speed(speed)
@@ -112,7 +115,7 @@ class WatchFan(hass.Hass):
         setting = sorted(settings)[-1]
 
         if speed != setting:
-            self.log(f"Setting fan speed to {setting}!")
+            self.event_happened(f"Setting fan speed to {setting}!")
             self.post_fan_speed(setting)
         else:
             self.log(f"Fan speed is already at {setting}!")
@@ -185,7 +188,7 @@ class WatchFan(hass.Hass):
         """
 
         # address for the rest api
-        url = "http://192.168.178.29:5000/get_speed"
+        url = self.ventilator + "/get_speed"
 
         # send out the actual request to the api
         response = requests.get(url=url)
@@ -197,7 +200,7 @@ class WatchFan(hass.Hass):
     def post_fan_speed(self, speed):
         
         # address for the rest api
-        url = "http://192.168.178.29:5000/post_speed"
+        url = self.ventilator + "/post_speed"
 
         # denote that we are sending data in the form of a json string
         headers = {
@@ -212,3 +215,16 @@ class WatchFan(hass.Hass):
         response = requests.post(url=url, headers=headers, json=json)
 
         self.log(response.text)
+
+    def event_happened(self, message):
+        """
+        the method that is called when an event happens
+        """
+
+        # log the message before sending it
+        self.log(message)
+
+        # Call telegram message service to send the message from the telegram bot
+        self.call_service(
+            "telegram_bot/send_message", message=message,
+        )

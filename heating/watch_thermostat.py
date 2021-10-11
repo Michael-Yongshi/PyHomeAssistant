@@ -22,6 +22,9 @@ class WatchThermostat(hass.Hass):
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
 
+        # url of the device that controls the heater
+        self.heater = "http://192.168.178.44:5000"
+
         # set settings from settings file
         self.days = self.load_json("days")
         self.programs = self.load_json("programs")
@@ -34,8 +37,9 @@ class WatchThermostat(hass.Hass):
         # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received. 
         self.listen_event(self.override, "HEATER_OVERRIDE")
         self.listen_state(self.mqtt_update, "sensor.mqtt_living_temperature")
+        # TODO: listen state for user setting target temperatures instead of json files
 
-        # enforce determining setting even if humidity is unchanged every minute
+        # enforce determining setting even if termperature is unchanged every minute
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
 
     def override(self, event_name, data, kwargs):
@@ -52,7 +56,7 @@ class WatchThermostat(hass.Hass):
             self.override_expiration += datetime.timedelta(minutes=self.override_interval)
             
             # log
-            self.log(f"Someone requested thermostat override, extending the override by {self.override_interval} minutes!")
+            self.event_happened(f"Someone requested thermostat override, extending the override by {self.override_interval} minutes!")
 
         else:
 
@@ -63,7 +67,7 @@ class WatchThermostat(hass.Hass):
                 # immediately run automatically setting the fan as override is stopped
                 self.determine_setting(kwargs)
 
-                self.log(f"Thermostat override lifted!")
+                self.event_happened(f"Thermostat override lifted!")
 
             else:
 
@@ -74,7 +78,7 @@ class WatchThermostat(hass.Hass):
                 self.post_heater_status(status)
 
                 # log
-                self.log(f"Someone requested heater override, setting status {oldstatus} => {status}!")
+                self.event_happened(f"Someone requested heater override, setting status {oldstatus} => {status}!")
 
         self.log(f"Current date and time is: {current_time}")
         self.log("")
@@ -96,7 +100,7 @@ class WatchThermostat(hass.Hass):
             self.log(f"Override active, expires in {until}")
             return
             
-        # # humidity level (try block as sensor can be down)
+        # # termperature level (try block as sensor can be down)
         # try:
         temp = float(self.get_state("sensor.mqtt_living_temperature"))
         self.log(f"Measured temperature at {temp}C!")
@@ -110,9 +114,8 @@ class WatchThermostat(hass.Hass):
         if status == 1:
             
             if temp >= upper_bound:
-                self.log(f"Temperature ({temp}) rose above upper bound ({upper_bound})")
                 self.post_heater_status(status=0)
-                self.log(f"Turned off heater")
+                self.event_happened(f"Temperature ({temp}) rose above upper bound ({upper_bound}). Turned off heater")
             else:
                 self.log(f"Temperature ({temp}) is still below upper bound ({upper_bound})")
         
@@ -121,9 +124,8 @@ class WatchThermostat(hass.Hass):
         if status == 0:
             
             if temp < lower_bound:
-                self.log(f"Temperature ({temp}) fell below lower bound ({lower_bound})")
                 self.post_heater_status(status=1)
-                self.log(f"Turned on heater")
+                self.event_happened(f"Temperature ({temp}) fell below lower bound ({lower_bound}). Turned on heater")
             else:
                 self.log(f"Temperature ({temp}) is still above lower bound ({lower_bound})")
 
@@ -171,8 +173,8 @@ class WatchThermostat(hass.Hass):
 
     def get_heater_status(self):
 
-        # address for the rest api
-        url = "http://192.168.178.44:5000/get_status"
+        # address for the rest api of the device that controls the heater
+        url = self.heater + "/get_status"
 
         # send out the actual request to the api
         response = requests.get(url=url)
@@ -183,7 +185,7 @@ class WatchThermostat(hass.Hass):
     def post_heater_status(self, status):
 
         # address for the rest api
-        url = "http://192.168.178.44:5000/post_status"
+        url = self.heater + "/post_status"
 
         # denote that we are sending data in the form of a json string
         headers = {
@@ -216,3 +218,16 @@ class WatchThermostat(hass.Hass):
                 contents = json.load(infile)
         
             return contents
+
+    def event_happened(self, message):
+        """
+        the method that is called when an event happens
+        """
+
+        # log the message before sending it
+        self.log(message)
+
+        # Call telegram message service to send the message from the telegram bot
+        self.call_service(
+            "telegram_bot/send_message", message=message,
+        )
