@@ -1,5 +1,8 @@
 https://gathering.tweakers.net/forum/list_messages/1535288/152
 
+https://siytek.com/quick-and-easy-diy-thermostat/
+https://siytek.com/the-ultimate-home-assistant-diy-thermostat-guide-for-single-or-multiple-zone-heating/
+
 ## rpi set to local time
 timedatectl
 timedatectl list-timezones
@@ -10,6 +13,8 @@ sudo timedatectl set-timezone Europe/Amsterdam
 
 adafruit circuitpython dht something
 had to install libgio 2 or something
+
+
 
 # Open Therm
 

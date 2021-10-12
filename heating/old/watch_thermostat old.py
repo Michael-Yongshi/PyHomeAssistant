@@ -23,7 +23,7 @@ class WatchThermostat(hass.Hass):
     def initialize(self):
 
         # url of the device that controls the heater
-        self.climate = "climate.thermostat"
+        self.heater = "http://192.168.178.44:5000"
 
         # set settings from settings file
         self.days = self.load_json("days")

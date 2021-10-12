@@ -69,10 +69,10 @@
   #################################################################
   ## Network
   #################################################################
-  network:
-    name: Network
-    entities:
-      - sensor.fritz_netmonitor
+  # network:
+  #   name: Network
+  #   entities:
+  #     - sensor.fritz_netmonitor
 
   #################################################################
   ## Sensors

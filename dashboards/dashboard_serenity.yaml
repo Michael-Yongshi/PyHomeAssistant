@@ -1,6 +1,6 @@
 title: Serenity
 views:
-  - title: Light & Devices
+  - title: Lights & Devices
     path: default_view
     icon: ''
     badges: []
@@ -11,10 +11,10 @@ views:
           - entity: light.office_didi
           - entity: light.office_mike_light
           - entity: light.garden_lights
-        title: Lights
+        title: Simple Lights
         show_header_toggle: true
       - type: horizontal-stack
-        title: Garden Lights
+        title: Automatic Garden Lights
         cards:
           - type: button
             name: GardenLightOn
@@ -40,7 +40,7 @@ views:
               service: script.garden_lights_override_auto
           - type: button
             name: GardenLightAuto
-            icon: mdi:lightbulb
+            icon: hass:cog
             show_name: false
             icon_height: 30px
             tap_action:
@@ -68,6 +68,43 @@ views:
     icon: ''
     badges: []
     cards:
+      - type: vertical-stack
+        title: Heater
+        cards:
+          - type: thermostat
+            entity: climate.thermostat
+          - type: horizontal-stack
+            cards:
+              - type: button
+                name: Heater1
+                icon: mdi:fire-alert
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: script.heater_override_1
+                hold_action:
+                  action: call-service
+                  service: script.heater_override_off
+              - type: button
+                icon: mdi:fire-off
+                name: Heater0
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: script.heater_override_0
+                hold_action:
+                  action: call-service
+                  service: script.heater_override_off
+              - type: button
+                name: HeaterOff
+                icon: hass:cog
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: script.heater_override_off
       - type: vertical-stack
         title: Ventilation
         show_header_toggle: true
@@ -119,55 +156,9 @@ views:
                   action: call-service
                   service: script.fan_override_0
           - type: gauge
-            entity: sensor.mqtt_fan_speed
+            entity: sensor.mqtt_fan_status
             min: 0
             max: 3
-      - type: vertical-stack
-        title: Heater
-        cards:
-          - type: horizontal-stack
-            cards:
-              - type: button
-                name: Heater1
-                icon: mdi:fire-alert
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: script.heater_override_1
-                hold_action:
-                  action: call-service
-                  service: script.heater_override_off
-              - type: button
-                icon: mdi:fire-off
-                name: Heater0
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: script.heater_override_0
-                hold_action:
-                  action: call-service
-                  service: script.heater_override_off
-              - type: button
-                name: HeaterOff
-                icon: hass:cog
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: script.heater_override_off
-          - type: gauge
-            entity: sensor.mqtt_heater_status
-            min: 0
-            max: 1
-      - type: vertical-stack
-        title: Weather
-        cards:
-          - type: weather-forecast
-            entity: weather.serenity
-            show_forecast: false
-            secondary_info_attribute: temperature
       - type: vertical-stack
         title: Humidity
         cards:
@@ -182,18 +173,12 @@ views:
             detail: 2
             hours_to_show: 24
       - type: vertical-stack
-        title: Temperature
+        title: Weather
         cards:
-          - type: sensor
-            entity: sensor.mqtt_living_temperature
-            graph: line
-            detail: 2
-            hours_to_show: 24
-          - type: sensor
-            entity: sensor.mqtt_bathroom_temperature
-            graph: line
-            detail: 2
-            hours_to_show: 24
+          - type: weather-forecast
+            entity: weather.serenity
+            show_forecast: false
+            secondary_info_attribute: temperature
   - title: Energy
     path: energy
     icon: ''

@@ -1,12 +1,21 @@
 """
-Contains logic to check and set a GPIO pin connected to a relay that turns the heater (CV / boiler / heatpump) on or off and request current status
+Contains logic to check and set a GPIO pin connected to a relay that turns the heater (CV / boiler / heatpump) on or off
+whenever a command has been given to a subscribed MQTT topic, i.e. by home assistant scripts like watch_thermostat.py.
+Broadcasts MQTT telemetry to an MQTT server of the status of the heater (available and current status / state)
+
+expects to be run on a device that has control of a relay on a certain GPIO pin that is used to turn on/off the heater (CV, Boiler or heatpump)
+depends on heater.service in order to get run on reboot of the device
+
 """
 
 import time
 import logging
-
-# heater relay operates by gpio signal
+from paho.mqtt import client as mqtt_client
 import gpiozero
+
+# set up logging
+logging.basicConfig(level=logging.DEBUG)
+
 
 class Heater(object):
     """
@@ -30,7 +39,7 @@ class Heater(object):
         try:
 
             # cycle those relays twice to see if it works
-            logging.info("Checking relay...")
+            logging.debug("Checking relay...")
        
             for x in [0,10]:
                 self.switch.on()
@@ -38,7 +47,7 @@ class Heater(object):
                 self.switch.off()
                 time.sleep(1)
 
-            logging.info("Checking relays finished")
+            logging.debug("Checking relays finished")
         except:
             logging.error(f"Couldn't check relays!")
 
@@ -52,7 +61,7 @@ class Heater(object):
             status = self.switch.value
 
             print(f"Heater status is {status}")
-            logging.info(f"Read heater status as {status}")
+            logging.debug(f"Read heater status as {status}")
             return status
 
         except:
@@ -62,7 +71,7 @@ class Heater(object):
     def set_status(self, status):
 
     # try:
-        logging.info(f"Setting status to {status}")
+        logging.debug(f"Setting status to {status}")
         if status == 1:
             self.switch.on()
         elif status == 0:
@@ -73,3 +82,96 @@ class Heater(object):
     # except:
         logging.error(f"Couldn't set heater!")
         return -1
+heater = Heater()
+
+# MQTT stuff
+broker = '192.168.178.37'
+port = 1883
+client_id = 'heater'
+username = "mqttpublisher"
+password = "publishmqtt"
+
+command_topic = "heater/set"
+status_topic = "heater/status"
+avail_topic = "heater/availability"
+
+def on_connect(client, userdata, flags, rc):
+    """
+    Callback thats run whenever the device reconnects to the MQTT broker
+    """
+    
+    if rc == 0:
+        # if rc is 0 then it connected without error
+        logging.debug("Connected to MQTT Broker!")
+
+        # subscribe on topics when connected
+        client.subscribe(command_topic)
+
+    else:
+        logging.critical("Failed to connect, return code %d\n", rc)
+
+def on_message(client, userdata, message):
+    """
+    Callback thats run whenever the device receives a message from the MQTT broker
+    This is run from the thread that is running the loop, so it will work even though the main thread is blocked by sending of sensor data in a while loop.
+    """
+    payload = int(message.payload.decode("utf-8"))
+    logging.debug(f"received message = {payload}")
+
+    # send to the Heater
+    result = heater.set_status(payload)
+
+def publish(client, topic, value):
+    """
+    Publish a result to the MQTT broker and log if it went successfull
+    """
+
+    # publish it
+    result = client.publish(topic, value)
+
+    # first item in result array is the status, if this is 0 then the packet is send succesfully
+    if result[0] == 0:
+        logging.debug(f"Send `{value}` to topic `{topic}`")
+    
+    # if not the message sending failed
+    else:
+        logging.critical(f"Failed to send message to topic {topic}")
+
+def run():
+    """
+    The main process to set up MQTT loop
+    """
+
+    # set up mqtt client
+    client = mqtt_client.Client(client_id)
+    client.username_pw_set(username, password)
+
+    # set callback methods
+    client.on_connect = on_connect
+    client.on_message = on_message
+
+    # connect to client
+    client.connect(broker, port)
+
+    # start loop that will process the actual collection and sending of the messages continuously in a seperate thread
+    client.loop_start()
+
+    # loop to publish sensor data
+    msg_count = 0
+    while True:
+
+        # every second
+        time.sleep(1)
+
+        topic = "heater/status"
+        value = heater.get_status()
+        publish(client, topic, value)
+
+        # publish(client=client, topic=status_topic, value=heater.get_status())
+        publish(client=client, topic=avail_topic, value="online")
+
+        # finish off with adding to the message count
+        msg_count += 1
+
+if __name__ == '__main__':
+    run()

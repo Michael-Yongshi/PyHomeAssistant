@@ -7,6 +7,7 @@ fan_override_0:
   mode: queued
   icon: hass:fan
   max: 10
+
 fan_override_1:
   alias: Fan Override Low
   sequence:
@@ -16,6 +17,7 @@ fan_override_1:
   mode: queued
   icon: mdi:fan-speed-1
   max: 10
+
 fan_override_2:
   alias: Fan Override Medium
   sequence:
@@ -25,6 +27,7 @@ fan_override_2:
   mode: queued
   icon: mdi:fan-speed-2
   max: 10
+
 fan_override_3:
   alias: Fan Override High
   sequence:
@@ -34,6 +37,7 @@ fan_override_3:
   mode: queued
   icon: mdi:fan-speed-3
   max: 10
+
 fan_override_off:
   alias: Fan Override Auto
   sequence:
@@ -53,6 +57,7 @@ heater_override_0:
   mode: queued
   icon: hass:cancel
   max: 10
+
 heater_override_1:
   alias: Heater_Override_On
   sequence:
@@ -62,6 +67,7 @@ heater_override_1:
   mode: queued
   icon: hass:fire
   max: 10
+
 heater_override_off:
   alias: Heater_Override_Auto
   sequence:
@@ -77,27 +83,26 @@ garden_lights_override_on:
   sequence:
   - event: GARDEN_LIGHTS_OVERRIDE
     event_data:
-      entity: light.garden_lights
       status: 'on'
   mode: queued
   icon: mdi:lightbulb-on
   max: 10
+
 garden_lights_override_off:
   alias: Garden Lights Override Off
   sequence:
   - event: GARDEN_LIGHTS_OVERRIDE
     event_data:
-      entity: light.garden_lights
       status: 'off'
   mode: queued
   icon: mdi:lightbulb-off-outline
   max: 10
+
 garden_lights_override_auto:
   alias: Garden Lights Override Auto
   sequence:
   - event: GARDEN_LIGHTS_OVERRIDE
     event_data:
-      entity: light.garden_lights
       status: auto
   mode: queued
   icon: mdi:refresh
