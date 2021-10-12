@@ -2,7 +2,9 @@ import appdaemon.plugins.hass.hassapi as hass
 import datetime
 import requests
 
-class WatchFan(hass.Hass):
+import mqttapi as mqtt
+
+class WatchFan(mqtt.Mqtt, hass.Hass):
     """
     Type of class:
     - Event Listener
@@ -20,24 +22,32 @@ class WatchFan(hass.Hass):
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
         
-        # The device that controls the ventilator
-        self.fan_url = "http://192.168.178.29:5000"
-        self.fan_sensor = "sensor.mqtt_fan_status"
+        # command topic to watch
+        self.command_topic = "fan/set"
 
-        # we set some humidity variables
+        # we set some humidity limits, TODO can become MQTT settings in the future to set by the user
         self.limit3 = 95
         self.limit2 = 85
 
+        # MQTT initialization
+        # self.set_namespace("mqtt")
+        # self.log("MQTT initialized")
+        
         # Were keeping track of an override variable to keep override only on for a certain amount of time
         self.override_expiration = datetime.datetime.now()
         self.override_interval = 30
 
-        # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received. 
+        # call a certain method when a certain event ("EVENT") is received
         self.listen_event(self.override, "FAN_OVERRIDE")
+
+        # call a certain method when mqtt updates are available. 
         self.listen_state(self.mqtt_update, "sensor.mqtt_bathroom_humidity")
 
         # enforce determining setting even if humidity is unchanged every minute
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
+
+    def on_command(self, event_name, data, kwargs):
+        pass
 
     # the method that is called when someone wants to override fan setting from home assistant itself
     def override(self, event_name, data, kwargs):
@@ -96,8 +106,8 @@ class WatchFan(hass.Hass):
     def determine_setting(self, kwargs):
 
         # get fanspeed state
-        speed = int(self.get_state(self.fan_sensor))
-        self.log(f"Fan speed is {speed}")
+        current_speed = self.get_fan_speed()
+        self.log(f"Fan speed is {current_speed}")
 
         current_time = datetime.datetime.now()
 
@@ -113,13 +123,45 @@ class WatchFan(hass.Hass):
         # settings += [self.determine_cooling()]
 
         # retrieve highest setting from the array (sort and get last element)
-        setting = sorted(settings)[-1]
+        new_speed = sorted(settings)[-1]
 
-        if speed != setting:
-            self.event_happened(f"Setting fan speed to {setting}!")
-            self.post_fan_speed(setting)
+        if current_speed != new_speed:
+            self.event_happened(f"Setting fan speed to {new_speed}!")
+            self.post_fan_speed(new_speed)
         else:
-            self.log(f"Fan speed is already at {setting}!")
+            self.log(f"Fan speed is already at {new_speed}!")
+
+    # depreciated
+    def get_fan_speed(self):
+        """
+        get the current speed of the fan
+        """
+
+        # get hass sensor data
+        current_speed = int(self.get_state("sensor.mqtt_fan_status"))
+
+        return current_speed
+
+    def post_fan_speed(self, speed):
+        
+        self.call_service("publish", topic = self.command_topic, payload = speed)
+
+        # # address for the rest api
+        # url = self.fan_url + "/post_speed"
+
+        # # denote that we are sending data in the form of a json string
+        # headers = {
+        #     "content-type": "application/json",
+        # }
+
+        # json = {
+        #     "speed": f"{speed}",
+        # }
+
+        # # send out the actual request to the api
+        # response = requests.post(url=url, headers=headers, json=json)
+
+        # self.log(response.text)
 
     def determine_humidity(self):
         """
@@ -182,40 +224,6 @@ class WatchFan(hass.Hass):
             self.log(f"Couldn't observe temperature!")
 
         return setting
-
-    def get_fan_speed(self):
-        """
-        get the current speed of the fan
-        """
-
-        # address for the rest api
-        url = self.fan_url + "/get_speed"
-
-        # send out the actual request to the api
-        response = requests.get(url=url)
-        speed = response.text
-
-        return speed
-
-    # set the speed of the fan
-    def post_fan_speed(self, speed):
-        
-        # address for the rest api
-        url = self.fan_url + "/post_speed"
-
-        # denote that we are sending data in the form of a json string
-        headers = {
-            "content-type": "application/json",
-        }
-
-        json = {
-            "speed": f"{speed}",
-        }
-
-        # send out the actual request to the api
-        response = requests.post(url=url, headers=headers, json=json)
-
-        self.log(response.text)
 
     def event_happened(self, message):
         """

@@ -1,7 +1,12 @@
 
-import gpiozero
 import time
 import logging
+
+from paho.mqtt import client as mqtt_client
+import gpiozero
+
+# set up logging
+logging.basicConfig(level=logging.DEBUG)
 
 class Fan(object):
     """
@@ -17,6 +22,7 @@ class Fan(object):
         L1 and L2:          medium speed (2)
         L1(, L2) and L3:    highest speed (3)
 
+        (some devices have high speed on 2 and medium on 3)
         """
 
         # Use active_high to invert the relay
@@ -131,8 +137,96 @@ class Fan(object):
 
             logging.info(f"Couldnt set speed {speed}.")
             return -1
+fan = Fan()
+
+# MQTT stuff
+broker = '192.168.178.37'
+port = 1883
+client_id = 'rpi-fan-pymqtt'
+username = "mqttpublisher"
+password = "publishmqtt"
+
+command_topic = "fan/set"
+state_topic = "fan/speed"
+avail_topic = "fan/availability"
+
+def on_connect(client, userdata, flags, rc):
+    """
+    Callback thats run whenever the device reconnects to the MQTT broker
+    """
+    
+    if rc == 0:
+        # if rc is 0 then it connected without error
+        logging.debug("Connected to MQTT Broker!")
+
+        # subscribe on topics when connected
+        client.subscribe(command_topic)
+
+    else:
+        logging.critical("Failed to connect, return code %d\n", rc)
+
+
+def on_message(client, userdata, message):
+    """
+    Callback thats run whenever the device receives a message from the MQTT broker
+    This is run from the thread that is running the loop, so it will work even though the main thread is blocked by sending of sensor data in a while loop.
+    """
+    payload = int(message.payload.decode("utf-8"))
+    logging.debug(f"received message = {payload}")
+
+    # send to the Heater
+    result = fan.set_speed(payload)
+
+def publish(client, topic, value):
+    """
+    Publish a result to the MQTT broker and log if it went successfull
+    """
+
+    # publish it
+    result = client.publish(topic, value)
+
+    # first item in result array is the status, if this is 0 then the packet is send succesfully
+    if result[0] == 0:
+        logging.debug(f"Send `{value}` to topic `{topic}`")
+    
+    # if not the message sending failed
+    else:
+        logging.critical(f"Failed to send message to topic {topic}")
+
+def run():
+    """
+    The main process to set up MQTT loop
+    """
+
+    # set up mqtt client
+    client = mqtt_client.Client(client_id)
+    client.username_pw_set(username, password)
+
+    # set callback methods
+    client.on_connect = on_connect
+    client.on_message = on_message
+
+    # connect to client
+    client.connect(broker, port)
+
+    # start loop that will process the actual collection and sending of the messages continuously in a seperate thread
+    client.loop_start()
+
+    # loop to publish sensor data
+    msg_count = 0
+    while True:
+
+        # every second
+        time.sleep(1)
+
+        # publish
+        publish(client=client, topic=state_topic, value=fan.get_speed())
+        publish(client=client, topic=avail_topic, value="online")
+
+        # finish off with adding to the message count
+        msg_count += 1
+
 
 if __name__ == '__main__':
-    
-    fan = Fan()
-    fan.test_relay()
+
+    run()
