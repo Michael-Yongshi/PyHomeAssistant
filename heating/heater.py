@@ -16,7 +16,6 @@ import gpiozero
 # set up logging
 logging.basicConfig(level=logging.DEBUG)
 
-
 class Heater(object):
     """
     Heating is basically an on/off relay
@@ -163,11 +162,7 @@ def run():
         # every second
         time.sleep(1)
 
-        topic = "heater/status"
-        value = heater.get_status()
-        publish(client, topic, value)
-
-        # publish(client=client, topic=status_topic, value=heater.get_status())
+        publish(client=client, topic=status_topic, value=heater.get_status())
         publish(client=client, topic=avail_topic, value="online")
 
         # finish off with adding to the message count

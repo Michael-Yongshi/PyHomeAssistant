@@ -166,6 +166,7 @@ class WatchThermostat(hass.Hass):
         
         return target_temp
 
+    # depreciated
     def get_heater_status(self):
 
         # address for the rest api of the device that controls the heater
@@ -177,6 +178,7 @@ class WatchThermostat(hass.Hass):
 
         return status
 
+    # depreciated
     def post_heater_status(self, status):
 
         # address for the rest api
