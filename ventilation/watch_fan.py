@@ -21,7 +21,8 @@ class WatchFan(hass.Hass):
     def initialize(self):
         
         # The device that controls the ventilator
-        self.ventilator = "http://192.168.178.29:5000"
+        self.fan_url = "http://192.168.178.29:5000"
+        self.fan_sensor = "sensor.mqtt_fan_status"
 
         # we set some humidity variables
         self.limit3 = 95
@@ -95,7 +96,7 @@ class WatchFan(hass.Hass):
     def determine_setting(self, kwargs):
 
         # get fanspeed state
-        speed = int(self.get_state("sensor.mqtt_fan_speed"))
+        speed = int(self.get_state(self.fan_sensor))
         self.log(f"Fan speed is {speed}")
 
         current_time = datetime.datetime.now()
@@ -188,7 +189,7 @@ class WatchFan(hass.Hass):
         """
 
         # address for the rest api
-        url = self.ventilator + "/get_speed"
+        url = self.fan_url + "/get_speed"
 
         # send out the actual request to the api
         response = requests.get(url=url)
@@ -200,7 +201,7 @@ class WatchFan(hass.Hass):
     def post_fan_speed(self, speed):
         
         # address for the rest api
-        url = self.ventilator + "/post_speed"
+        url = self.fan_url + "/post_speed"
 
         # denote that we are sending data in the form of a json string
         headers = {

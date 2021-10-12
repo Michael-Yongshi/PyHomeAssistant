@@ -1,18 +1,10 @@
-  - platform: fritzbox_netmonitor
-    # name: Fritzbox
-
   # enable DSMR sensor
   - platform: dsmr
     host: 192.168.178.44
     port: 2001
     dsmr_version: 5
 
-  # enable rest endpoint for ethnode with our account
-  # - platform: rest
-  #   name: ethnode_get_balance
-  #   resource: http://192.168.178.39:5000/get_my_balance
-
-  # ------------------ MQTT Climate
+  # ------------------ MQTT Climate sensors
   - platform: mqtt
     name: mqtt_bathroom_humidity
     state_topic: "bathroom/humidity"
@@ -33,8 +25,9 @@
     state_topic: "living/temperature"
     unit_of_measurement: '°C'
 
+  # ------------------ MQTT Heater and ventilation device status
   - platform: mqtt
-    name: mqtt_fan_speed
+    name: mqtt_fan_status
     state_topic: 'fan/speed'
 
   - platform: mqtt
