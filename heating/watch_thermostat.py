@@ -99,7 +99,7 @@ class WatchThermostat(hass.Hass):
         if program_target != current_target:
             # only set new temperature if its different
             self.call_service("climate/set_temperature", entity_id=self.entity, temperature=program_target)
-            self.log(f"Set new temperature to {program_target} from {current_target}")
+            self.event_happened(f"Set new temperature to {program_target} from {current_target}")
 
     def get_target_temp(self):
 
