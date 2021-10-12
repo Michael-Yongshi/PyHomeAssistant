@@ -22,8 +22,8 @@ class WatchThermostat(hass.Hass):
 
         # Home assistant parameters
         self.entity = "climate.thermostat"
-        self.service = "climate.set_temperature"
         self.attribute = "target_temp"
+        self.service = "climate.set_temperature"
 
         # Were keeping track of an override variable to keep override only on for a certain amount of time
         self.override_expiration = datetime.datetime.now()
@@ -98,7 +98,9 @@ class WatchThermostat(hass.Hass):
         program_target = self.get_target_temp()
 
         if program_target != current_target:
+            # only set new temperature if its different
             self.call_service("climate/set_temperature", entity_id=self.entity, temperature=program_target)
+            self.log(f"Set new temperature to {program_target} from {current_target}")
 
     def get_target_temp(self):
 
