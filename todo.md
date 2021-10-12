@@ -2,6 +2,7 @@
 - add away toggle to switch to vacation mode for everything (primarily the heater)
 
 # heater
+-when turned on or off also toggle the distributor on the shelly (and add a once per day)
 -mqtt of overridden status
 
 1-overview of settings: days, active hours
