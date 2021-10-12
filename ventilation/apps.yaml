@@ -1,3 +1,0 @@
-watch_fan:
-  module: watch_fan
-  class: WatchFan
