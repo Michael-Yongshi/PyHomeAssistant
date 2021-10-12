@@ -10,10 +10,8 @@ class WatchThermostat(hass.Hass):
     - Event Listener
 
     Method called:
-    - Post to api to switch on/off heater
-    
-    Test this class by firing a test event
-    -> hass web ui -> developer tools -> events -> type "THERMOSTAT_OVERRIDE -> fire event
+    - update state of 'climate.thermostat' entity, attribute 'target_temperature' in order to influence the thermostat setting
+    - keep override buttons working it is now
 
     add data like below and replace x with 0 (off), 1 (on), 9(stop override)
     {'status': x}
@@ -22,27 +20,24 @@ class WatchThermostat(hass.Hass):
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
 
-        # url of the device that controls the heater
-        self.climate = "climate.thermostat"
-
-        # set settings from settings file
-        self.days = self.load_json("days")
-        self.programs = self.load_json("programs")
-        self.bound = 0.5
+        # Home assistant parameters
+        self.entity = "climate.thermostat"
+        self.service = "climate.set_temperature"
+        self.attribute = "target_temp"
 
         # Were keeping track of an override variable to keep override only on for a certain amount of time
         self.override_expiration = datetime.datetime.now()
-        self.override_interval = 60
+        self.override_interval = 1 # hours
 
-        # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received. 
+        # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received.
         self.listen_event(self.override, "HEATER_OVERRIDE")
-        self.listen_state(self.mqtt_update, "sensor.mqtt_living_temperature")
-        # TODO: listen state for user setting target temperatures instead of json files
 
-        # enforce determining setting even if termperature is unchanged every minute
+        # loop method to determine if target temp needs to change
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
 
     def override(self, event_name, data, kwargs):
+
+        datetime_interval = datetime.timedelta(hours=self.override_interval)
 
         status = int(data["status"])
         oldstatus = int(self.get_heater_status())
@@ -53,10 +48,10 @@ class WatchThermostat(hass.Hass):
         if status == oldstatus and self.override_expiration > current_time:
 
             # extend the override parameter
-            self.override_expiration += datetime.timedelta(minutes=self.override_interval)
+            self.override_expiration += datetime_interval
             
             # log
-            self.event_happened(f"Someone requested thermostat override, extending the override by {self.override_interval} minutes!")
+            self.event_happened(f"Someone requested thermostat override, extending the override by {self.override_interval} hours!")
 
         else:
 
@@ -72,7 +67,7 @@ class WatchThermostat(hass.Hass):
             else:
 
                 # if override is currently not active (for this status) override is set anew
-                self.override_expiration = current_time + datetime.timedelta(minutes=self.override_interval)
+                self.override_expiration = current_time + datetime_interval
 
                 # send thermostat command to set the status to the new level
                 self.post_heater_status(status)
@@ -83,14 +78,10 @@ class WatchThermostat(hass.Hass):
         self.log(f"Current date and time is: {current_time}")
         self.log("")
 
-    def mqtt_update(self, entity, attribute, old, new, kwargs):
-
-        self.determine_setting(kwargs)
-
     def determine_setting(self, kwargs):
-
-        # get heater state
-        status = int(self.get_state("sensor.mqtt_heater_status"))
+        """
+        Check logic to see if target temp should change on the thermostat
+        """
         
         current_time = datetime.datetime.now()
 
@@ -99,45 +90,25 @@ class WatchThermostat(hass.Hass):
             until = self.override_expiration - current_time
             self.log(f"Override active, expires in {until}")
             return
-            
-        # # termperature level (try block as sensor can be down)
-        # try:
-        temp = float(self.get_state("sensor.mqtt_living_temperature"))
-        self.log(f"Measured temperature at {temp}C!")
 
-        # get target temperature based on program
-        target_temp = self.get_target_temp()
-        lower_bound = target_temp - self.bound
-        upper_bound = target_temp + self.bound
+        # current target temp
+        current_target = self.get_state(self.entity, attribute=self.attribute)
 
-        # if heater is on (1), turn off only when temperature reaches the upper bound
-        if status == 1:
-            
-            if temp >= upper_bound:
-                self.post_heater_status(status=0)
-                self.event_happened(f"Temperature ({temp}) rose above upper bound ({upper_bound}). Turned off heater")
-            else:
-                self.log(f"Temperature ({temp}) is still below upper bound ({upper_bound})")
-        
-        # if heater is off, turn on only when temperature reaches the lower bound
-        # (to prevent turning the heater on or off to often)
-        if status == 0:
-            
-            if temp < lower_bound:
-                self.post_heater_status(status=1)
-                self.event_happened(f"Temperature ({temp}) fell below lower bound ({lower_bound}). Turned on heater")
-            else:
-                self.log(f"Temperature ({temp}) is still above lower bound ({lower_bound})")
+        # get target temperature based on programming
+        program_target = self.get_target_temp()
+
+        if program_target != current_target:
+            self.call_service("climate/set_temperature", entity_id=self.entity, temperature=program_target)
 
     def get_target_temp(self):
-        
-        # get current day and associated program
-        current_day = datetime.datetime.today().weekday()
-        current_program_number = self.days[current_day]
-        self.log(f"Loading program {current_program_number}")
+
+        # # get current day
+        # current_day = datetime.datetime.today().weekday()
+        # current_program_number = self.days[current_day]
+        # self.log(f"Loading program {current_program_number}")
 
         # load program
-        current_program = self.programs[current_program_number]
+        # current_program = self.programs[current_program_number]
         # logging.debug(f"Program loaded as: \n{current_program}")
 
         # check timeslot and target temperature
@@ -151,6 +122,29 @@ class WatchThermostat(hass.Hass):
             current_day = current_time.day
 
             # self.log(f"Searching for active timeslot... ({current_time})")
+            current_program = [
+                # morning
+                {
+                    "end": "06:30:00",
+                    "temp": 18
+                },
+                # afternoon
+                {
+                    "end": "18:00:00",
+                    "temp": 21
+                },
+                # evening
+                {
+                    "end": "22:00:00",
+                    "temp": 20
+                },
+                # night
+                {
+                    "end": "23:59:59",
+                    "temp": 18
+                }
+            ]
+
             for timeslot in current_program:
 
                 # Convert timeslot 'end' to time type
