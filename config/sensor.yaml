@@ -31,6 +31,10 @@
     state_topic: 'fan/speed'
 
   - platform: mqtt
+    name: mqtt_fan_set
+    state_topic: 'fan/set'
+  
+  - platform: mqtt
     name: mqtt_heater_status
     state_topic: 'heater/status'
 

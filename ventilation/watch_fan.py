@@ -37,22 +37,20 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         self.override_expiration = datetime.datetime.now()
         self.override_interval = 30
 
-        # call a certain method when a certain event ("EVENT") is received
-        self.listen_event(self.override, "FAN_OVERRIDE")
+        # # call a certain method when a certain event ("EVENT") is received
+        # self.listen_event(self.override, "FAN_OVERRIDE")
 
         # call a certain method when mqtt updates are available. 
         self.listen_state(self.mqtt_update, "sensor.mqtt_bathroom_humidity")
+        self.listen_state(self.override, "sensor.mqtt_fan_set")
 
         # enforce determining setting even if humidity is unchanged every minute
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
 
-    def on_command(self, event_name, data, kwargs):
-        pass
-
     # the method that is called when someone wants to override fan setting from home assistant itself
-    def override(self, event_name, data, kwargs):
+    def override(self, entity, attribute, old, new, kwargs):
 
-        speed = int(data["speed"])
+        speed = int(new)
         oldspeed = int(self.get_fan_speed())
 
         current_time = datetime.datetime.now()
@@ -143,8 +141,10 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         return current_speed
 
     def post_fan_speed(self, speed):
+
+        self.mqtt_publish(topic = "fan/set", payload = speed, qos = 1)
         
-        self.call_service("publish", topic = self.command_topic, payload = speed)
+        # self.call_service("mqtt.publish", topic = self.command_topic, payload = speed, qos=1, namespace = "mqtt")
 
         # # address for the rest api
         # url = self.fan_url + "/post_speed"
