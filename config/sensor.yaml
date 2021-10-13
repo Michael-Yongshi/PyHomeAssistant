@@ -30,10 +30,16 @@
     name: mqtt_fan_status
     state_topic: 'fan/speed'
 
+  # mqtt topic to communicate command to the fan service
   - platform: mqtt
     name: mqtt_fan_set
     state_topic: 'fan/set'
   
+  # mqtt topic to communicate a user override via mqtt to the watch_fan in appdaemon
+  - platform: mqtt
+    name: mqtt_fan_override
+    state_topic: 'fan/override'
+
   - platform: mqtt
     name: mqtt_heater_status
     state_topic: 'heater/status'
