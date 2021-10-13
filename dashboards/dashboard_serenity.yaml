@@ -118,10 +118,12 @@ views:
                 icon_height: 30px
                 tap_action:
                   action: call-service
-                  service: script.fan_override_1
-                hold_action:
-                  action: call-service
-                  service: script.fan_override_off
+                  service: mqtt.publish
+                  service_data:
+                    topic: fan/set
+                    payload: '1'
+                    qos: '1'
+                  target: {}
               - type: button
                 icon: mdi:fan-speed-2
                 name: Fan2
@@ -129,10 +131,12 @@ views:
                 icon_height: 30px
                 tap_action:
                   action: call-service
-                  service: script.fan_override_2
-                hold_action:
-                  action: call-service
-                  service: script.fan_override_off
+                  service: mqtt.publish
+                  service_data:
+                    topic: fan/set
+                    payload: '2'
+                    qos: '1'
+                  target: {}
               - type: button
                 name: Fan3
                 icon: mdi:fan-speed-3
@@ -140,10 +144,12 @@ views:
                 icon_height: 30px
                 tap_action:
                   action: call-service
-                  service: script.fan_override_3
-                hold_action:
-                  action: call-service
-                  service: script.fan_override_off
+                  service: mqtt.publish
+                  service_data:
+                    topic: fan/set
+                    payload: '3'
+                    qos: '1'
+                  target: {}
               - type: button
                 name: Fan0
                 icon: hass:cog
@@ -151,10 +157,20 @@ views:
                 icon_height: 30px
                 tap_action:
                   action: call-service
-                  service: script.fan_override_off
+                  service: mqtt.publish
+                  service_data:
+                    topic: fan/set
+                    payload: '9'
+                    qos: '1'
+                  target: {}
                 hold_action:
                   action: call-service
-                  service: script.fan_override_0
+                  service: mqtt.publish
+                  service_data:
+                    topic: fan/set
+                    payload: '0'
+                    qos: '1'
+                  target: {}
           - type: gauge
             entity: sensor.mqtt_fan_status
             min: 0
