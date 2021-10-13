@@ -45,8 +45,15 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
         current_time = datetime.datetime.now()
 
+        #disregard a reset of the mqtt topic to value 99
+        if status_new == 99:
+
+            # disregard
+            return
+
         # check if override is requested to be disabled
-        if status_new == 9:
+        elif status_new == 9:
+
             # disable override by setting expiration to current time
             self.override_expiration = current_time
             self.event_happened(f"Fan override lifted!")
