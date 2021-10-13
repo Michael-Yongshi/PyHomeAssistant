@@ -3,14 +3,13 @@
 
 # heater
 -when turned on or off also toggle the distributor on the shelly (and add a once per day)
+
 -mqtt of overridden status
 
-1-overview of settings: days, active hours
-2-change settings: input day + active hour block (https://www.home-assistant.io/integrations/input_text/)
-3-status rpi with heater and/or thermometer (check if service is running correctly, add to a new 'test' tab)
-
+-overview of settings: days, active hours that are now fixed in code, move to seperate dashboard with settings
 
 # ventilation
-1-
+- using mqtt made it impossible to override multiple times, check if needed
 
 # Floorplan and iot overview
+-status rpi's and ardios (check if services are running correctly, add to a new 'test' tab)
