@@ -22,25 +22,15 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
         
-        # command topic to watch
-        self.command_topic = "fan/set"
-
         # we set some humidity limits, TODO can become MQTT settings in the future to set by the user
         self.limit3 = 95
         self.limit2 = 85
 
-        # MQTT initialization
-        # self.set_namespace("mqtt")
-        # self.log("MQTT initialized")
-        
         # Were keeping track of an override variable to keep override only on for a certain amount of time
         self.override_expiration = datetime.datetime.now()
         self.override_interval = 30
 
-        # # call a certain method when a certain event ("EVENT") is received
-        # self.listen_event(self.override, "FAN_OVERRIDE")
-
-        # call a certain method when mqtt updates are available. 
+        # call a certain method when mqtt updates are available.
         self.listen_state(self.mqtt_update, "sensor.mqtt_bathroom_humidity")
         self.listen_state(self.override, "sensor.mqtt_fan_set")
 
@@ -129,7 +119,6 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         else:
             self.log(f"Fan speed is already at {new_speed}!")
 
-    # depreciated
     def get_fan_speed(self):
         """
         get the current speed of the fan
@@ -143,25 +132,6 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
     def post_fan_speed(self, speed):
 
         self.mqtt_publish(topic = "fan/set", payload = speed, qos = 1)
-        
-        # self.call_service("mqtt.publish", topic = self.command_topic, payload = speed, qos=1, namespace = "mqtt")
-
-        # # address for the rest api
-        # url = self.fan_url + "/post_speed"
-
-        # # denote that we are sending data in the form of a json string
-        # headers = {
-        #     "content-type": "application/json",
-        # }
-
-        # json = {
-        #     "speed": f"{speed}",
-        # }
-
-        # # send out the actual request to the api
-        # response = requests.post(url=url, headers=headers, json=json)
-
-        # self.log(response.text)
 
     def determine_humidity(self):
         """
