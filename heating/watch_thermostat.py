@@ -27,6 +27,9 @@ class WatchThermostat(hass.Hass):
         self.override_expiration = datetime.datetime.now()
         self.override_interval = 1 # hours
 
+        # keep track of timeslot to avoid having an override for normal behaviour and minor tweaks by users for a short time
+        self.last_timeslot_end = 0
+
         # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received.
         self.listen_event(self.override, "HEATER_OVERRIDE")
 
@@ -35,16 +38,17 @@ class WatchThermostat(hass.Hass):
 
     def override(self, event_name, data, kwargs):
 
+        # time
+        current_time = datetime.datetime.now()
         datetime_interval = datetime.timedelta(hours=self.override_interval)
 
-        status = int(data["status"])
-        oldstatus = int(self.get_heater_status())
-        current_time = datetime.datetime.now()
-        self.log(f"status is {status} with old status {oldstatus}")
+        # get new and old heater status
+        status_new = int(data["status"])
+        status_old = int(self.get_heater_status())
+        self.log(f"status is {status_new} with old status {status_old}")
 
-        # if override is active (and status is the same as previous override) extend the override
-        if status == oldstatus and self.override_expiration > current_time:
-
+        # if override is active (and status is the same) extend the override
+        if status_new == status_old and self.override_expiration > current_time:
             # extend the override parameter
             self.override_expiration += datetime_interval
             
@@ -52,29 +56,21 @@ class WatchThermostat(hass.Hass):
             self.event_happened(f"Someone requested thermostat override, extending the override by {self.override_interval} hours!")
 
         else:
-
-            if status >= 2:
+            if status_new >= 2:
                 # disable override by setting expiration to current time
                 self.override_expiration = current_time
                 
                 # immediately run automatically setting the fan as override is stopped
                 self.determine_setting(kwargs)
-
                 self.event_happened(f"Thermostat override lifted!")
 
             else:
-
-                # if override is currently not active (for this status) override is set anew
+                # if override is currently not active, override is set anew
                 self.override_expiration = current_time + datetime_interval
 
-                # send thermostat command to set the status to the new level
-                self.post_heater_status(status)
-
-                # log
-                self.event_happened(f"Someone requested heater override, setting status {oldstatus} => {status}!")
-
-        self.log(f"Current date and time is: {current_time}")
-        self.log("")
+                # send thermostat command for very high target temperature (most likely will not turn off without user doing something manually)
+                self.post_target_temp(30)
+                self.event_happened(f"Someone requested heater override, setting very high target temperature!")
 
     def determine_setting(self, kwargs):
         """
@@ -83,88 +79,79 @@ class WatchThermostat(hass.Hass):
         
         current_time = datetime.datetime.now()
 
-        # check if override is active
+        # check if override is active, if so return
         if self.override_expiration >= current_time:
             until = self.override_expiration - current_time
             self.log(f"Override active, expires in {until}")
             return
 
-        # current target temp
+        # get target temperature values
+        current_timeslot = self.get_current_timeslot(current_time)
+        current_timeslot_end = current_timeslot["end"]
+        program_target = current_timeslot["temp"]
         current_target = self.get_state(self.entity, attribute="temperature")
-        # self.log(f"Current target temperature {current_target}")
+        # self.log(f"Programming target temperature is {program_target}, while current target temperature is {current_target}")
 
-        # get target temperature based on programming
-        program_target = self.get_target_temp()
+        # check if we already programmed this timeslot before (we will only once, so user can still change it)
+        if self.last_timeslot_end != current_timeslot_end:
 
-        if program_target != current_target:
+            # register that we now programmed this timeslot
+            self.last_timeslot_end = current_timeslot_end
+
             # only set new temperature if its different
-            self.call_service("climate/set_temperature", entity_id=self.entity, temperature=program_target)
-            self.event_happened(f"Set new temperature to {program_target} from {current_target}")
+            if program_target != current_target:
+                # set new target temp
+                self.post_target_temp(target_temp=program_target)
 
-    def get_target_temp(self):
+            else:
+                self.event_happened(f"New timeslot, but target temperature is already set correctly to {program_target}")
 
-        # # get current day
-        # current_day = datetime.datetime.today().weekday()
-        # current_program_number = self.days[current_day]
-        # self.log(f"Loading program {current_program_number}")
+    def get_current_timeslot(self, current_time):
 
-        # load program
-        # current_program = self.programs[current_program_number]
-        # logging.debug(f"Program loaded as: \n{current_program}")
+        # get current time parameters
+        current_year = current_time.year
+        current_month = current_time.month
+        current_day = current_time.day
 
-        # check timeslot and target temperature
-        target_temp = 0
-        while target_temp == 0:
-            
-            # get current time
-            current_time = datetime.datetime.now() # .strftime("%H:%M:%S")
-            current_year = current_time.year
-            current_month = current_time.month
-            current_day = current_time.day
+        # TODO, we handle a generic program for now
+        current_program = [
+            # morning
+            {
+                "end": "06:30:00",
+                "temp": 18
+            },
+            # afternoon
+            {
+                "end": "18:00:00",
+                "temp": 21
+            },
+            # evening
+            {
+                "end": "22:00:00",
+                "temp": 20
+            },
+            # night
+            {
+                "end": "23:59:59",
+                "temp": 18
+            }
+        ]
 
-            # self.log(f"Searching for active timeslot... ({current_time})")
-            current_program = [
-                # morning
-                {
-                    "end": "06:30:00",
-                    "temp": 18
-                },
-                # afternoon
-                {
-                    "end": "18:00:00",
-                    "temp": 21
-                },
-                # evening
-                {
-                    "end": "22:00:00",
-                    "temp": 20
-                },
-                # night
-                {
-                    "end": "23:59:59",
-                    "temp": 18
-                }
-            ]
+        for timeslot in current_program:
+            timeslot_end = timeslot["end"]
 
-            for timeslot in current_program:
+            # Convert timeslot 'end' to time type
+            timeslot_end_str = datetime.datetime.strptime(timeslot_end, "%H:%M:%S")
+            timeslot_end_dt = timeslot_end_str.replace(year=current_year, month=current_month, day=current_day)
 
-                # Convert timeslot 'end' to time type
-                time_from_string = datetime.datetime.strptime(timeslot["end"], "%H:%M:%S")
-                timeslot_end = time_from_string.replace(year=current_year, month=current_month, day=current_day)
-                # self.log(timeslot_end)
+            # check if current time still falls within this timeslot
+            if current_time <= timeslot_end_dt:
 
-                # check if current time still falls within this timeslot
-                if current_time <= timeslot_end:
+                # set as current timeslot
+                current_timeslot = timeslot
+                break
 
-                    # set timeslot temperature as current target
-                    target_temp = timeslot["temp"]
-                    self.log(f"Target temperature is {target_temp}")
-
-                    break
-
-            # if no target temperature is set, restart this progress until it is set
-        
-        return target_temp
+        return current_timeslot
 
     # depreciated
     def get_heater_status(self):
@@ -179,24 +166,10 @@ class WatchThermostat(hass.Hass):
         return status
 
     # depreciated
-    def post_heater_status(self, status):
+    def post_target_temp(self, target_temp):
 
-        # address for the rest api
-        url = self.heater + "/post_status"
-
-        # denote that we are sending data in the form of a json string
-        headers = {
-            "content-type": "application/json",
-        }
-
-        json = {
-            "status": f"{status}",
-        }
-
-        # send out the actual request to the api
-        response = requests.post(url=url, headers=headers, json=json)
-
-        self.log(response.text)
+        self.call_service("climate/set_temperature", entity_id=self.entity, temperature=target_temp)
+        self.event_happened(f"Set new temperature to {target_temp}")
 
     def load_json(self, filename):
         """Load settings json"""
