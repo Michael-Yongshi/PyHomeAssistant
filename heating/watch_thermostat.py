@@ -21,7 +21,8 @@ class WatchThermostat(hass.Hass):
     def initialize(self):
 
         # Home assistant parameters
-        self.entity = "climate.thermostat"
+        self.climate_entity = "climate.thermostat"
+        self.heater_status_entity = "sensor.mqtt_heater_status"
 
         # Were keeping track of an override variable to keep override only on for a certain amount of time
         self.override_expiration = datetime.datetime.now()
@@ -89,7 +90,7 @@ class WatchThermostat(hass.Hass):
         current_timeslot = self.get_current_timeslot(current_time)
         current_timeslot_end = current_timeslot["end"]
         program_target = current_timeslot["temp"]
-        current_target = self.get_state(self.entity, attribute="temperature")
+        current_target = self.get_state(self.climate_entity, attribute="temperature")
         # self.log(f"Programming target temperature is {program_target}, while current target temperature is {current_target}")
 
         # check if we already programmed this timeslot before (we will only once, so user can still change it)
@@ -102,6 +103,7 @@ class WatchThermostat(hass.Hass):
             if program_target != current_target:
                 # set new target temp
                 self.post_target_temp(target_temp=program_target)
+                self.event_happened(f"Set new temperature to {program_target}, according to the program")
 
             else:
                 self.event_happened(f"New timeslot, but target temperature is already set correctly to {program_target}")
@@ -153,23 +155,16 @@ class WatchThermostat(hass.Hass):
 
         return current_timeslot
 
-    # depreciated
     def get_heater_status(self):
 
-        # address for the rest api of the device that controls the heater
-        url = self.heater + "/get_status"
+        # get heater state from the heater entity in home assistant
+        heater_status = self.get_state(self.heater_status_entity)
 
-        # send out the actual request to the api
-        response = requests.get(url=url)
-        status = response.text
+        return heater_status
 
-        return status
-
-    # depreciated
     def post_target_temp(self, target_temp):
 
-        self.call_service("climate/set_temperature", entity_id=self.entity, temperature=target_temp)
-        self.event_happened(f"Set new temperature to {target_temp}")
+        self.call_service("climate/set_temperature", entity_id=self.climate_entity, temperature=target_temp)
 
     def load_json(self, filename):
         """Load settings json"""
