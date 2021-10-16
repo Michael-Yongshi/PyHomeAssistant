@@ -33,8 +33,8 @@ class WatchThermostat(hass.Hass):
 
         # call turn on/off floorpump when heater status changes and add once a day floor pump flushing to prevent damage to pipes
         self.listen_state(self.floorpump, self.heater_status_entity)
-        self.run_daily(self.floorpump_24_on, datetime.time(0, 0, 0))
-        self.run_daily(self.floorpump_24_off, datetime.time(0, 10, 0))
+        self.run_daily(self.floorpump_24_on, datetime.time(12, 0, 0))
+        self.run_daily(self.floorpump_24_off, datetime.time(12, 10, 0))
 
     def floorpump(self, entity, attribute, old, new, kwargs):
         """
