@@ -1,3 +1,0 @@
-watch_doorbell:
-  module: watch_doorbell
-  class: WatchDoorbell
