@@ -22,56 +22,53 @@ class WatchThermostat(hass.Hass):
 
         # Home assistant parameters
         self.climate_entity = "climate.thermostat"
+        self.floorpump_entity = "switch.floor_pump"
         self.heater_status_entity = "sensor.mqtt_heater_status"
-
-        # Were keeping track of an override variable to keep override only on for a certain amount of time
-        self.override_expiration = datetime.datetime.now()
-        self.override_interval = 1 # hours
 
         # keep track of timeslot to avoid having an override for normal behaviour and minor tweaks by users for a short time
         self.last_timeslot_end = 0
 
-        # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received.
-        self.listen_event(self.override, "HEATER_OVERRIDE")
-
         # loop method to determine if target temp needs to change
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
 
-    def override(self, event_name, data, kwargs):
+        # call turn on/off floorpump when heater status changes and add once a day floor pump flushing to prevent damage to pipes
+        self.listen_state(self.floorpump, self.heater_status_entity)
+        self.run_daily(self.floorpump_24_on, datetime.time(0, 0, 0))
+        self.run_daily(self.floorpump_24_off, datetime.time(0, 10, 0))
 
-        # time
-        current_time = datetime.datetime.now()
-        datetime_interval = datetime.timedelta(hours=self.override_interval)
+    def floorpump(self, entity, attribute, old, new, kwargs):
+        """
+        Turns on pump if heater is on, otherwise turn off
+        """
 
-        # get new and old heater status
-        status_new = int(data["status"])
-        status_old = int(self.get_heater_status())
-        self.log(f"status is {status_new} with old status {status_old}")
-
-        # if override is active (and status is the same) extend the override
-        if status_new == status_old and self.override_expiration > current_time:
-            # extend the override parameter
-            self.override_expiration += datetime_interval
-            
-            # log
-            self.event_happened(f"Someone requested thermostat override, extending the override by {self.override_interval} hours!")
-
+        if int(new) == 1:
+            self.turn_on(self.floorpump_entity)
+            self.event_happened(f"heater is now {new}, turning on floorpump")
         else:
-            if status_new >= 2:
-                # disable override by setting expiration to current time
-                self.override_expiration = current_time
-                
-                # immediately run automatically setting the fan as override is stopped
-                self.determine_setting(kwargs)
-                self.event_happened(f"Thermostat override lifted!")
+            self.turn_off(self.floorpump_entity)
+            self.event_happened(f"heater is now {new}, turning off floorpump")
 
-            else:
-                # if override is currently not active, override is set anew
-                self.override_expiration = current_time + datetime_interval
+    def floorpump_24_on(self, kwargs):
+        """
+        Turns on pump once a day at midnight
+        """
 
-                # send thermostat command for very high target temperature (most likely will not turn off without user doing something manually)
-                self.post_target_temp(30)
-                self.event_happened(f"Someone requested heater override, setting very high target temperature!")
+        if self.get_heater_status() == 0:
+            self.turn_on(self.floorpump_entity)
+            self.event_happened(f"Flushing floor radiator, turning on floorpump")
+        else:
+            self.event_happened(f"Heater is on, flushing floor radiator is not necessary")
+
+    def floorpump_24_off(self, kwargs):
+        """
+        Turns off pump once a day at midnight + some minutes if heater is off
+        """
+
+        if self.get_heater_status() == 0:
+            self.turn_off(self.floorpump_entity)
+            self.event_happened(f"Flushing floor radiator, turning on floorpump")
+        else:
+            self.event_happened(f"Heater is on, floor pump can stay on")
 
     def determine_setting(self, kwargs):
         """
@@ -158,7 +155,7 @@ class WatchThermostat(hass.Hass):
     def get_heater_status(self):
 
         # get heater state from the heater entity in home assistant
-        heater_status = self.get_state(self.heater_status_entity)
+        heater_status = int(self.get_state(self.heater_status_entity))
 
         return heater_status
 
