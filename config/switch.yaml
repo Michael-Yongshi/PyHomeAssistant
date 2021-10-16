@@ -1,3 +1,4 @@
+# Heater relay controlled by an RPI
   - platform: mqtt
     name: mqtt_heater
     state_topic: "heater/status"
@@ -9,3 +10,16 @@
     optimistic: false
     qos: 1
     retain: true
+
+# Heater distribution pump (floor) - Shelly
+- platform: mqtt
+  name: mqtt_heater_pump
+  state_topic: heater/pump/status
+  command_topic: heater/pump/set
+  payload_on: 1
+  payload_off: 0
+  state_on: 1
+  state_off: 0
+  optimistic: false
+  qos: 1
+
