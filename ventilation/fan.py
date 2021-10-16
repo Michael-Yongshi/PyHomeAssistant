@@ -1,4 +1,6 @@
 
+import os
+import json
 import time
 import logging
 
@@ -139,16 +141,37 @@ class Fan(object):
             return -1
 fan = Fan()
 
-# MQTT stuff
-broker = '192.168.178.37'
-port = 1883
+# MQTT Client unique id
 client_id = 'rpi-fan-pymqtt'
-username = "mqttpublisher"
-password = "publishmqtt"
 
+# MQTT topics
 command_topic = "fan/set"
 state_topic = "fan/speed"
 avail_topic = "fan/availability"
+
+def mqtt_broker_login_from_json(client):
+    """
+    Load mqtt broker details from json located in users home directory
+    """
+
+    userpath = os.path.expanduser('~')
+    complete_path = os.path.join(userpath, "mqtt.json")
+
+    # open json and return as an array
+    with open(complete_path, 'r') as infile:
+        json_contents = json.load(infile)
+
+    # MQTT Broker
+    client.username_pw_set(
+        username=json_contents["username"],
+        password=json_contents["password"]
+        )
+    client.connect(
+        host=json_contents["broker"],
+        port=json_contents["port"]
+        )
+
+    return client
 
 def on_connect(client, userdata, flags, rc):
     """
@@ -164,7 +187,6 @@ def on_connect(client, userdata, flags, rc):
 
     else:
         logging.critical("Failed to connect, return code %d\n", rc)
-
 
 def on_message(client, userdata, message):
     """
@@ -200,14 +222,13 @@ def run():
 
     # set up mqtt client
     client = mqtt_client.Client(client_id)
-    client.username_pw_set(username, password)
 
     # set callback methods
     client.on_connect = on_connect
     client.on_message = on_message
 
-    # connect to client
-    client.connect(broker, port)
+    # connect to broker
+    client = mqtt_broker_login_from_json(client)
 
     # start loop that will process the actual collection and sending of the messages continuously in a seperate thread
     client.loop_start()
