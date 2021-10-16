@@ -2,6 +2,8 @@
 Contains logic to check a GPIO pin connected to a DHT thermometer / humidity and provides methods to access these status'
 """
 
+import os
+import json
 import logging
 import time
 from paho.mqtt import client as mqtt_client
@@ -9,7 +11,6 @@ import adafruit_dht
 
 # set up logging
 logging.basicConfig(level=logging.DEBUG)
-
 
 class Thermometer(object):
     """
@@ -64,15 +65,37 @@ class Thermometer(object):
         return humidity
 thermometer = Thermometer()
 
-# MQTT stuff
-broker = '192.168.178.37'
+# MQTT unique client id
 port = 1883
 client_id = 'thermometer-living-room'
-username = "mqttpublisher"
-password = "publishmqtt"
 
+# MQTT topics
 temp_topic = "living/temperature"
 humid_topic = "living/humidity"
+
+def mqtt_broker_login_from_json(client):
+    """
+    Load mqtt broker details from json located in users home directory
+    """
+
+    userpath = os.path.expanduser('~')
+    complete_path = os.path.join(userpath, "mqtt.json")
+
+    # open json and return as an array
+    with open(complete_path, 'r') as infile:
+        json_contents = json.load(infile)
+
+    # MQTT Broker
+    client.username_pw_set(
+        username=json_contents["username"],
+        password=json_contents["password"]
+        )
+    client.connect(
+        host=json_contents["broker"],
+        port=json_contents["port"]
+        )
+
+    return client
 
 def on_connect(client, userdata, flags, rc):
     """
@@ -120,14 +143,13 @@ def run():
 
     # set up mqtt client
     client = mqtt_client.Client(client_id)
-    client.username_pw_set(username, password)
 
     # set callback methods
     client.on_connect = on_connect
     # client.on_message = on_message
 
     # connect to client
-    client.connect(broker, port)
+    client = mqtt_broker_login_from_json(client)
 
     # start loop that will process the actual collection and sending of the messages continuously in a seperate thread
     client.loop_start()
