@@ -8,6 +8,8 @@ depends on heater.service in order to get run on reboot of the device
 
 """
 
+import os
+import json
 import time
 import logging
 from paho.mqtt import client as mqtt_client
@@ -83,16 +85,37 @@ class Heater(object):
         return -1
 heater = Heater()
 
-# MQTT stuff
-broker = '192.168.178.37'
-port = 1883
+# MQTT unique client id
 client_id = 'heater'
-username = "mqttpublisher"
-password = "publishmqtt"
 
+# MQTT topics
 command_topic = "heater/set"
 status_topic = "heater/status"
 avail_topic = "heater/availability"
+
+def mqtt_broker_login_from_json(client):
+    """
+    Load mqtt broker details from json located in users home directory
+    """
+
+    userpath = os.path.expanduser('~')
+    complete_path = os.path.join(userpath, "mqtt.json")
+
+    # open json and return as an array
+    with open(complete_path, 'r') as infile:
+        json_contents = json.load(infile)
+
+    # MQTT Broker
+    client.username_pw_set(
+        username=json_contents["username"],
+        password=json_contents["password"]
+        )
+    client.connect(
+        host=json_contents["broker"],
+        port=json_contents["port"]
+        )
+
+    return client
 
 def on_connect(client, userdata, flags, rc):
     """
@@ -143,14 +166,13 @@ def run():
 
     # set up mqtt client
     client = mqtt_client.Client(client_id)
-    client.username_pw_set(username, password)
 
     # set callback methods
     client.on_connect = on_connect
     client.on_message = on_message
 
     # connect to client
-    client.connect(broker, port)
+    client = mqtt_broker_login_from_json(client)
 
     # start loop that will process the actual collection and sending of the messages continuously in a seperate thread
     client.loop_start()
