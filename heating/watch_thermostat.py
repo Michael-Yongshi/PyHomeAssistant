@@ -11,10 +11,7 @@ class WatchThermostat(hass.Hass):
 
     Method called:
     - update state of 'climate.thermostat' entity, attribute 'target_temperature' in order to influence the thermostat setting
-    - keep override buttons working it is now
 
-    add data like below and replace x with 0 (off), 1 (on), 9(stop override)
-    {'status': x}
     """
 
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
@@ -25,7 +22,7 @@ class WatchThermostat(hass.Hass):
         self.floorpump_entity = "switch.floor_pump"
         self.heater_status_entity = "sensor.mqtt_heater_status"
 
-        # keep track of timeslot to avoid having an override for normal behaviour and minor tweaks by users for a short time
+        # keep track of timeslot to allow for user adjustments in between program slots
         self.last_timeslot_end = 0
 
         # loop method to determine if target temp needs to change
@@ -76,12 +73,6 @@ class WatchThermostat(hass.Hass):
         """
         
         current_time = datetime.datetime.now()
-
-        # check if override is active, if so return
-        if self.override_expiration >= current_time:
-            until = self.override_expiration - current_time
-            self.log(f"Override active, expires in {until}")
-            return
 
         # get target temperature values
         current_timeslot = self.get_current_timeslot(current_time)

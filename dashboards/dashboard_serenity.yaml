@@ -73,38 +73,6 @@ views:
         cards:
           - type: thermostat
             entity: climate.thermostat
-          - type: horizontal-stack
-            cards:
-              - type: button
-                name: Heater1
-                icon: mdi:fire-alert
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: script.heater_override_1
-                hold_action:
-                  action: call-service
-                  service: script.heater_override_off
-              - type: button
-                icon: mdi:fire-off
-                name: Heater0
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: script.heater_override_0
-                hold_action:
-                  action: call-service
-                  service: script.heater_override_off
-              - type: button
-                name: HeaterOff
-                icon: hass:cog
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: script.heater_override_off
       - type: vertical-stack
         title: Ventilation
         show_header_toggle: true
