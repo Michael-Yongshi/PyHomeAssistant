@@ -75,8 +75,12 @@ views:
             entity: climate.thermostat
       - type: vertical-stack
         title: Ventilation
-        show_header_toggle: true
         cards:
+          - type: entities
+            entities:
+              - entity: sensor.mqtt_fan_status
+            show_header_toggle: false
+            state_color: true
           - type: horizontal-stack
             cards:
               - type: button
@@ -90,7 +94,7 @@ views:
                   service_data:
                     topic: fan/override
                     payload: '1'
-                    qos: '1'
+                    qos: '2'
                   target: {}
               - type: button
                 icon: mdi:fan-speed-2
@@ -103,7 +107,7 @@ views:
                   service_data:
                     topic: fan/override
                     payload: '2'
-                    qos: '1'
+                    qos: '2'
                   target: {}
               - type: button
                 name: Fan3
@@ -116,7 +120,7 @@ views:
                   service_data:
                     topic: fan/override
                     payload: '3'
-                    qos: '1'
+                    qos: '2'
                   target: {}
               - type: button
                 name: Fan0
@@ -129,7 +133,7 @@ views:
                   service_data:
                     topic: fan/override
                     payload: '9'
-                    qos: '1'
+                    qos: '2'
                   target: {}
                 hold_action:
                   action: call-service
@@ -137,12 +141,8 @@ views:
                   service_data:
                     topic: fan/override
                     payload: '0'
-                    qos: '1'
+                    qos: '2'
                   target: {}
-          - type: gauge
-            entity: sensor.mqtt_fan_status
-            min: 0
-            max: 3
       - type: vertical-stack
         title: Humidity
         cards:
@@ -157,12 +157,29 @@ views:
             detail: 2
             hours_to_show: 24
       - type: vertical-stack
+        title: Temperature
+        cards:
+          - type: sensor
+            entity: sensor.mqtt_living_temperature
+            graph: line
+            detail: 2
+            hours_to_show: 24
+          - type: sensor
+            entity: sensor.mqtt_bathroom_temperature
+            graph: line
+            detail: 2
+            hours_to_show: 24
+      - type: vertical-stack
         title: Weather
         cards:
           - type: weather-forecast
             entity: weather.serenity
             show_forecast: false
             secondary_info_attribute: temperature
+      - type: entities
+        entities:
+          - entity: switch.mqtt_heater
+          - entity: switch.floor_pump
   - title: Energy
     path: energy
     icon: ''
