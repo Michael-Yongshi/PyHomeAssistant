@@ -52,7 +52,7 @@ class WatchThermostat(hass.Hass):
 
         if self.get_heater_status() == 0:
             self.turn_on(self.floorpump_entity)
-            self.event_happened(f"Flushing floor radiator, turning on floorpump")
+            self.event_happened(f"Flushing floor radiator, turning floorpump on")
         else:
             self.event_happened(f"Heater is on, flushing floor radiator is not necessary")
 
@@ -63,7 +63,7 @@ class WatchThermostat(hass.Hass):
 
         if self.get_heater_status() == 0:
             self.turn_off(self.floorpump_entity)
-            self.event_happened(f"Flushing floor radiator, turning on floorpump")
+            self.event_happened(f"Flushing floor radiator, turning floorpump off")
         else:
             self.event_happened(f"Heater is on, floor pump can stay on")
 
