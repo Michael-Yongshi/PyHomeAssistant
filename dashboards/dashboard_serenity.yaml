@@ -92,7 +92,7 @@ views:
                   action: call-service
                   service: mqtt.publish
                   service_data:
-                    topic: fan/override
+                    topic: fan/override/set
                     payload: '1'
                     qos: '2'
                   target: {}
@@ -105,7 +105,7 @@ views:
                   action: call-service
                   service: mqtt.publish
                   service_data:
-                    topic: fan/override
+                    topic: fan/override/set
                     payload: '2'
                     qos: '2'
                   target: {}
@@ -118,7 +118,7 @@ views:
                   action: call-service
                   service: mqtt.publish
                   service_data:
-                    topic: fan/override
+                    topic: fan/override/set
                     payload: '3'
                     qos: '2'
                   target: {}
@@ -131,7 +131,7 @@ views:
                   action: call-service
                   service: mqtt.publish
                   service_data:
-                    topic: fan/override
+                    topic: fan/override/set
                     payload: '9'
                     qos: '2'
                   target: {}
@@ -139,7 +139,7 @@ views:
                   action: call-service
                   service: mqtt.publish
                   service_data:
-                    topic: fan/override
+                    topic: fan/override/set
                     payload: '0'
                     qos: '2'
                   target: {}
