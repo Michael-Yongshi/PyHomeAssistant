@@ -37,8 +37,13 @@
   
   # mqtt topic to communicate a user override via mqtt to the watch_fan in appdaemon
   - platform: mqtt
-    name: mqtt_fan_override
-    state_topic: 'fan/override'
+    name: mqtt_fan_override_set
+    state_topic: 'fan/override/set'
+
+  - platform: mqtt
+    icon: mdi:fan_alert
+    name: mqtt_fan_override_status
+    state_topic: 'fan/override/status'
 
   - platform: mqtt
     name: mqtt_heater_status

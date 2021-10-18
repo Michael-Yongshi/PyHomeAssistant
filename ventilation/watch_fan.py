@@ -30,9 +30,14 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         self.override_expiration = datetime.datetime.now()
         self.override_interval = 30
 
+        # override set topic is a queue to take commands and always gets reset back to 99 after a command is taken
+        self.topic_override_set = "fan/override/set"
+        # override status topic is the current status of the override
+        self.topic_override_status = "fan/override/status"
+
         # call a certain method when mqtt updates are available.
         self.listen_state(self.mqtt_update, "sensor.mqtt_bathroom_humidity")
-        self.listen_state(self.override, "sensor.mqtt_fan_override")
+        self.listen_state(self.override, "sensor.mqtt_fan_override_set")
 
         # enforce determining setting even if humidity is unchanged every minute
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
@@ -45,7 +50,7 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
         current_time = datetime.datetime.now()
 
-        #disregard a reset of the mqtt topic to value 99
+        # disregard a reset of the override command topic to value 99
         if status_new == 99:
 
             # disregard
@@ -56,42 +61,40 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
             # disable override by setting expiration to current time
             self.override_expiration = current_time
+            self.mqtt_publish(topic = self.topic_override_status, payload = "Automatic programming", qos = 1)
             self.event_happened(f"Fan override lifted!")
 
             # immediately run automatically setting the fan as override is stopped
             self.determine_setting(kwargs)
 
-        # if override is active (and speed is the same as previous override) extend the override
-        elif status_new == status_old and self.override_expiration > current_time:
-
-            # extend the override parameter
-            self.override_expiration += datetime.timedelta(minutes=self.override_interval)
-            
-            # log
-            self.event_happened(f"Someone requested fan override, extending the override by {self.override_interval} minutes!")
-
+        # override is requested. determining which type
         else:
-            # if override is currently not active (for this speed) override is set anew
-            
-            if status_new == 0:
-                # override to shut off the fan for longer period of time or until override is lifted or changed. 
-                self.override_expiration = current_time + datetime.timedelta(days=1)
 
-                # log
-                self.event_happened(f"Someone requested stopping the fan, shutting off the fan for the time being!")
+            # if override is already active (and speed is the same as previous override) extend the override
+            if status_new == status_old and self.override_expiration > current_time:
+
+                # extend the override parameter
+                self.override_expiration += datetime.timedelta(minutes=self.override_interval)
+                self.event_happened(f"Someone requested fan override, extending the override by {self.override_interval} minutes to {self.override_expiration}!")
+
+            # if override is currently not active (for this speed) override is set anew
+            elif status_new == 0:
+                # override to shut off the fan for longer period of time
+                self.override_expiration = current_time + datetime.timedelta(days=1)
+                self.post_fan_speed(status_new)
+                self.event_happened(f"Someone requested stopping the fan, shutting off the fan until {self.override_expiration}!")
 
             else:
-                # overrides in the off setting for by default a day. 
+                # new override
                 self.override_expiration = current_time + datetime.timedelta(minutes=self.override_interval)
-
-                # log
-                self.event_happened(f"Someone requested fan override, setting speed {status_old} => {status_new}!")
+                self.post_fan_speed(status_new)
+                self.event_happened(f"Someone requested fan override, setting speed {status_old} => {status_new} until {self.override_expiration}!")
             
-            # send fan command to set the speed to the new level
-            self.post_fan_speed(status_new)
+            # publish override to MQTT
+            self.mqtt_publish(topic = self.topic_override_status, payload = f"Override of {status_new} active until {self.override_expiration}", qos = 1)
         
-        # reset override flag in mqtt
-        self.mqtt_publish(topic = "fan/override", payload = 99, qos = 1)
+        # reset override command flag in mqtt
+        self.mqtt_publish(topic = self.topic_override_set, payload = 99, qos = 1)
 
         self.log(f"Current date and time is: {current_time}")
 
