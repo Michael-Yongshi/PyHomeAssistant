@@ -24,9 +24,11 @@ class WatchThermostat(hass.Hass):
 
         # keep track of timeslot to allow for user adjustments in between program slots
         self.last_timeslot_end = 0
+        self.last_heater_status = None
 
         # loop method to determine if target temp needs to change
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
+        self.run_minutely(self.check_heater, datetime.time(0, 0, 0))
 
         # call turn on/off floorpump when heater status changes and add once a day floor pump flushing to prevent damage to pipes
         self.listen_state(self.floorpump_auto, self.heater_status_entity)
@@ -35,7 +37,7 @@ class WatchThermostat(hass.Hass):
 
     def floorpump_auto(self, entity, attribute, old, new, kwargs):
         """
-        Turns on pump if heater is on, otherwise turn off
+        Sync floorpump status with Heater, so they both turn on and off simultaneously
         """
 
         if int(new) == 1:
@@ -58,7 +60,9 @@ class WatchThermostat(hass.Hass):
             message = f"Heater is on, flushing floor radiator is not necessary:\n"
 
         status = self.get_floorpump_status()
-        self.event_happened(message + f"Floorpump is now {status}")
+        event = message + f"Floorpump is now {status}"
+
+        self.event_happened(event)
 
     def floorpump_24_off(self, kwargs):
         """
@@ -102,6 +106,16 @@ class WatchThermostat(hass.Hass):
 
             else:
                 self.event_happened(f"New timeslot, but target temperature is already set correctly to {program_target}")
+
+    def check_heater(self, kwargs):
+        """
+        Check heater and push status to telegram if changed
+        """
+        
+        new = self.get_heater_status()
+        if new != self.last_heater_status:
+            self.last_heater_status = new
+            self.event_happened(f"Heater turned to {new}")
 
     def get_current_timeslot(self, current_time):
 
