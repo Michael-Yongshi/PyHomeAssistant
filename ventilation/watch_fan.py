@@ -118,6 +118,10 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
             self.log(f"Override active, expires in {until}")
             return
 
+        else:
+            # make sure override status is on auto
+            self.mqtt_publish(topic = self.topic_override_status, payload = "Automatic programming", qos = 1)
+
         # Collect requested settings
         settings = []
         settings += [self.determine_humidity()]
