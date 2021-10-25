@@ -167,7 +167,7 @@ class WatchThermostat(hass.Hass):
     def get_floorpump_status(self):
 
         # get floorpump state from the floorpump entity in home assistant
-        floorpump_status = int(self.get_state(self.floorpump_entity))
+        floorpump_status = self.get_state(self.floorpump_entity)
 
         return floorpump_status
 
