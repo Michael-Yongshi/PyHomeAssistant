@@ -76,7 +76,9 @@ class WatchThermostat(hass.Hass):
             message = f"Heater already on, floor pump does not have to turn off:\n"
 
         status = self.get_floorpump_status()
-        self.event_happened(message + f"Floorpump is now {status}")
+        event = message + f"Floorpump is now {status}"
+
+        self.event_happened(event)
 
     def determine_setting(self, kwargs):
         """
