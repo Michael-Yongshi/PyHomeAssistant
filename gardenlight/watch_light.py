@@ -362,7 +362,7 @@ class WatchLight(hass.Hass):
     def pretty_datetime(self, datetime):
 
         # Format datetime string
-        pretty_dt = datetime.strftime("%Y-%m-%d %H:%M:%S")
+        pretty_dt = datetime.strftime("day %d time %H:%M")
 
         return pretty_dt
 
