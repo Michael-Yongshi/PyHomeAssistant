@@ -63,6 +63,27 @@ views:
           - type: entities
             entities:
               - remote.apple_tv_2
+      - type: "custom:auto-entities"
+        card:
+          type: glance
+        filter:
+          include:
+            - entity_id: sensor.afvalwijzer_gft
+            - entity_id: sensor.afvalwijzer_papier
+            - entity_id: sensor.afvalwijzer_pmd
+            - entity_id: sensor.afvalwijzer_restafval
+        sort:
+          attribute: days_until_collection_date
+          method: attribute
+          numeric: true
+      - type: entities
+        entities:
+          - entity: binary_sensor.hookie_ewok_security_status
+          - entity: binary_sensor.hookie_ewok_update_available
+          - entity: sensor.hookie_ewok_status
+          - entity: sensor.hookie_ewok_used_space
+          - entity: sensor.hookie_ewok_volume_used
+        title: Hookie-Ewok
   - title: Climate
     path: climate
     icon: ''
@@ -79,6 +100,7 @@ views:
           - type: entities
             entities:
               - entity: sensor.mqtt_fan_status
+              - entity: sensor.mqtt_fan_override_status
             show_header_toggle: false
             state_color: true
           - type: horizontal-stack
