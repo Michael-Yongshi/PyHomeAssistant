@@ -17,13 +17,13 @@ sensor.mqtt_fan_status:
 
 
 
-sensor.mqtt_heater_status:
+switch.heater:
   icon: hass:fire
-  friendly_name: Heater Status
+  friendly_name: Heater
 
 switch.floor_pump:
   icon: hass:water
-  friendly_name: Floorpump Status
+  friendly_name: Floorpump
 
 
 
