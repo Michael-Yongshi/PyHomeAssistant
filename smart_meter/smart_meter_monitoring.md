@@ -25,6 +25,7 @@ HA has a default DSMR integration we can use
 https://www.home-assistant.io/integrations/dsmr/
 
 Home assistant advice for ser2net configuration
+Add the ip address with port 2001 (as above in the ser2net settings)
 
 ## Tested
 Only test on 
