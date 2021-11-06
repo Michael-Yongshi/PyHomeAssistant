@@ -6,27 +6,47 @@ sensor.ethnode_get_balance:
 
 
 
+sensor.mqtt_fan_status:
+  icon: hass:fan
+  unit_of_measurement: 'step'
+  friendly_name: Fan Active Setting
+
+sensor.mqtt_fan_status:
+  icon: hass:fan-alert
+  friendly_name: Fan Override Status
+
+
+
+sensor.mqtt_heater_status:
+  icon: hass:fire
+  friendly_name: Heater Status
+
+switch.floor_pump:
+  icon: hass:water
+  friendly_name: Floorpump Status
+
+
 
 
 sensor.mqtt_bathroom_humidity:
   icon: hass:water
   unit_of_measurement: '%'
-  friendly_name: Bathroom
+  friendly_name: Bathroom Humidity
 
 sensor.mqtt_bathroom_temperature:
   icon: hass:thermometer
   unit_of_measurement: °C
-  friendly_name: Bathroom
+  friendly_name: Bathroom Temperature
 
 sensor.mqtt_living_humidity:
   icon: hass:water
   unit_of_measurement: '%'
-  friendly_name: Livingroom
+  friendly_name: Livingroom Humidity
 
 sensor.mqtt_living_temperature:
   icon: hass:thermometer
   unit_of_measurement: °C
-  friendly_name: Livingroom
+  friendly_name: Livingroom Temperature
 
 
 
