@@ -2,6 +2,9 @@
 - add away toggle to switch to vacation mode for everything
     - primarily the heater
 
+# TP Link EAP
+https://github.com/zachcheatham/ha-omada
+
 # heater
 -mqtt of overridden status
 
