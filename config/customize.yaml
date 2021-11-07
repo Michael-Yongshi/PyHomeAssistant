@@ -1,10 +1,3 @@
-sensor.external_ip:
-  icon: mdi:wan
-
-sensor.ethnode_get_balance:
-  icon: mdi:cash
-
-
 
 sensor.mqtt_fan_status:
   icon: hass:fan
@@ -16,10 +9,14 @@ sensor.mqtt_fan_override_status:
   friendly_name: Fan Override Status
 
 
-
-switch.heater:
+switch.mqtt_heater:
   icon: hass:fire
   friendly_name: Heater
+
+sensor.mqtt_heater_status:
+  friendly_name: Heater Status
+  icon: hass:fire
+
 
 switch.floor_pump:
   icon: hass:water
@@ -49,13 +46,8 @@ sensor.mqtt_living_temperature:
   friendly_name: Livingroom Temperature
 
 
+sensor.external_ip:
+  icon: mdi:wan
 
-
-
-sensor.mqtt_fan_status:
-  friendly_name: Fan Status
-  icon: hass:fan
-
-sensor.mqtt_heater_status:
-  friendly_name: Heater Status
-  icon: hass:fire
+sensor.ethnode_get_balance:
+  icon: mdi:cash
