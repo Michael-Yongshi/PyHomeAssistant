@@ -11,7 +11,7 @@ sensor.mqtt_fan_status:
   unit_of_measurement: 'step'
   friendly_name: Fan Active Setting
 
-sensor.mqtt_fan_status:
+sensor.mqtt_fan_override_status:
   icon: hass:fan-alert
   friendly_name: Fan Override Status
 
