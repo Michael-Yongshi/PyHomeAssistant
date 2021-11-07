@@ -63,7 +63,7 @@ views:
           - type: entities
             entities:
               - remote.apple_tv_2
-      - type: "custom:auto-entities"
+      - type: custom:auto-entities
         card:
           type: glance
         filter:
@@ -76,14 +76,6 @@ views:
           attribute: days_until_collection_date
           method: attribute
           numeric: true
-      - type: entities
-        entities:
-          - entity: binary_sensor.hookie_ewok_security_status
-          - entity: binary_sensor.hookie_ewok_update_available
-          - entity: sensor.hookie_ewok_status
-          - entity: sensor.hookie_ewok_used_space
-          - entity: sensor.hookie_ewok_volume_used
-        title: Hookie-Ewok
   - title: Climate
     path: climate
     icon: ''
@@ -191,17 +183,6 @@ views:
             graph: line
             detail: 2
             hours_to_show: 24
-      - type: vertical-stack
-        title: Weather
-        cards:
-          - type: weather-forecast
-            entity: weather.serenity
-            show_forecast: false
-            secondary_info_attribute: temperature
-      - type: entities
-        entities:
-          - entity: switch.mqtt_heater
-          - entity: switch.floor_pump
   - title: Energy
     path: energy
     icon: ''
@@ -239,11 +220,35 @@ views:
               - sensor.current_phase_l1
               - sensor.current_phase_l2
               - sensor.current_phase_l3
-  - title: DLT
-    path: dlt
+  - title: Debug
+    path: debug
     icon: ''
     badges: []
     cards:
+      - type: entities
+        entities:
+          - entity: sensor.hookie_ewok_status
+          - entity: binary_sensor.hookie_ewok_security_status
+          - entity: binary_sensor.hookie_ewok_below_min_remaining_life
+          - entity: binary_sensor.hookie_ewok_exceeded_max_bad_sectors
+          - entity: binary_sensor.hookie_ewok_update_available
+          - entity: sensor.hookie_ewok_used_space
+          - entity: sensor.hookie_ewok_volume_used
+        title: Network Attached Storage
+        show_header_toggle: true
+      - type: glance
+        entities:
+          - entity: sensor.bedroom_light_rssi
+          - entity: sensor.office_mike_light_rssi
+          - entity: sensor.office_didi_rssi
+          - entity: sensor.garden_lights_rssi
+          - entity: sensor.floor_pump_rssi
+        title: Shellies
+      - type: entities
+        entities:
+          - entity: switch.mqtt_heater
+          - entity: switch.floor_pump
+        title: Heater
       - type: vertical-stack
         title: Bitcoin
         show_header_toggle: false
