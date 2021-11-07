@@ -1,10 +1,52 @@
-  # enable DSMR sensor
-  - platform: dsmr
-    host: 192.168.178.44
-    port: 2001
-    dsmr_version: 5
+  # # enable DSMR sensor
+  # - platform: dsmr
+  #   host: 192.168.178.44
+  #   port: 2001
+  #   dsmr_version: 5
 
-  # ------------------ MQTT Climate sensors
+  #################################################################
+  ## Wifi Access Points
+  #################################################################
+  - platform: snmp
+    name: snmp_fritzbox
+    host: 192.168.1.1
+    version: 2c
+    baseoid: 1.3.6.1.4.1.2021.10.1.3.1
+
+  - platform: snmp
+    name: snmp_wifi_eap245
+    host: 192.168.1.38
+    version: 2c
+    baseoid: 1.3.6.1.4.1.2021.10.1.3.1
+
+  - platform: snmp
+    name: snmp_wifi_eap110
+    host: 192.168.1.21
+    version: 2c
+    baseoid: 1.3.6.1.4.1.2021.10.1.3.1
+
+    # 1.3.6.1.2.1.3.1.1.2
+    # 1.3.6.1.2.1.3.1.1.2.16.1
+    # 1.3.6.1.2.1.3.1.1.2.19.1
+
+  #################################################################
+  ## Afvalwijzer
+  #################################################################
+
+  - platform: afvalwijzer
+    provider: mijnafvalwijzer        # (required, default = mijnafvalwijzer) either choose mijnafvalwijzer, afvalstoffendienstkalender or rova
+    postal_code: 8256CT              # (required, default = '')
+    street_number:  1                # (required, default = '')
+    suffix: ''                       # (optional, default = '')
+    include_date_today: false        # (optional, default = false) to take or not to take Today into account in the next pickup.
+    default_label: Geen              # (optional, default = Geen) label if no date found
+    id: ''                           # (optional, default = '') use if you'd like to have multiple waste pickup locations in HASS
+    exclude_list: ''                 # (optional, default = '') comma separated list of wast types (case ignored). F.e. "papier, gft"
+
+  #################################################################
+  ## MQTT Climate sensors
+  #################################################################
+
   - platform: mqtt
     name: mqtt_bathroom_humidity
     state_topic: "bathroom/humidity"
@@ -25,7 +67,10 @@
     state_topic: "living/temperature"
     unit_of_measurement: '°C'
 
-  # ------------------ MQTT Heater and ventilation device status
+  #################################################################
+  ## MQTT Climate device sensors
+  #################################################################
+
   - platform: mqtt
     name: mqtt_fan_status
     state_topic: 'fan/speed'
@@ -49,7 +94,10 @@
     name: mqtt_heater_status
     state_topic: 'heater/status'
 
-  # ------------------ MQTT DLT
+  #################################################################
+  ## MQTT DLT nodes
+  #################################################################
+
   - platform: mqtt
     name: mqtt_ethmain_current_block
     state_topic: "ethmain/current_block"
@@ -104,14 +152,3 @@
     name: mqtt_btcmain_connections
     state_topic: "btcmain/connections"
     icon: hass:lan
-
-# Afvalwijzer
-  - platform: afvalwijzer
-    provider: mijnafvalwijzer        # (required, default = mijnafvalwijzer) either choose mijnafvalwijzer, afvalstoffendienstkalender or rova
-    postal_code: 8256CT              # (required, default = '')
-    street_number:  1                # (required, default = '')
-    suffix: ''                       # (optional, default = '')
-    include_date_today: false        # (optional, default = false) to take or not to take Today into account in the next pickup.
-    default_label: Geen              # (optional, default = Geen) label if no date found
-    id: ''                           # (optional, default = '') use if you'd like to have multiple waste pickup locations in HASS
-    exclude_list: ''                 # (optional, default = '') comma separated list of wast types (case ignored). F.e. "papier, gft"
