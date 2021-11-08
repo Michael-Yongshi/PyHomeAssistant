@@ -2,7 +2,7 @@ import appdaemon.plugins.hass.hassapi as hass
 import os
 import json
 import datetime
-import requests
+import time
 
 class WatchThermostat(hass.Hass):
     """
@@ -45,8 +45,14 @@ class WatchThermostat(hass.Hass):
         else:
             self.turn_off(self.floorpump_entity)
 
+        t = 0
+        while t < 10 and self.get_floorpump_status() == "unavailable":
+            self.event_happened(f"Floorpump is unavailable")
+            time.sleep(30)
+            t += 1
+
         status = self.get_floorpump_status()
-        self.event_happened(f"heater is now {new}, floorpump turned {status}")
+        self.event_happened(f"Floorpump turned {status}")
 
     def floorpump_24_on(self, kwargs):
         """
