@@ -5,6 +5,9 @@
 homeassistant:
   customize: !include customize.yaml
 
+frontend:
+  themes: !include themes.yaml
+
 group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
