@@ -128,7 +128,8 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
         # Collect requested settings
         settings = []
-        settings += [self.determine_humidity()]
+        settings += [self.determine_time()]
+        # settings += [self.determine_humidity()]
         # settings += [self.determine_cooling()]
 
         # retrieve highest setting from the array (sort and get last element)
@@ -153,6 +154,22 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
     def post_fan_speed(self, speed):
 
         self.mqtt_publish(topic = "fan/set", payload = speed, qos = 1)
+
+    def determine_time(self):
+        """
+        Requests a setting to shut off in the evening when all the hearths are spreading smoke in the neighborhood
+        """
+
+        current_time = datetime.datetime.now()
+        evening_time = current_time.replace(hour=19, minute=0, second=0)
+
+        if current_time > evening_time:
+            setting = 0
+        else:
+            setting = 1
+
+        self.event_happened(f"Timebased program requires setting {setting}")
+        return setting
 
     def determine_humidity(self):
         """
