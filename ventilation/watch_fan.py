@@ -168,7 +168,7 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         else:
             setting = 1
 
-        self.event_happened(f"Timebased program requires setting {setting}")
+        # self.event_happened(f"Timebased program requires setting {setting}")
         return setting
 
     def determine_humidity(self):
