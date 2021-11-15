@@ -11,7 +11,11 @@ https://github.com/zachcheatham/ha-omada
 -overview of settings: days, active hours that are now fixed in code, move to seperate dashboard with settings
 
 # ventilation
+- add bathroom humidifier connected to power in wall with only the DHT sticking out.
+- test what settings are needed
 
+# gardenlight
+- post via mqtt the override settings
 
 # Floorplan and iot overview
 -status rpi's and ardios (check if services are running correctly, add to a new 'test' tab)
