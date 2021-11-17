@@ -2,6 +2,9 @@
 - add away toggle to switch to vacation mode for everything
     - primarily the heater
 
+# doorbell
+- to arduino or something, self contained device
+
 # TP Link EAP
 https://github.com/zachcheatham/ha-omada
 
@@ -27,4 +30,9 @@ https://github.com/xirixiz/homeassistant-afvalwijzer
 https://github.com/home-assistant/example-custom-config/blob/master/custom_components/example_sensor/sensor.py
 
 # MQTT
-MQTT doesnt reconnect if mqtt is later launched (i.e. during a reinstall)
+MQTT doesnt reconnect in my programs if mqtt is later set up and logging in the broker failed already.
+needs a wait until connect correctly so it keeps trying
+
+# Tooling
+soldering with pinecel
+https://www.youtube.com/watch?v=-u_o-yNjpzs&t=3s
