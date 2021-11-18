@@ -9,8 +9,6 @@
 https://github.com/zachcheatham/ha-omada
 
 # heater
--mqtt of overridden status
-
 -overview of settings: days, active hours that are now fixed in code, move to seperate dashboard with settings
 
 # ventilation
