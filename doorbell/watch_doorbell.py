@@ -3,27 +3,34 @@ import appdaemon.plugins.hass.hassapi as hass
 class WatchDoorbell(hass.Hass):
     """
     Type of class:
-    - Event Listener
+    - MQTT Listener
 
     Method called:
     - Create message and send to the telegram bot
-    
-    Test this class by firing a test event
-    -> hass web ui -> developer tools -> events -> type "DOORBELL_PRESSED" -> fire event
     """
 
-    # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
 
-        # tells appdaemon we want to call a certain method when a certain event ("EVENT") is received. 
-        self.listen_event(self.event_happened, "DOORBELL_PRESSED")
+        # tells appdaemon we want to call a certain method when a certain MQTT state changed. 
+        self.listen_state(self.doorbell_change, "sensor.mqtt_doorbell_status")
 
-    # the method that is called when an event happens
-    def event_happened(self, event_name, data, kwargs):
-
-        date_time = data["time"][0:19]
-        message = f"I heard that someone is at the door! \nCurrent date and time is: {date_time}"
+    def doorbell_change(self, entity, attribute, old, new, kwargs):
         
+        # send a message when doorbell rang
+        if new == "Ringing":
+            message = f"I heard that someone is at the door!"
+
+        # doorbell blocks for 10 seconds after ringing
+        elif new == "Waiting":
+            message = f"Doorbell finished ringing!"
+
+        self.event_happened(message)
+
+    def event_happened(self, message):
+        """
+        the method that is called when an event happens
+        """
+
         # log the message before sending it
         self.log(message)
 

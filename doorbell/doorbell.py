@@ -1,68 +1,56 @@
 import os.path
-import datetime
+import json
 from time import sleep
 from signal import pause
 import logging
-import requests
+from paho.mqtt import client as mqtt_client
 from gpiozero import Button
 import simpleaudio
 
+# set up logging
+logging.basicConfig(level=logging.DEBUG)
+
+# MQTT unique client id
+client_id = 'doorbell'
+
+# MQTT topics
+status_topic = "doorbell/status"
+gpio_topic = "doorbell/gpio"
+
 class Doorbell(object):
 
-    def __init__(self):
+    def __init__(self, mqtt_client):
 
-        # set up logging
-        logging.basicConfig(level=logging.DEBUG)
+        # MQTT info needed for publishing
+        self.client = mqtt_client
+        self.msg_count = 0
 
-        # configure which GPIO connector transmits to the button
-        self.GPIO_doorbell = 17
-        # Connect the return cable to GROUND, as the GPIO button will try to provide power and grounding it triggers the press!!
-        # you can check this by only connecting the GPIO_button jumper and touch the return cable with you bare hand (grounding the circuit with your body)
+        # set the bell as a gpio button
+        gpio_pin = 5
+        self.button = Button(gpio_pin, hold_time=2.5)
 
-        # set the doorbell as a button
-        self.button = Button(self.GPIO_doorbell, hold_time=2.5)
         self.button.when_pressed = self.button_pressed
         self.button.when_held = self.button_held
         self.button.when_released = self.button_released
 
         # Import sound file in simpleaudio object
-        sound_filename = 'mixkit-home-standard-ding-dong-109.wav'
-        sound_filepath = os.path.join(os.path.expanduser('~'), 'sounds', sound_filename)
-        self.sound = simpleaudio.WaveObject.from_wave_file(sound_filepath)
-
-        # default address for the rest api in default settings
-        self.url = "http://rpi-home:8123/api/events/DOORBELL_PRESSED"
-       
-        # open file with the api token
-        token_filepath = os.path.join(os.path.expanduser('~'), '.ssh', 'Home_API_Token')
-        with open(token_filepath, "r") as text_file:
-            self.token = text_file.read().strip("\n")
-
-        # Define delay to wait before continuing after activation
-        self.delay = 10
-
-        logging.debug('Doorbell object is initiated')
-
-    def run(self):
-        """
-        Waiting for commands to be processed
-        """
-
-        pause()
+        self.sound_filename = 'mixkit-home-standard-ding-dong-109.wav'
+        self.sound_filepath = os.path.join(os.path.expanduser('~'), 'sounds', self.sound_filename)
+        self.sound = simpleaudio.WaveObject.from_wave_file(self.sound_filepath)
 
     def button_pressed(self):
 
-        logging.debug(f'Found grounded circuit on GPIO {self.GPIO_doorbell}')
+        # publish the status to MQTT
+        self.publish_doorbell_status(status="Ringing")
 
         # play sound (asynchronous, will immediately proceed further after starting the audio)
         self.play_sound()
 
-        # emit the event to Home Assistant (so notification can be send out)
-        self.emit_event()
-
         # a break to prevent impatient visitors pressing to quickly
-        logging.debug(f'Going to sleep for {self.delay} seconds')
-        sleep(self.delay)
+        sleep(20)
+
+        # publish the status to MQTT
+        self.publish_doorbell_status(status="Waiting")
 
     def button_held(self):
 
@@ -73,62 +61,106 @@ class Doorbell(object):
         # Signal after button_pressed that program is continuing to listen to events
         logging.info('Listening for visitors')
 
+    def publish_doorbell_status(self, status):
+
+        publish(client=self.client, topic=status_topic, value=status)
+
+        # finish off with adding to the message count
+        self.msg_count += 1
+
     def play_sound(self):
 
-        # try to play the sound
-        try:
-            logging.info(f'Sound is playing')
-            play_obj = self.sound.play()
-            # play_obj.wait_done()
+            # try to play the sound
+            try:
+                logging.info(f'Sound is playing')
+                play_obj = self.sound.play()
+                # play_obj.wait_done()
 
-        # trow an error if file cant be played
-        except:
-            logging.error(f"Sound couldn't be played")
+            # trow an error if file cant be played
+            except:
+                logging.error(f"Sound couldn't be played")
 
-            # Check if sound file exists
-            if os.path.isfile(self.sound) == True:
-                logging.error(f"Sound file exists but couldnt be played: {self.sound}")
-            else:
-                logging.error(f"Sound file is missing: {self.sound}")
+                # Check if sound file exists
+                if os.path.isfile(self.sound) == True:
+                    logging.error(f"Sound file exists but couldnt be played: {self.sound}")
+                else:
+                    logging.error(f"Sound file is missing: {self.sound}")
 
-    def emit_event(self):
-        """
-        Emits a DOORBELL_PRESSED event.
-        
-        Needs an API authorisation token in order to send the post request to Home Assistant.
-        This can be obtained under settings at the bottom at 'long lived tokens'
-        By default this code looks at the users .ssh folder for a '
-        """
+def mqtt_broker_login_from_json(client):
+    """
+    Load mqtt broker details from json located in users home directory
+    """
 
-        try:
+    userpath = os.path.expanduser('~')
+    complete_path = os.path.join(userpath, "mqtt.json")
 
-            # get current time and log
-            current_time = datetime.datetime.now()
-            logging.debug(f'Button was pressed at {current_time}')
+    # open json and return as an array
+    with open(complete_path, 'r') as infile:
+        json_contents = json.load(infile)
 
-            # send the authorization token and denote that we are sending data in the form of a json string
-            headers = {
-                "Authorization": f"Bearer {self.token}",
-                "content-type": "application/json",
-            }
+    # MQTT Broker
+    client.username_pw_set(
+        username=json_contents["username"],
+        password=json_contents["password"]
+        )
+    client.connect(
+        host=json_contents["broker"],
+        port=json_contents["port"]
+        )
 
-            json = {
-                "time": f"{current_time}",
-            }
+    return client
 
-            # send out the actual request to the api
-            response = requests.post(url=self.url, headers=headers, json=json)
+def on_connect(client, userdata, flags, rc):
+    """
+    Callback thats run whenever the device reconnects to the MQTT broker
+    """
+    
+    if rc == 0:
+        # if rc is 0 then it connected without error
+        logging.debug("Connected to MQTT Broker!")
 
-            logging.debug('Send event to home assistant')
-            logging.debug(f"url {self.url}, headers {headers}, json {json}")
-            logging.debug(f"response: {response.text}")
-            
-        except:
-            logging.debug('Couldnt send event to home assistant')
+    else:
+        logging.critical("Failed to connect, return code %d\n", rc)
+
+def publish(client, topic, value):
+    """
+    Publish a result to the MQTT broker and log if it went successfull
+    """
+
+    # publish it
+    result = client.publish(topic, value)
+
+    # first item in result array is the status, if this is 0 then the packet is send succesfully
+    if result[0] == 0:
+        logging.debug(f"Send `{value}` to topic `{topic}`")
+    
+    # if not the message sending failed
+    else:
+        logging.critical(f"Failed to send message to topic {topic}")
+
+def run():
+    """
+    The main process to set up MQTT loop and the Doorbell object
+    """
+
+    # set up mqtt client
+    client = mqtt_client.Client(client_id)
+
+    # set callback methods
+    client.on_connect = on_connect
+
+    # connect to client
+    client = mqtt_broker_login_from_json(client)
+
+    # start loop that will process the actual collection and sending of the messages continuously in a seperate thread
+    client.loop_start()
+
+    # load the doorbell with the mqtt client so it knows where to publish events
+    doorbell = Doorbell(mqtt_client=client)
+
+    pause()
+
 
 if __name__ == "__main__":
 
-    doorbell = Doorbell()
-
-    # doorbell.play_sound()
-    doorbell.run()
+    run()
