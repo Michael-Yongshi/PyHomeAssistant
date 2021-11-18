@@ -236,6 +236,8 @@ views:
           - entity: sensor.hookie_ewok_volume_used
         title: Network Attached Storage
         show_header_toggle: true
+      - type: entity
+        entity: light.garden_lights
       - type: glance
         entities:
           - entity: sensor.bedroom_light_rssi
@@ -285,3 +287,6 @@ views:
               - sensor.mqtt_ethropsten_highest_block
               - sensor.mqtt_ethropsten_pulled_states
               - sensor.mqtt_ethropsten_known_states
+      - type: entities
+        entities:
+          - entity: sensor.mqtt_doorbell_status
