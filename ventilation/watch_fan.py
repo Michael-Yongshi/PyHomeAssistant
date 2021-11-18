@@ -112,7 +112,7 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
         # get fanspeed state
         current_speed = self.get_fan_speed()
-        self.log(f"Fan speed is {current_speed}")
+        # self.log(f"Fan speed is {current_speed}")
 
         current_time = datetime.datetime.now()
 
@@ -138,8 +138,6 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         if current_speed != new_speed:
             self.event_happened(f"Setting fan speed to {new_speed}!")
             self.post_fan_speed(new_speed)
-        else:
-            self.log(f"Fan speed is already at {new_speed}!")
 
     def get_fan_speed(self):
         """
