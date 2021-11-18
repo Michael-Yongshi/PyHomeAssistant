@@ -25,7 +25,6 @@ class Heater(object):
 
     The self.switch variable contains a on() and off() method to manipulate the heater.
     so calling 'heater.switch.on()' turns the heater on.
-
     """
 
     def __init__(self):
@@ -71,7 +70,6 @@ class Heater(object):
 
     def set_status(self, status):
 
-    # try:
         logging.debug(f"Setting status to {status}")
         if status == 1:
             self.switch.on()
@@ -80,9 +78,6 @@ class Heater(object):
 
         return status
 
-    # except:
-        logging.error(f"Couldn't set heater!")
-        return -1
 heater = Heater()
 
 # MQTT unique client id
