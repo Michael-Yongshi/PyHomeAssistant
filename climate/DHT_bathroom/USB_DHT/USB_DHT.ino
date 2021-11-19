@@ -14,13 +14,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////// Humidity sensor
-const dht_pin = 2;
+const int dht_pin = 2;
 DHT dht(dht_pin, DHT11, 15);
-
-struct dht_struct
-{
-  float humidity, temp, heatindex;
-};
 
 ////////////// Delay
 const long interval = 1000;
@@ -56,42 +51,35 @@ void loop() {
     // save the last time a message was sent
     previousMillis = currentMillis;
   
-    dht_struct dht_results = readDHT11()
+    ////////////// DHT11 sensor for Humidity & Temperature
+    // Reading temperature or humidity takes about 250 milliseconds!
+    // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+
+    // read from sensor (Celcius is the default)
+    float humidity = dht.readHumidity();
+    float temp = dht.readTemperature();
+
+    // Check if any reads failed and exit if it did
+    if (isnan(humidity) || isnan(temp)) {
+      Serial.println(F("Failed to read from DHT sensor!"));
+      return;
+    }
+
+    // Compute heat index in Celsius (isFahreheit = false)
+    float heatindex = dht.computeHeatIndex(temp, humidity, false);
 
     // print to serial connection
     Serial.print(F("Humidity: "));
-    Serial.print(dht_results.humidity);
+    Serial.print(humidity);
     Serial.println(F("%, "));
     Serial.print(F("Temperature: "));
-    Serial.print(dht_results.temp);
+    Serial.print(temp);
     Serial.println(F("°C, "));
     Serial.print(F("Heat index: "));
-    Serial.print(dht_results.heatindex);
+    Serial.print(heatindex);
     Serial.println(F("°C "));
 
     // flush the serial output
     Serial.flush();
   }
-}
-
-dht_struct readDHT11() {
-
-  ////////////// DHT11 sensor for Humidity & Temperature
-  // Reading temperature or humidity takes about 250 milliseconds!
-  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-
-  // read from sensor (Celcius is the default)
-  float humidity = dht.readHumidity();
-  float temp = dht.readTemperature();
-
-  // Check if any reads failed and exit if it did
-  if (isnan(humidity) || isnan(temp)) {
-    Serial.println(F("Failed to read from DHT sensor!"));
-    return;
-  }
-
-  // Compute heat index in Celsius (isFahreheit = false)
-  float heatindex = dht.computeHeatIndex(temp, humidity, false);
-
-  return {humidity, temp, heatindex};
 }
