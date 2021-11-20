@@ -20,7 +20,7 @@ class Thermometer(object):
 
     def __init__(self):
 
-        self.sensor = adafruit_dht.DHT22(pin=4)
+        self.sensor = adafruit_dht.DHT22(pin=4) # pin is GPIO pin
 
         logging.debug('Thermometer object is initiated')
 
@@ -67,11 +67,11 @@ thermometer = Thermometer()
 
 # MQTT unique client id
 port = 1883
-client_id = 'thermometer-living-room'
+client_id = 'thermometer-bathroom'
 
 # MQTT topics
-temp_topic = "living/temperature"
-humid_topic = "living/humidity"
+temp_topic = "bathroom/temperature"
+humid_topic = "bathroom/humidity"
 
 def mqtt_broker_login_from_json(client):
     """
@@ -112,14 +112,6 @@ def on_connect(client, userdata, flags, rc):
     else:
         logging.critical("Failed to connect, return code %d\n", rc)
 
-def on_message(client, userdata, message):
-    """
-    Callback thats run whenever the device receives a message from the MQTT broker
-    This is run from the thread that is running the loop, so it will work even though the main thread is blocked by sending of sensor data in a while loop.
-    """
-
-    print(f"received message = {message.payload}")
-
 def publish(client, topic, value):
     """
     Publish a result to the MQTT broker and log if it went successfull
@@ -146,7 +138,6 @@ def run():
 
     # set callback methods
     client.on_connect = on_connect
-    # client.on_message = on_message
 
     # connect to client
     client = mqtt_broker_login_from_json(client)
