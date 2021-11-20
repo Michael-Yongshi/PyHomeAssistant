@@ -1,5 +1,5 @@
 """
-Contains logic to check a serial connection for DHT thermometer / humidity data and provides methods to access these status'
+Contains logic to check a GPIO pin connected to a DHT thermometer / humidity and provides methods to access these status'
 """
 
 import os
@@ -7,13 +7,14 @@ import json
 import logging
 import time
 from paho.mqtt import client as mqtt_client
+import adafruit_dht
 
 # set up logging
 logging.basicConfig(level=logging.DEBUG)
 
 class Thermometer(object):
     """
-    The thermometer is a termperature sensor connected to this device over serial
+    The thermometer is a termperature sensor on this device
     opens functions to read the temperature
     """
 
