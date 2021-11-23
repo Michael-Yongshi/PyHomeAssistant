@@ -1,6 +1,8 @@
 # generic
 - add away toggle to switch to vacation mode for everything
     - primarily the heater
+- make all devices that i have approachable by browser to set up a new home assistant (mqtt) installation (set new mqtt broker, username, password, etc.)
+- make all devices that i have discoverable by home assistant
 
 # doorbell
 - to arduino or something, self contained device
