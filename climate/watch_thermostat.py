@@ -227,7 +227,7 @@ class WatchThermostat(hass.Hass):
                 # self.event_happened(f"Added timeslot {timeofday} as {timeslotdict}!")
 
             program = user_program
-            self.event_happened(f"Set user program!")
+            # self.event_happened(f"Set user program!")
 
         except:
             program = default_program
