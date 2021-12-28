@@ -4,10 +4,21 @@ views:
     path: dashboard
     badges: []
     cards:
+      - type: entities
+        entities:
+          - entity: light.bedroom_light
+          - entity: light.office_didi
+          - entity: light.office_mike_light
+          - entity: light.garden_lights
+          - entity: light.garage_front_channel_1
+            name: Garage Front Reindeer
+          - entity: light.garage_front_channel_2
+            name: Garage Front Cluster
+        title: Simple Lights
+        show_header_toggle: true
       - type: thermostat
         entity: climate.thermostat
       - type: vertical-stack
-        title: Fan
         cards:
           - type: entities
             entities:
@@ -15,6 +26,7 @@ views:
               - entity: sensor.mqtt_fan_override_status
             show_header_toggle: false
             state_color: true
+            title: Fan
           - type: horizontal-stack
             cards:
               - type: button
@@ -77,26 +89,10 @@ views:
                     payload: '0'
                     qos: '2'
                   target: {}
-      - type: entities
-        entities:
-          - entity: light.bedroom_light
-          - entity: light.office_didi
-          - entity: light.office_mike_light
-          - entity: light.garden_lights
-          - entity: light.garage_front_channel_1
-            name: Garage Front Reindeer
-          - entity: light.garage_front_channel_2
-            name: Garage Front Cluster
-        title: Simple Lights
-        show_header_toggle: true
-  - title: Devices
-    path: default_view
-    icon: ''
-    badges: []
-    cards:
       - type: custom:auto-entities
         card:
           type: glance
+          title: Afvalwijzer
         filter:
           include:
             - entity_id: sensor.afvalwijzer_gft
@@ -107,6 +103,11 @@ views:
           attribute: days_until_collection_date
           method: attribute
           numeric: true
+  - title: Devices
+    path: default_view
+    icon: ''
+    badges: []
+    cards:
       - type: horizontal-stack
         title: Automatic Garden Lights
         cards:
