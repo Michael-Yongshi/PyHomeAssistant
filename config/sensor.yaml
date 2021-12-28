@@ -77,7 +77,7 @@
     unit_of_measurement: '°C'
 
   #################################################################
-  ## MQTT Climate device sensors
+  ## MQTT Climate Fan sensors
   #################################################################
 
   - platform: mqtt
@@ -99,9 +99,49 @@
     name: mqtt_fan_override_status
     state_topic: 'fan/override/status'
 
+  #################################################################
+  ## MQTT Climate Heater sensors
+  #################################################################
+
   - platform: mqtt
     name: mqtt_heater_status
     state_topic: 'heater/status'
+
+  - platform: mqtt
+    name: mqtt_thermostat_morning_temp
+    state_topic: "thermostat/morning/temp"
+    unit_of_measurement: '°C'
+
+  - platform: mqtt
+    name: mqtt_thermostat_afternoon_temp
+    state_topic: "thermostat/afternoon/temp"
+    unit_of_measurement: '°C'
+
+  - platform: mqtt
+    name: mqtt_thermostat_evening_temp
+    state_topic: "thermostat/evening/temp"
+    unit_of_measurement: '°C'
+
+  - platform: mqtt
+    name: mqtt_thermostat_night_temp
+    state_topic: "thermostat/night/temp"
+    unit_of_measurement: '°C'
+
+  - platform: mqtt
+    name: mqtt_thermostat_morning_timeslot_end
+    state_topic: "thermostat/morning/timeslot_end"
+
+  - platform: mqtt
+    name: mqtt_thermostat_afternoon_timeslot_end
+    state_topic: "thermostat/afternoon/timeslot_end"
+
+  - platform: mqtt
+    name: mqtt_thermostat_evening_timeslot_end
+    state_topic: "thermostat/evening/timeslot_end"
+
+  - platform: mqtt
+    name: mqtt_thermostat_night_timeslot_end
+    state_topic: "thermostat/night/timeslot_end"
 
   #################################################################
   ## MQTT DLT nodes

@@ -5,19 +5,24 @@
 homeassistant:
   customize: !include customize.yaml
 
-frontend:
-  themes: !include themes.yaml
+# frontend:
+#   themes: !include themes.yaml
 
+# Manual entities
+sensor: !include sensor.yaml
+switch: !include switch.yaml
+
+# helpers
+# input_boolean: !include input_boolean.yaml
+input_number: !include input_number.yaml
+input_datetime: !include input_datetime.yaml
+
+# other fancy configs
 group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-#################################################################
-## Manual entities
-#################################################################
-sensor: !include sensor.yaml
-switch: !include switch.yaml
 
 # Configure a default setup of Home Assistant (frontend, api, etc)
 default_config:

@@ -1,0 +1,23 @@
+  morning_timeslot_slider:
+    name: Morning Timeslot End
+    icon: mdi:timer
+    has_date: false
+    has_time: true
+
+  afternoon_timeslot_slider:
+    name: Afternoon Timeslot End
+    icon: mdi:timer
+    has_date: false
+    has_time: true
+
+  evening_timeslot_slider:
+    name: Evening Timeslot End
+    icon: mdi:timer
+    has_date: false
+    has_time: true
+
+  night_timeslot_slider:
+    name: Night Timeslot End
+    icon: mdi:timer
+    has_date: false
+    has_time: true

@@ -1,10 +1,11 @@
 title: Serenity
 views:
-  - title: Lights & Devices
-    path: default_view
-    icon: ''
+  - title: Dashboard
+    path: dashboard
     badges: []
     cards:
+      - type: thermostat
+        entity: climate.thermostat
       - type: entities
         entities:
           - entity: light.bedroom_light
@@ -17,6 +18,92 @@ views:
             name: Garage Front Cluster
         title: Simple Lights
         show_header_toggle: true
+      - type: horizontal-stack
+        cards:
+          - type: button
+            name: Fan1
+            icon: mdi:fan-speed-1
+            show_name: false
+            icon_height: 30px
+            tap_action:
+              action: call-service
+              service: mqtt.publish
+              service_data:
+                topic: fan/override/set
+                payload: '1'
+                qos: '2'
+              target: {}
+          - type: button
+            icon: mdi:fan-speed-2
+            name: Fan2
+            show_name: false
+            icon_height: 30px
+            tap_action:
+              action: call-service
+              service: mqtt.publish
+              service_data:
+                topic: fan/override/set
+                payload: '2'
+                qos: '2'
+              target: {}
+          - type: button
+            name: Fan3
+            icon: mdi:fan-speed-3
+            show_name: false
+            icon_height: 30px
+            tap_action:
+              action: call-service
+              service: mqtt.publish
+              service_data:
+                topic: fan/override/set
+                payload: '3'
+                qos: '2'
+              target: {}
+          - type: button
+            name: Fan0
+            icon: hass:cog
+            show_name: false
+            icon_height: 30px
+            tap_action:
+              action: call-service
+              service: mqtt.publish
+              service_data:
+                topic: fan/override/set
+                payload: '9'
+                qos: '2'
+              target: {}
+            hold_action:
+              action: call-service
+              service: mqtt.publish
+              service_data:
+                topic: fan/override/set
+                payload: '0'
+                qos: '2'
+              target: {}
+      - type: entities
+        entities:
+          - entity: sensor.mqtt_fan_status
+          - entity: sensor.mqtt_fan_override_status
+        show_header_toggle: false
+        state_color: true
+  - title: Devices
+    path: default_view
+    icon: ''
+    badges: []
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: glance
+        filter:
+          include:
+            - entity_id: sensor.afvalwijzer_gft
+            - entity_id: sensor.afvalwijzer_papier
+            - entity_id: sensor.afvalwijzer_pmd
+            - entity_id: sensor.afvalwijzer_restafval
+        sort:
+          attribute: days_until_collection_date
+          method: attribute
+          numeric: true
       - type: horizontal-stack
         title: Automatic Garden Lights
         cards:
@@ -67,100 +154,38 @@ views:
           - type: entities
             entities:
               - remote.apple_tv_2
-      - type: custom:auto-entities
-        card:
-          type: glance
-        filter:
-          include:
-            - entity_id: sensor.afvalwijzer_gft
-            - entity_id: sensor.afvalwijzer_papier
-            - entity_id: sensor.afvalwijzer_pmd
-            - entity_id: sensor.afvalwijzer_restafval
-        sort:
-          attribute: days_until_collection_date
-          method: attribute
-          numeric: true
   - title: Climate
     path: climate
     icon: ''
     badges: []
     cards:
       - type: vertical-stack
-        title: Heater
-        cards:
-          - type: thermostat
-            entity: climate.thermostat
-      - type: vertical-stack
-        title: Ventilation
+        title: Thermostat Timeslots
         cards:
           - type: entities
             entities:
-              - entity: sensor.mqtt_fan_status
-              - entity: sensor.mqtt_fan_override_status
+              - entity: input_datetime.morning_timeslot_slider
+              - entity: input_number.morning_temp_slider
             show_header_toggle: false
-            state_color: true
-          - type: horizontal-stack
-            cards:
-              - type: button
-                name: Fan1
-                icon: mdi:fan-speed-1
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: mqtt.publish
-                  service_data:
-                    topic: fan/override/set
-                    payload: '1'
-                    qos: '2'
-                  target: {}
-              - type: button
-                icon: mdi:fan-speed-2
-                name: Fan2
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: mqtt.publish
-                  service_data:
-                    topic: fan/override/set
-                    payload: '2'
-                    qos: '2'
-                  target: {}
-              - type: button
-                name: Fan3
-                icon: mdi:fan-speed-3
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: mqtt.publish
-                  service_data:
-                    topic: fan/override/set
-                    payload: '3'
-                    qos: '2'
-                  target: {}
-              - type: button
-                name: Fan0
-                icon: hass:cog
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: mqtt.publish
-                  service_data:
-                    topic: fan/override/set
-                    payload: '9'
-                    qos: '2'
-                  target: {}
-                hold_action:
-                  action: call-service
-                  service: mqtt.publish
-                  service_data:
-                    topic: fan/override/set
-                    payload: '0'
-                    qos: '2'
-                  target: {}
+            state_color: false
+          - type: entities
+            entities:
+              - entity: input_datetime.afternoon_timeslot_slider
+              - entity: input_number.afternoon_temp_slider
+            show_header_toggle: true
+            state_color: false
+          - type: entities
+            entities:
+              - entity: input_datetime.evening_timeslot_slider
+              - entity: input_number.evening_temp_slider
+            show_header_toggle: true
+            state_color: false
+          - type: entities
+            entities:
+              - entity: input_datetime.night_timeslot_slider
+              - entity: input_number.night_temp_slider
+            show_header_toggle: true
+            state_color: false
       - type: vertical-stack
         title: Humidity
         cards:
