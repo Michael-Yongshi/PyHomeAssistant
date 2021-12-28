@@ -91,8 +91,11 @@ class WatchThermostat(hass.Hass):
         """
         Check logic to see if target temp should change on the thermostat
         """
-        
+
         current_time = datetime.datetime.now()
+
+        # reload user determined program
+        self.current_program = self.set_program()
 
         # get target temperature values
         current_timeslot = self.get_current_timeslot(current_time)
@@ -208,11 +211,11 @@ class WatchThermostat(hass.Hass):
                 # get user settings for this time of day
                 timeslot_sensor = f"input_datetime.{timeofday}_timeslot_slider"
                 timeslotend = self.get_state(timeslot_sensor)
-                self.event_happened(f"timeslot sensor is {timeslot_sensor} with value {timeslotend}")
+                # self.event_happened(f"timeslot sensor is {timeslot_sensor} with value {timeslotend}")
 
                 temp_sensor = f"input_number.{timeofday}_temp_slider"
                 temp = self.get_state(temp_sensor)
-                self.event_happened(f'temp sensor is {temp_sensor} with value {temp}')
+                # self.event_happened(f'temp sensor is {temp_sensor} with value {temp}')
                 # temp = int(self.get_state(f"mqtt_thermostat_{timeofday}_temp"))
 
                 timeslotdict = {
@@ -221,10 +224,10 @@ class WatchThermostat(hass.Hass):
                 }
 
                 user_program += [timeslotdict]
-                self.event_happened(f"Added timeslot {timeofday} as {timeslotdict}!")
+                # self.event_happened(f"Added timeslot {timeofday} as {timeslotdict}!")
 
             program = user_program
-            self.event_happened(f"Set user program {user_program}!")
+            self.event_happened(f"Set user program!")
 
         except:
             program = default_program
