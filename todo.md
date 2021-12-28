@@ -8,7 +8,7 @@
 - to arduino or something, self contained device
 
 # heater
--overview of settings: days, active hours that are now fixed in code, move to seperate dashboard with settings
+- move from fixed timeslots to a bunch of them (6 - 8) in order to be more flexible
 
 # ventilation
 - add bathroom humidifier connected to power in wall with only the DHT sticking out.
