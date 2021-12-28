@@ -11,6 +11,10 @@ views:
           - entity: light.office_didi
           - entity: light.office_mike_light
           - entity: light.garden_lights
+          - entity: light.garage_front_channel_1
+            name: Garage Front Reindeer
+          - entity: light.garage_front_channel_2
+            name: Garage Front Cluster
         title: Simple Lights
         show_header_toggle: true
       - type: horizontal-stack
