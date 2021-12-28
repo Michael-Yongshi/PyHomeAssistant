@@ -81,6 +81,7 @@
   #################################################################
 
   - platform: mqtt
+  # icon by customize.yaml
     name: mqtt_fan_status
     state_topic: 'fan/speed'
 
@@ -95,7 +96,7 @@
     state_topic: 'fan/override/set'
 
   - platform: mqtt
-    icon: mdi:fan_alert
+    # icon by customize.yaml
     name: mqtt_fan_override_status
     state_topic: 'fan/override/status'
 
