@@ -29,12 +29,18 @@ class WatchLight(hass.Hass):
         self.override_interval = 1
 
         # define the actual (light) entities used in home assistant and the events to watch for
-        self.entity = "light.garden_lights"
-        self.switch = "binary_sensor.garden_lights_input"
-        self.event = "GARDEN_LIGHTS_OVERRIDE"
+        self.entities = [
+            "light.garage_front_channel_1",
+            "light.garage_front_channel_2",
+            ]
+        self.switches = [
+            "binary_sensor.garage_front_channel_1_input",
+            "binary_sensor.garage_front_channel_2_input",
+            ]
+        self.event = "CHRISTMAS_LIGHTS_OVERRIDE"
 
         # check config and fetch settings
-        config_filename = "config_garden_light"
+        config_filename = "config_christmas_light"
         self.config = self.load_json(config_filename)
 
         # set timezone
@@ -43,7 +49,8 @@ class WatchLight(hass.Hass):
 
         # tells appdaemon we want to call a certain method upon event or state change
         self.listen_event(self.override_event, self.event)
-        self.listen_state(self.override_switch, self.switch)
+        for switch in self.switches:
+            self.listen_state(self.override_switch, switch)
 
         """
         Following call runs every minute to check if something needs to happen
@@ -288,7 +295,8 @@ class WatchLight(hass.Hass):
         actual call to turn off lights
         """
 
-        self.call_service("light/turn_off", entity_id = self.entity)
+        for entity in self.entities:
+            self.call_service("light/turn_off", entity_id = entity)
         self.log(f"Turned off lights")
 
     def light_on(self):
@@ -296,7 +304,8 @@ class WatchLight(hass.Hass):
         actual call to turn on lights
         """
 
-        self.call_service("light/turn_on", entity_id = self.entity)
+        for entity in self.entities:
+            self.call_service("light/turn_on", entity_id = entity)
         self.log(f"Turned on lights")
 
     def event_happened(self, message):
