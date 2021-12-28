@@ -21,6 +21,7 @@ class WatchThermostat(hass.Hass):
         self.climate_entity = "climate.thermostat"
         self.floorpump_entity = "switch.floor_pump"
         self.heater_status_entity = "sensor.mqtt_heater_status"
+        self.current_program = self.set_program()
 
         # keep track of timeslot to allow for user adjustments in between program slots
         self.last_timeslot_end = 0
@@ -126,37 +127,20 @@ class WatchThermostat(hass.Hass):
             self.event_happened(f"Heater turned to {new}")
 
     def get_current_timeslot(self, current_time):
+        """
+        Current timeslot is calculated as follows
+
+        Iterate over the timeslots in the current program (start with morning and ending with night)
+        check if current time is before the end of the timeslot
+        if so this timeslot is the active timeslot
+        """
 
         # get current time parameters
         current_year = current_time.year
         current_month = current_time.month
         current_day = current_time.day
 
-        # TODO, we handle a generic program for now
-        current_program = [
-            # morning
-            {
-                "end": "06:30:00",
-                "temp": 18
-            },
-            # afternoon
-            {
-                "end": "18:00:00",
-                "temp": 21
-            },
-            # evening
-            {
-                "end": "22:00:00",
-                "temp": 20
-            },
-            # night
-            {
-                "end": "23:59:59",
-                "temp": 18
-            }
-        ]
-
-        for timeslot in current_program:
+        for timeslot in self.current_program:
             timeslot_end = timeslot["end"]
 
             # Convert timeslot 'end' to time type
@@ -189,6 +173,71 @@ class WatchThermostat(hass.Hass):
     def post_target_temp(self, target_temp):
 
         self.call_service("climate/set_temperature", entity_id=self.climate_entity, temperature=target_temp)
+
+    def set_program(self):
+
+        default_program = [
+            # night
+            {
+                "end": "05:00:00",
+                "temp": 16
+            },
+            # morning
+            {
+                "end": "12:00:00",
+                "temp": 21
+            },
+            # afternoon
+            {
+                "end": "17:00:00",
+                "temp": 20
+            },
+            # evening
+            {
+                "end": "21:00:00",
+                "temp": 18
+            },
+        ]
+
+        user_program = []
+
+        try:
+            # Iterate over user settings
+            for timeofday in ['night', 'morning', 'afternoon', 'evening']:
+
+                # get user settings for this time of day
+                timeslot_sensor = f"input_datetime.{timeofday}_timeslot_slider"
+                timeslotend = self.get_state(timeslot_sensor)
+                self.event_happened(f"timeslot sensor is {timeslot_sensor} with value {timeslotend}")
+
+                temp_sensor = f"input_number.{timeofday}_temp_slider"
+                temp = self.get_state(temp_sensor)
+                self.event_happened(f'temp sensor is {temp_sensor} with value {temp}')
+                # temp = int(self.get_state(f"mqtt_thermostat_{timeofday}_temp"))
+
+                timeslotdict = {
+                    "end": timeslotend,
+                    "temp": temp,
+                }
+
+                user_program += [timeslotdict]
+                self.event_happened(f"Added timeslot {timeofday} as {timeslotdict}!")
+
+            program = user_program
+            self.event_happened(f"Set user program {user_program}!")
+
+        except:
+            program = default_program
+            self.event_happened(f"Couldn't set user program, reverting to default program")
+
+        # add last timeslot until midnight and use the first timeslot as temperature
+        timeslotdict = {
+            "end": "23:59:59",
+            "temp": program[0]["temp"],
+        }
+        program += [timeslotdict]
+
+        return program
 
     def load_json(self, filename):
         """Load settings json"""
