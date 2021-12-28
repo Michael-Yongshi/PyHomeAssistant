@@ -3,18 +3,14 @@
 #################################################################
 
   #################################################################
-  ## interactive devices
+  ## Interactive Devices
   #################################################################
 
-  ventilation:
-    name: Ventilation
+  christmas_lights:
+    name: Christmas Lights
     entities:
-      - sensor.mqtt_fan_speed
-
-  lights:
-    name: Lights
-    entities:
-      - light.bedroom_light
+      - light.garage_front_channel_1
+      - light.garage_front_channel_2
 
   vacuum:
     name: Vacuum
