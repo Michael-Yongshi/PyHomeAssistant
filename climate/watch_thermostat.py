@@ -53,7 +53,7 @@ class WatchThermostat(hass.Hass):
             t += 1
 
         status = self.get_floorpump_status()
-        self.event_happened(f"Floorpump turned {status}")
+        self.event_happened(f"Floorpump should turn {new}")
 
     def floorpump_24_on(self, kwargs):
         """
@@ -67,7 +67,7 @@ class WatchThermostat(hass.Hass):
             message = f"Heater is on, flushing floor radiator is not necessary:\n"
 
         status = self.get_floorpump_status()
-        event = message + f"Floorpump is now {status}"
+        event = message + f"Floorpump should turn on"
 
         self.event_happened(event)
 
@@ -83,7 +83,7 @@ class WatchThermostat(hass.Hass):
             message = f"Heater already on, floor pump does not have to turn off:\n"
 
         status = self.get_floorpump_status()
-        event = message + f"Floorpump is now {status}"
+        event = message + f"Floorpump should turn off"
 
         self.event_happened(event)
 
