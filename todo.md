@@ -1,4 +1,7 @@
 # generic
+-Fix appdaemon logging, it broke in new version
+
+
 - add away toggle to switch to vacation mode for everything
     - primarily the heater
 - make all devices that i have approachable by browser to set up a new home assistant (mqtt) installation (set new mqtt broker, username, password, etc.)
