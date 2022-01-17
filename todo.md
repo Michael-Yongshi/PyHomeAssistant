@@ -1,7 +1,6 @@
 # generic
 -Fix appdaemon logging, it broke in new version
 
-
 - add away toggle to switch to vacation mode for everything
     - primarily the heater
 - make all devices that i have approachable by browser to set up a new home assistant (mqtt) installation (set new mqtt broker, username, password, etc.)
@@ -16,6 +15,7 @@
 # ventilation
 - add bathroom humidifier connected to power in wall with only the DHT sticking out.
 - test what settings are needed
+- fan based on shelly i4
 
 # gardenlight
 - post via mqtt the override settings
@@ -45,3 +45,8 @@ multiple state sensor: homeassistant/sensor/sensorBedroom/state
 # Tooling
 soldering with pinecel
 https://www.youtube.com/watch?v=-u_o-yNjpzs&t=3s
+
+# Shelly stuff
+shelly plug: https://shop.shelly.cloud/shelly-plug-wifi-smart-home-automation#71
+shelly bathroom vent controls: https://shop.shelly.cloud/shelly-plus-i4-plus-shelly-wall-switch-4-wifi-smart-home-automation
+shelly radiator: https://shelly.cloud/shelly-thermostatic-radiator-valve/
