@@ -10,6 +10,7 @@
 - move from fixed timeslots to a bunch of them (6 - 8) in order to be more flexible
 
 # ventilation
+- use shelly button for now, redo back to api workings of fan
 - seperate bathroom DHT sensor https://shelly.cloud/products/shelly-humidity-temperature-smart-home-automation-sensor/ for automation
 - control fan based on shelly i4 for now? can be switched out to a dump one if needed, it needs a neutral line though...
 But not really another way to create a replacement for it
