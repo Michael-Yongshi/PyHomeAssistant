@@ -81,7 +81,8 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
                 pretty_time = self.pretty_time(self.override_expiration)
                 self.event_happened(f"Someone requested fan override, extending the override by {self.override_interval} minutes to {pretty_time}!")
 
-            # if override is currently not active (for this speed) override is set anew
+            # override is currently not active (or for a different speed) so override is set anew
+
             elif status_new == 0:
                 # override to shut off the fan for longer period of time
                 self.override_expiration = current_time + datetime.timedelta(days=1)
