@@ -1,15 +1,30 @@
+"""
+A fan object that manipulates three relays to set fan speeds or turn it on/off
+
+MQTT
+Watches for MQTT messages on a broker so it can be controlled by smart logic, based on sensor data.
+Sends MQTT messages back to the broker of status and availability
+
+Flask API
+Flask API is used so it can be controlled directly by buttons. This will keep working if the assistant or MQTT broker is offline
+If a command is directly send over the Flask API it will send a MQTT override set message so the assistant is notified about it
+Otherwise the assistant may incur a different setting, overriding the users manual action.
+"""
 
 import os
 import json
 import time
 import logging
+import threading
 
+from flask import Flask, request
 from paho.mqtt import client as mqtt_client
 import gpiozero
 
 # set up logging
 logging.basicConfig(level=logging.DEBUG)
 
+### FAN
 class Fan(object):
     """
     Provdes calls to interface with the fan
@@ -59,9 +74,7 @@ class Fan(object):
     def get_speed(self):
         """
         Check the current status of the ventilation speeds and returns result
-        """
 
-        """
         Checks the channels on GPIO to see which setting is currently active
 
         All channels off means fan off
@@ -79,17 +92,21 @@ class Fan(object):
             print(self.channel3.value)
 
             if self.channel1.value == 1 and self.channel3.value == 1:
+                #[1,x,1]
                 speed = 3
-            #[1,1,x]
+
             elif self.channel1.value == 1 and self.channel2.value == 1:
+                #[1,1,x]
                 speed = 2
-            #[1,x,x]
+
             elif self.channel1.value == 1:
+                #[1,x,x]
                 speed = 1
-            #[0,x,x]
+
             else:
+                #[x,x,x]
                 speed = 0
-            logging.info(f"Read speed {speed}")
+            # logging.info(f"Read speed {speed}")
 
             return speed
 
@@ -141,13 +158,41 @@ class Fan(object):
             return -1
 fan = Fan()
 
-# MQTT Client unique id
-client_id = 'rpi-fan-pymqtt'
-
-# MQTT topics
+### MQTT
 command_topic = "fan/set"
 state_topic = "fan/speed"
 avail_topic = "fan/availability"
+topic_override_set = "fan/override/set"
+
+client_id = 'rpi-fan-pymqtt'
+client = mqtt_client.Client(client_id)
+
+def on_connect(client, userdata, flags, rc):
+    """
+    Callback thats run whenever the device reconnects to the MQTT broker
+    """
+    
+    if rc == 0:
+        # if rc is 0 then it connected without error
+        logging.debug("Connected to MQTT Broker!")
+
+        # subscribe on topics when connected
+        client.subscribe(command_topic)
+
+    else:
+        logging.critical("Failed to connect, return code %d\n", rc)
+def on_message(client, userdata, message):
+    """
+    Callback thats run whenever the device receives a message from the MQTT broker
+    This is run from the thread that is running the loop, so it will work even though the main thread is blocked by sending of sensor data in a while loop.
+    """
+    payload = int(message.payload.decode("utf-8"))
+    logging.debug(f"received message = {payload}")
+
+    # send to the fan
+    result = fan.set_speed(payload)
+client.on_connect = on_connect
+client.on_message = on_message
 
 def mqtt_broker_login_from_json(client):
     """
@@ -172,32 +217,7 @@ def mqtt_broker_login_from_json(client):
         )
 
     return client
-
-def on_connect(client, userdata, flags, rc):
-    """
-    Callback thats run whenever the device reconnects to the MQTT broker
-    """
-    
-    if rc == 0:
-        # if rc is 0 then it connected without error
-        logging.debug("Connected to MQTT Broker!")
-
-        # subscribe on topics when connected
-        client.subscribe(command_topic)
-
-    else:
-        logging.critical("Failed to connect, return code %d\n", rc)
-
-def on_message(client, userdata, message):
-    """
-    Callback thats run whenever the device receives a message from the MQTT broker
-    This is run from the thread that is running the loop, so it will work even though the main thread is blocked by sending of sensor data in a while loop.
-    """
-    payload = int(message.payload.decode("utf-8"))
-    logging.debug(f"received message = {payload}")
-
-    # send to the Heater
-    result = fan.set_speed(payload)
+client = mqtt_broker_login_from_json(client)
 
 def publish(client, topic, value):
     """
@@ -209,26 +229,57 @@ def publish(client, topic, value):
 
     # first item in result array is the status, if this is 0 then the packet is send succesfully
     if result[0] == 0:
-        logging.debug(f"Send `{value}` to topic `{topic}`")
-    
+        # logging.debug(f"Send `{value}` to topic `{topic}`")
+        pass
+
     # if not the message sending failed
     else:
         logging.critical(f"Failed to send message to topic {topic}")
 
+### Flask
+host = '0.0.0.0'
+port = 5000
+app = Flask(__name__)
+def start_flask():
+    app.run(host=host, port=port, debug=False, use_reloader=False)
+
+@app.route('/set_speed', methods=['GET'])
+def set_speed():
+    """
+    Sets speed, expects input between 0 - 3. 
+    It will request fan object to trigger the new speed and notify over mqtt that a manual override is used.
+    
+    :param string or int speed:
+
+    :return string result:
+    """
+
+    logging.critical(f"Received http request {request.args}")
+
+    # get arguments from a get request
+    speed = int(request.args.get('speed'))
+
+    if speed in [0, 1, 2, 3]:
+
+        logging.critical(f"http set speed to {speed}")
+
+        # first set speed directly in case assistant is down
+        result = fan.set_speed(speed)
+
+        # only now give command to hass that a manual override is requested
+        publish(client=client, topic=topic_override_set, value=speed)
+
+    # returns the current speed
+    return f"Speed is set to {result}"
+
 def run():
     """
-    The main process to set up MQTT loop
+    The main process to set up Flask and MQTT loop
     """
 
-    # set up mqtt client
-    client = mqtt_client.Client(client_id)
-
-    # set callback methods
-    client.on_connect = on_connect
-    client.on_message = on_message
-
-    # connect to broker
-    client = mqtt_broker_login_from_json(client)
+    # run flask in a seperate thread so it doesnt block mqtt and other code
+    thread = threading.Thread(target=start_flask)
+    thread.start()
 
     # start loop that will process the actual collection and sending of the messages continuously in a seperate thread
     client.loop_start()
