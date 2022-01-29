@@ -3,6 +3,10 @@
 - add away toggle to switch to vacation mode for everything, primarily the heater
 - make all devices that i have approachable by browser to set up a new home assistant (mqtt) installation (set new mqtt broker, username, password, etc.)
 - make all devices that i have discoverable by home assistant
+- report daily statuses
+- security: https://tweakers.net/reviews/9610/4/raspberry-pi-als-brein-van-je-smarthome-deel-4-beveilig-je-domoticasysteem-proxys-en-tunnels.html
+- add pihole
+- touchscreen: ttps://www.sunfounder.com/products/10inch-touchscreen-for-raspberrypi?variant=35990839001249
 
 # doorbell
 
