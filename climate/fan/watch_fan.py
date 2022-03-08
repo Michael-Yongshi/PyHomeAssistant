@@ -154,6 +154,40 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
         self.mqtt_publish(topic = "fan/set", payload = speed, qos = 1)
 
+    # def get_fan_speed(self):
+    #     """
+    #     get the current speed of the fan
+    #     """
+
+    #     # address for the rest api
+    #     url = self.fan_url + "/get_speed"
+
+    #     # send out the actual request to the api
+    #     response = requests.get(url=url)
+    #     speed = response.text
+
+    #     return speed
+
+    # # set the speed of the fan
+    # def post_fan_speed(self, speed):
+
+    #     # address for the rest api
+    #     url = self.fan_url + "/post_speed"
+
+    #     # denote that we are sending data in the form of a json string
+    #     headers = {
+    #         "content-type": "application/json",
+    #     }
+
+    #     json = {
+    #         "speed": f"{speed}",
+    #     }
+
+    #     # send out the actual request to the api
+    #     response = requests.post(url=url, headers=headers, json=json)
+
+    #     self.log(response.text)
+
     def determine_time(self):
         """
         Requests a setting to shut off in the evening when all the hearths are spreading smoke in the neighborhood
