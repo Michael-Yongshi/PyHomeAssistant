@@ -14,7 +14,8 @@ views:
             name: Garage Front Reindeer
           - entity: light.garage_front_channel_2
             name: Garage Front Cluster
-        title: Simple Lights
+          - entity: switch.wcd_iron
+        title: Lights and Power
         show_header_toggle: true
       - type: thermostat
         entity: climate.thermostat
@@ -89,25 +90,20 @@ views:
                     payload: '0'
                     qos: '2'
                   target: {}
-      - type: custom:auto-entities
-        card:
-          type: glance
-          title: Afvalwijzer
-        filter:
-          include:
-            - entity_id: sensor.afvalwijzer_gft
-            - entity_id: sensor.afvalwijzer_papier
-            - entity_id: sensor.afvalwijzer_pmd
-            - entity_id: sensor.afvalwijzer_restafval
-        sort:
-          attribute: days_until_collection_date
-          method: attribute
-          numeric: true
   - title: Devices
     path: default_view
     icon: ''
     badges: []
     cards:
+      - type: vertical-stack
+        title: Wifi Guest
+        cards:
+          - type: picture
+            image: /local/wifi-guest-qr-cropped.png
+            tap_action:
+              action: none
+            hold_action:
+              action: none
       - type: horizontal-stack
         title: Automatic Garden Lights
         cards:
@@ -221,38 +217,45 @@ views:
     icon: ''
     badges: []
     cards:
+      - type: horizontal-stack
+        title: Energy Usage
+        cards:
+          - type: energy-usage-graph
+      - type: horizontal-stack
+        title: Solar Production
+        cards:
+          - type: energy-solar-graph
       - type: vertical-stack
         title: Power
         cards:
-          - type: sensor
-            entity: sensor.power_consumption
-            graph: line
-            name: Consumption
+          - hours_to_show: 24
+            graph: none
+            type: sensor
+            entity: sensor.net_energy_use
+            name: Net Energy Usage
             detail: 2
-          - type: sensor
-            entity: sensor.power_production
-            graph: line
-            name: Production
-            detail: 2
-      - type: vertical-stack
+            icon: mdi:transmission-tower
+            unit: kW
+      - type: horizontal-stack
+        title: Energy Distribution
         cards:
-          - type: entities
-            entities:
-              - sensor.power_consumption_phase_l1
-              - sensor.power_consumption_phase_l2
-              - sensor.power_consumption_phase_l3
-          - type: entities
-            title: Voltage
-            entities:
-              - sensor.voltage_phase_l1
-              - sensor.voltage_phase_l2
-              - sensor.voltage_phase_l3
-          - type: entities
-            title: Current
-            entities:
-              - sensor.current_phase_l1
-              - sensor.current_phase_l2
-              - sensor.current_phase_l3
+          - type: energy-distribution
+            link_dashboard: true
+      - type: entities
+        entities:
+          - entity: sensor.status
+            name: Solar equipment status
+            icon: mdi:power
+          - entity: sensor.grid_power
+            name: Current solar production
+            icon: mdi:solar-power
+          - entity: sensor.daily_yield
+            name: Todays solar production
+            icon: mdi:home-lightning-bolt
+          - entity: sensor.total_yield
+            name: All-time solar production
+            icon: mdi:home-lightning-bolt
+        title: Inverter
   - title: Debug
     path: debug
     icon: ''
@@ -284,6 +287,21 @@ views:
           - entity: switch.mqtt_heater
           - entity: switch.floor_pump
         title: Heater
+      - type: entities
+        title: Voltage
+        entities:
+          - sensor.voltage_phase_l1
+          - sensor.voltage_phase_l2
+          - sensor.voltage_phase_l3
+      - type: entities
+        title: Current
+        entities:
+          - entity: sensor.current_phase_l1
+          - entity: sensor.current_phase_l2
+          - entity: sensor.current_phase_l3
+          - entity: sensor.pv_current_a
+            name: Current Solar L1
+            icon: mdi:current-ac
       - type: vertical-stack
         title: Bitcoin
         show_header_toggle: false
@@ -323,3 +341,17 @@ views:
       - type: entities
         entities:
           - entity: sensor.mqtt_doorbell_status
+      - type: custom:auto-entities
+        card:
+          type: glance
+          title: Afvalwijzer
+        filter:
+          include:
+            - entity_id: sensor.afvalwijzer_gft
+            - entity_id: sensor.afvalwijzer_papier
+            - entity_id: sensor.afvalwijzer_pmd
+            - entity_id: sensor.afvalwijzer_restafval
+        sort:
+          attribute: days_until_collection_date
+          method: attribute
+          numeric: true
