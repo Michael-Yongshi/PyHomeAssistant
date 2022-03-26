@@ -12,3 +12,6 @@ shelly plug: https://shop.shelly.cloud/shelly-plug-wifi-smart-home-automation#71
 shelly bathroom vent controls: https://shop.shelly.cloud/shelly-plus-i4-plus-shelly-wall-switch-4-wifi-smart-home-automation
 shelly radiator: https://shelly.cloud/shelly-thermostatic-radiator-valve/
 shelly button: https://shop.shelly.cloud/shelly-button-wifi-smart-home-automation#64
+
+# Doorbell aux arduino
+https://www.adafruit.com/product/3357
