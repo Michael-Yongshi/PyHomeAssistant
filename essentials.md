@@ -15,6 +15,10 @@ Add 3 black cables back
 Build 3stepsimulator and put between ventilation unit and original 3 phase socket to enable optional logic
 The 3 stepsimulator can then easily be removed by just plugging the ventilation back in the original socket
 
+specific fan stuff native in home assistant
+https://www.home-assistant.io/integrations/fan/
+https://esphome.io/components/fan/speed.html
+
 ## lights
 Should be all shelly 1 and they are basically optional anyway if an external switch is connected
 
