@@ -5,6 +5,20 @@
   #   dsmr_version: 5
 
   #################################################################
+  ## Templates
+  #################################################################
+  - platform: template
+    sensors:
+        net_energy_use:
+            friendly_name: "Net Energy Usage"
+            unit_of_measurement: 'kWh'
+            value_template: '{{ states("sensor.power_consumption") |float - states("sensor.power_production") | float }}'
+        net_energy_production:
+            friendly_name: "Net Energy Production"
+            unit_of_measurement: 'kWh'
+            value_template: '{{ states("sensor.power_production") |float - states("sensor.power_consumption") | float }}'
+
+  #################################################################
   ## Wifi Access Points
   #################################################################
   - platform: snmp
