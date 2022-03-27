@@ -3,9 +3,8 @@
 soldering with pinecel
 https://www.youtube.com/watch?v=-u_o-yNjpzs&t=3s
 
-# step down converter
-https://www.kiwi-electronics.nl/en/tsr-1-2450-5v-1a-switching-regulator-506
-https://www.kiwi-electronics.nl/en/tsr-1-2433-3-3v-1a-switching-regulator-564
+# Floor pump
+want a manual trigger for floor pump activation on
 
 # Shelly stuff
 shelly plug: https://shop.shelly.cloud/shelly-plug-wifi-smart-home-automation#71
@@ -14,4 +13,6 @@ shelly radiator: https://shelly.cloud/shelly-thermostatic-radiator-valve/
 shelly button: https://shop.shelly.cloud/shelly-button-wifi-smart-home-automation#64
 
 # Doorbell aux arduino
-https://www.adafruit.com/product/3357
+Board: https://opencircuit.nl/product/Geassembleerde-Adafruit-Feather-HUZZAH-ESP8266
+music aux addition: https://www.adafruit.com/product/3357
+headers to be soldered on addition: https://opencircuit.nl/product/Short-Headers-Kit-Feather-12-pins-Meer-16-pins
