@@ -1,0 +1,9 @@
+  - alias: 'Publish Solar Yield'
+    trigger:
+      platform: state
+      entity_id: sensor.grid_power
+    action:
+      service: mqtt.publish
+      data_template:
+        payload: "{{trigger.to_state.state}}"
+        topic: sma/yield

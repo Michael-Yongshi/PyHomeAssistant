@@ -1,0 +1,12 @@
+[Unit]
+Description=Solar Yield
+After=network.target
+
+[Service]
+User=yongshi
+WorkingDirectory=/
+ExecStart=python3 /home/yongshi/solar_yield.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
