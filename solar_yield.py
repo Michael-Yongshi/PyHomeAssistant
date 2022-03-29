@@ -48,6 +48,7 @@ def on_connect(client, userdata, flags, rc):
 
         # subscribe on topics when connected
         client.subscribe(state_topic)
+        logging.debug(f"Subscribed to {state_topic}!")
 
     else:
         logging.critical("Failed to connect, return code %d\n", rc)
@@ -98,6 +99,8 @@ def run():
     # start loop that will process the actual collection and sending of the messages continuously in a seperate thread
     client.loop_start()
 
+    while True:
+        pass
 
 if __name__ == '__main__':
 
