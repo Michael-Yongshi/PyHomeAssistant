@@ -10,6 +10,22 @@
 
 # doorbell
 
+# Watering plants
+- Kentia grote hoekplant
+- Struikmargriet voor en achter
+- Genista x spachiana voor geel
+- Monstera zwarte bak achter
+- Moneyplant pannekoekenplant
+- Clusia rosea princess in vensterbank
+- Olijfboom voor
+
+https://www.home-assistant.io/integrations/plant/
+https://www.home-assistant.io/integrations/miflora
+
+hardware:
+non-smart: https://www.bol.com/nl/nl/p/chirp-vochtmeter-voor-planten-sensor/9200000132121712/
+smart: https://www.bol.com/nl/nl/p/xiaomi-hhcc-flower-care-smart-plant-sensor-houdt-de-welzijn-van-de-planten-goed-in-de-gaten/9200000086002570/
+
 # heater
 - move from fixed timeslots to a bunch of them (6 - 8) in order to be more flexible
 
