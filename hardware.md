@@ -16,7 +16,12 @@ want a manual trigger for floor pump activation on
 
 # Shelly stuff
 shelly plug: https://shop.shelly.cloud/shelly-plug-wifi-smart-home-automation#71
-shelly bathroom vent controls: https://shop.shelly.cloud/shelly-plus-i4-plus-shelly-wall-switch-4-wifi-smart-home-automation
+shelly bathroom vent controls: https://shop.shelly.cloud/
+
+https://shelly.cloud/knowledge-base/devices/shelly-i3/
+
+https://shop.shelly.cloud/shelly-plus-i4-plus-shelly-wall-switch-4-wifi-smart-home-automation
+
 shelly radiator: https://shelly.cloud/shelly-thermostatic-radiator-valve/
 shelly button: https://shop.shelly.cloud/shelly-button-wifi-smart-home-automation#64
 
