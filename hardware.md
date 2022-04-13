@@ -3,10 +3,13 @@
 soldering with pinecel
 https://www.youtube.com/watch?v=-u_o-yNjpzs&t=3s
 
+https://pine64.com/product/pinecil-smart-mini-portable-soldering-iron/
+https://pine64.com/product/pinecil-portable-mini-stand/
+(power on its way)
+
 # Power
 to power multiple dc devices:
 https://www.amazon.co.uk/Charging-Station-Topvork-Multiport-Charger-Black/dp/B09LCGLYMD/ref=sr_1_15
-
 
 # Floor pump
 want a manual trigger for floor pump activation on
@@ -17,21 +20,11 @@ shelly bathroom vent controls: https://shop.shelly.cloud/shelly-plus-i4-plus-she
 shelly radiator: https://shelly.cloud/shelly-thermostatic-radiator-valve/
 shelly button: https://shop.shelly.cloud/shelly-button-wifi-smart-home-automation#64
 
-# Doorbell aux arduino
-music aux addition: https://www.adafruit.com/product/3357
-headers to be soldered on addition: https://opencircuit.nl/product/Short-Headers-Kit-Feather-12-pins-Meer-16-pins
+# Local Doorbell with smart optional
+Feather board: 
+https://www.kiwi-electronics.nl/en/assembled-adafruit-feather-huzzah-with-esp8266-wifi-with-headers-2863
 
-# Local doorbell with optional automation
+Featherwing Music / sound (needs soldering): 
+https://www.kiwi-electronics.nl/en/adafruit-music-maker-featherwing-mp3-ogg-wav-midi-synth-player-2779
 
-## local doorbell soundboard
-adafruit soundboard: https://www.adafruit.com/product/2220
-set up and insert audio, just add some music files and connect doorbell to appropriate pin for simple local functionality
-
-## smart addition featherboard
-adafruit esp: https://opencircuit.nl/product/Geassembleerde-Adafruit-Feather-HUZZAH-ESP8266
-to capture the doorbell press and send it to home assistant
-But this part can probably be done by an existing rpi as well, although a dedicated device may be more stable...
-
-## combine featherboard with featherwing
-feather sound: https://www.adafruit.com/product/3357
 This to combine local and smart in a single device
