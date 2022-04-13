@@ -3,6 +3,11 @@
 soldering with pinecel
 https://www.youtube.com/watch?v=-u_o-yNjpzs&t=3s
 
+# Power
+to power multiple dc devices:
+https://www.amazon.co.uk/Charging-Station-Topvork-Multiport-Charger-Black/dp/B09LCGLYMD/ref=sr_1_15
+
+
 # Floor pump
 want a manual trigger for floor pump activation on
 
