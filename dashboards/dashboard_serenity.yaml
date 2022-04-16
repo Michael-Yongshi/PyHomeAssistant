@@ -90,6 +90,57 @@ views:
                     payload: '0'
                     qos: '2'
                   target: {}
+      - type: gauge
+        entity: sensor.grid_power
+        name: Solar
+        unit: kW
+        max: 3000
+        min: 1
+        needle: false
+  - title: Energy
+    path: energy
+    icon: ''
+    badges: []
+    cards:
+      - type: horizontal-stack
+        title: Energy Usage
+        cards:
+          - type: energy-usage-graph
+      - type: horizontal-stack
+        title: Solar Production
+        cards:
+          - type: energy-solar-graph
+      - type: vertical-stack
+        title: Power
+        cards:
+          - hours_to_show: 24
+            graph: none
+            type: sensor
+            entity: sensor.net_energy_use
+            name: Net Energy Usage
+            detail: 2
+            icon: mdi:transmission-tower
+            unit: kW
+      - type: horizontal-stack
+        title: Energy Distribution
+        cards:
+          - type: energy-distribution
+            link_dashboard: true
+      - type: entities
+        entities:
+          - entity: sensor.status
+            name: Solar equipment status
+            icon: mdi:power
+          - entity: sensor.grid_power
+            name: Current solar production
+            icon: mdi:solar-power
+          - entity: sensor.daily_yield
+            name: Todays solar production
+            icon: mdi:home-lightning-bolt
+          - entity: sensor.total_yield
+            name: All-time solar production
+            icon: mdi:home-lightning-bolt
+        title: Inverter
   - title: Devices
     path: default_view
     icon: ''
@@ -212,50 +263,6 @@ views:
             graph: line
             detail: 2
             hours_to_show: 24
-  - title: Energy
-    path: energy
-    icon: ''
-    badges: []
-    cards:
-      - type: horizontal-stack
-        title: Energy Usage
-        cards:
-          - type: energy-usage-graph
-      - type: horizontal-stack
-        title: Solar Production
-        cards:
-          - type: energy-solar-graph
-      - type: vertical-stack
-        title: Power
-        cards:
-          - hours_to_show: 24
-            graph: none
-            type: sensor
-            entity: sensor.net_energy_use
-            name: Net Energy Usage
-            detail: 2
-            icon: mdi:transmission-tower
-            unit: kW
-      - type: horizontal-stack
-        title: Energy Distribution
-        cards:
-          - type: energy-distribution
-            link_dashboard: true
-      - type: entities
-        entities:
-          - entity: sensor.status
-            name: Solar equipment status
-            icon: mdi:power
-          - entity: sensor.grid_power
-            name: Current solar production
-            icon: mdi:solar-power
-          - entity: sensor.daily_yield
-            name: Todays solar production
-            icon: mdi:home-lightning-bolt
-          - entity: sensor.total_yield
-            name: All-time solar production
-            icon: mdi:home-lightning-bolt
-        title: Inverter
   - title: Debug
     path: debug
     icon: ''
