@@ -1,5 +1,9 @@
 # Jip & Janneke essential functionality
 
+## Pihole
+https://docs.pi-hole.net/main/prerequisites/#supported-operating-systems
+
+
 ## Floor heating
 for super stable floor pump that activates on CV activation
 
