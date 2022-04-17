@@ -30,7 +30,7 @@ int status = WL_IDLE_STATUS;     // the WiFi radio's status
 
 ////////////// MQTT
 const char mqtt_broker[] = SECRET_MQTT_BROKER;
-const int port = 1883;
+const int mqtt_port = 1883;
 
 const char mqtt_user[] = SECRET_MQTT_USER;
 const char mqtt_password[] = SECRET_MQTT_PASS;
@@ -112,7 +112,7 @@ void setup() {
   Serial.print("Attempting to connect to the MQTT broker: ");
   Serial.println(mqtt_broker);
 
-  if (!mqttClient.connect(mqtt_broker, port)) {
+  if (!mqttClient.connect(mqtt_broker, mqtt_port)) {
     Serial.print("MQTT connection failed! Error code = ");
     Serial.println(mqttClient.connectError());
 
