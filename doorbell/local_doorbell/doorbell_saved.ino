@@ -11,24 +11,51 @@
 ////////////// Wifi
 #include <ESP8266WiFi.h>
 
+////////////// MQTT
+#include <PubSubClient.h>
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Parameters
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////// Wifi
-//const char ssid[] = SECRET_WIFI_SSID;        // your network SSID (name)
-//const char pass[] = SECRET_WIFI_PASS;    // your network password (use for WPA, or use as key for WEP)
-
 const char* ssid     = SECRET_WIFI_SSID;
 const char* password = SECRET_WIFI_PASS;
-
 const char* host = "wifitest.adafruit.com";
 
+////////////// MQTT
+const char mqtt_broker[] = SECRET_MQTT_BROKER;
+const int mqtt_port = 1883;
+
+const char mqtt_user[] = SECRET_MQTT_USER;
+const char mqtt_password[] = SECRET_MQTT_PASS;
+
+const char outTopicDoorbell[] = "doorbell/status";
+
+////////////// Pins
+const int buttonPin= 4;
+const int outPin= 0;
+
+////////////// Delay
+const int WAIT_TIME= 5000;
+
+////////////// Global attributes
+WiFiClient wifiClient;
+PubSubClient mqttClient(wifiClient);
+
+bool buttonPressed = false;
+unsigned long lastTrigger = millis();
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// Set up
+///////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
+
+  //start serial connection
   Serial.begin(115200);
   delay(100);
 
-  // We start by connecting to a WiFi network
+  ////////////// Wifi
 
   Serial.println();
   Serial.println();
@@ -46,42 +73,51 @@ void setup() {
   Serial.println("WiFi connected");  
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+
+  ////////////// MQTT
+  mqttClient.setServer(mqtt_broker, mqtt_port);
+  mqttClient.connect("Adafruit_Doorbell", mqtt_user, mqtt_password);
+
+  if (mqttClient.connected()) {
+    Serial.println("MQTT connection established!");
+  }
+  else {
+    Serial.println("MQTT connection failed! Error code = ");
+  }
+
+  ////////////// Pins
+  // Pin for button
+  pinMode(buttonPin, INPUT_PULLUP); // pullup if you have a GPIO - button - GND set up. This sets the GPIO pin to high
+  // pin for onboard led
+  pinMode(outPin, OUTPUT);
+
+  // set onboard led to off
+  digitalWrite(outPin, HIGH);
+
 }
 
-int value = 0;
 
+///////////////////////////////////////////////////////////////////////////////////////////
+// Loop
+///////////////////////////////////////////////////////////////////////////////////////////
 void loop() {
-  delay(5000);
-  ++value;
 
-  Serial.print("connecting to ");
-  Serial.println(host);
-  
-  // Use WiFiClient class to create TCP connections
-  WiFiClient client;
-  const int httpPort = 80;
-  if (!client.connect(host, httpPort)) {
-    Serial.println("connection failed");
-    return;
+  // light led for 5 sec if button is pressed
+
+  if (!buttonPressed && digitalRead(buttonPin) == LOW) // button is pressed when its grounded low in a GPIO - button - GND set up
+  {
+    Serial.println("Button pressed...\n");
+    boolean rc = mqttClient.publish(outTopicDoorbell, "Ringing");
+    digitalWrite(outPin, LOW);
+    buttonPressed = true;
+
+    lastTrigger = millis();
   }
-  
-  // We now create a URI for the request
-  String url = "/testwifi/index.html";
-  Serial.print("Requesting URL: ");
-  Serial.println(url);
-  
-  // This will send the request to the server
-  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
-               "Host: " + host + "\r\n" + 
-               "Connection: close\r\n\r\n");
-  delay(500);
-  
-  // Read all the lines of the reply from server and print them to Serial
-  while(client.available()){
-    String line = client.readStringUntil('\r');
-    Serial.print(line);
+
+  if (buttonPressed && lastTrigger + WAIT_TIME < millis()){
+    boolean rc = mqttClient.publish(outTopicDoorbell, "Waiting");
+    digitalWrite(outPin, HIGH);
+    buttonPressed = false;
   }
-  
-  Serial.println();
-  Serial.println("closing connection");
+
 }
