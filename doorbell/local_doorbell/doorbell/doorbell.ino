@@ -1,5 +1,10 @@
 /*
- *  Simple HTTP get webclient test
+Connects with wifi
+Connects with MQTT
+
+Waits for button press
+Sends MQTT message
+Play a sound
  */
 
 ///////////////////////////////////////////////////////////////////////////////////////////
