@@ -1,4 +1,6 @@
 /*
+Expects the music maker featherboard to carry a track called 'track001.wav'
+
 Connects with wifi
 Connects with MQTT
 
