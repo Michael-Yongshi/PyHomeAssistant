@@ -58,3 +58,19 @@ climate:
     initial_hvac_mode: "off"
     away_temp: 15
     precision: 0.1
+
+rest_command:
+  set_fan_speed_1:
+    url: 'http://192.168.178.29:5000/set_speed?speed=1'
+
+  set_fan_speed_2:
+    url: 'http://192.168.178.29:5000/set_speed?speed=2'
+
+  set_fan_speed_3:
+    url: 'http://192.168.178.29:5000/set_speed?speed=3'
+
+  set_fan_speed_0:
+    url: 'http://192.168.178.29:5000/set_speed?speed=0'
+
+  set_fan_speed_auto:
+    url: 'http://192.168.178.29:5000/set_speed?speed=9'
