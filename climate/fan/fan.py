@@ -24,10 +24,10 @@ import gpiozero
 # set up logging
 logging.basicConfig(level=logging.DEBUG)
 
-### FAN
+### Physical interface with the Fan
 class Fan(object):
     """
-    Provdes calls to interface with the fan
+    Provdes methods to interface with the physical fan connections
     """
 
     def __init__(self):
@@ -39,37 +39,13 @@ class Fan(object):
         L1 and L2:          medium speed (2)
         L1(, L2) and L3:    highest speed (3)
 
-        (some devices have high speed on 2 and medium on 3)
+        (some devices have high and medium inverted)
         """
 
         # Use active_high to invert the relay
         self.channel1 = gpiozero.OutputDevice(pin=26, active_high=False)
         self.channel2 = gpiozero.OutputDevice(pin=20, active_high=False)
         self.channel3 = gpiozero.OutputDevice(pin=21, active_high=False)
-
-    def test_relay(self):
-
-        try:
-
-            # cycle those relays twice to see if it works
-            logging.info("Checking relays...")
-            
-            for x in [0,1]:
-                self.channel1.on()
-                time.sleep(1)
-                self.channel1.off()
-
-                self.channel2.on()
-                time.sleep(1)
-                self.channel2.off()
-
-                self.channel3.on()
-                time.sleep(1)
-                self.channel3.off()
-
-            logging.info("Checking relays finished")
-        except:
-            logging.error(f"Couldn't check relays!")
 
     def get_speed(self):
         """
@@ -80,9 +56,7 @@ class Fan(object):
         All channels off means fan off
         Only channel 1 means setting 1
         Channel 1 and 2 means setting 2
-        Channel 1 and 3 means setting 3
-
-        if for some reason all channels are on, it will return setting 3 (as its checked first)
+        Channel 1(, 2) and 3 means setting 3
         """
 
         try:
