@@ -1,0 +1,7 @@
+https://www.shelly-support.eu/forum/index.php?thread/775-collection-of-http-commands/
+
+
+http://192.168.xxx.xxxx/roller/0?go=open
+http://192.168.xxx.xxxx/roller/0?go=close
+http://192.168.xxx.xxx/roller/0?go=to_pos&roller_pos=x
+http://192.168.xxx.xxx/roller/0?go=stop
