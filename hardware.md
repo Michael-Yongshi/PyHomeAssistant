@@ -12,6 +12,8 @@ to power multiple dc devices:
 https://www.amazon.co.uk/Charging-Station-Topvork-Multiport-Charger-Black/dp/B09LCGLYMD/ref=sr_1_15
 
 # Fan
+3 phase cable?
+
 https://www.ventilatieshop.com/servomotor-silence-open-dicht-230v-4nm-voor-ventilatie-regelkleppen/?sqr=servo&
 https://www.ventilatieshop.com/servomotor-silence-open-dicht-230v-4nm-voor-ventilatie-regelkleppen/?sqr=servo&
 
