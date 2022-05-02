@@ -11,6 +11,12 @@ https://pine64.com/product/pinecil-portable-mini-stand/
 to power multiple dc devices:
 https://www.amazon.co.uk/Charging-Station-Topvork-Multiport-Charger-Black/dp/B09LCGLYMD/ref=sr_1_15
 
+# Wall kiosk
+https://pine64.com/product/pinetab-10-1-linux-tablet/
+https://www.how2shout.com/linux/how-to-start-firefox-kiosk-mode-ubuntu-20-04-lts/
+
+Need to check if there is a hass app to run or something that is stable
+
 # Fan
 3 phase cable?
 
