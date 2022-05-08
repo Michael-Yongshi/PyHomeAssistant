@@ -10,9 +10,9 @@ watch_thermostat:
   module: watch_thermostat
   class: WatchThermostat
 
-# watch_garden_light:
-#   module: watch_garden_light
-#   class: WatchLight
+watch_garden_light:
+  module: watch_garden_light
+  class: WatchLight
 
 # watch_christmas_light:
 #   module: watch_christmas_light
