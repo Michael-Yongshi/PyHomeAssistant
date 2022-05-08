@@ -34,7 +34,7 @@ class WatchLight(hass.Hass):
         self.event = "GARDEN_LIGHTS_OVERRIDE"
 
         # check config and fetch settings
-        config_filename = "watch_light_config"
+        config_filename = "config_garden_light"
         self.config = self.load_json(config_filename)
 
         # set timezone
@@ -69,19 +69,17 @@ class WatchLight(hass.Hass):
         if old in valid and new in valid:
 
             # get current status of the entity
-            current_status = self.get_state(self.entity)
-
-            if current_status == "off":
-                self.override(set_state="on")
-            elif current_status == "on":
-                self.override(set_state="off")
+            switched_to = self.get_state(self.entity)
+            self.log(f"physically switched to {switched_to}")
+            
+            self.override_set(switched_to)
 
     def override_event(self, event_name, data, kwargs):
         """
         the method that is called when someone wants to override lights setting from home assistant itself, which works through firing events
         """
 
-        self.override(data["status"])
+        self.override(set_state=data["status"])
 
     def periodic_process(self, kwargs):
         """
@@ -90,7 +88,31 @@ class WatchLight(hass.Hass):
 
         self.process()
 
-    def override(self, set_state=""):
+    def override_set(self, set_state):
+
+        # current (date)time
+        current_datetime_utc = datetime.datetime.now(tz=utc)
+        current_datetime_local = self.convert_dt_utc_aware_to_local_aware(current_datetime_utc)
+        self.log(f"current datetime is {current_datetime_local}")
+
+
+        # just set the override anew
+
+        # to get to noon next day or today
+        # i.e. 21 o clock, then 15 hours have to be added to get to tomorrows noon. 36 - 21 = 15
+        # i.e. 7 o clock, then only 5 hours have to be added to get to todays noon. 12 - 7 = 5
+        extension = 36 if current_datetime_local.hour > 12 else 12
+        expiration_time_delta = datetime.timedelta(hours=(extension-current_datetime_local.hour))
+
+        # override is set anew
+        self.override_expiration_utc = current_datetime_local + expiration_time_delta
+        # self.override_expiration_utc = self.convert_string_utc_to_dt_utc_aware(self.get_state('sun.sun', 'next_noon'))
+
+        # log
+        message = f"Someone requested lights override, lights are turned {set_state}!"
+        self.event_happened(message)
+
+    def override(self, set_state="", switched="no"):
         """
         if no set_state is given it will default to "auto"
         """
@@ -102,6 +124,13 @@ class WatchLight(hass.Hass):
 
         # get current status of the entity
         current_status = self.get_state(self.entity)
+
+        # switch is already switched, so current status was actually the opposite
+        if switched == "yes":
+            if current_status == "on":
+                current_status = "off"
+            elif current_status == "off":
+                current_status = "on"
 
         if set_state == "auto" or set_state == "":
 
@@ -141,7 +170,6 @@ class WatchLight(hass.Hass):
             message = f"Someone requested lights override, turning lights {set_state}!"
             self.event_happened(message)
 
-            # send lights command to set the status to the new level
             self.post_light_status(set_state)
 
     def process(self):
@@ -369,7 +397,7 @@ class WatchLight(hass.Hass):
     def pretty_datetime(self, datetime):
 
         # Format datetime string
-        pretty_dt = datetime.strftime("%Y-%m-%d %H:%M:%S")
+        pretty_dt = datetime.strftime("day %d time %H:%M")
 
         return pretty_dt
 
