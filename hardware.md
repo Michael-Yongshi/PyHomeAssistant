@@ -43,9 +43,11 @@ shelly button: https://shop.shelly.cloud/shelly-button-wifi-smart-home-automatio
 
 # Local Doorbell with smart optional
 ## KLIK AAN ACDB-7000BCDEURBEL
-Bedrade zender en ontvanger
-Heeft een rfxcom nodig om deze signalen af te vangen:
-https://www.robbshop.nl/usb-433mhz-controller-rfxtrx433xl-transceiver#reviews
+drukknop bedraad aan een zender die 433 signalen stuurt naar een of meerdere ontvangers
+
+Heeft iets nodig om deze signalen af te vangen:
+https://www.rflink.nl/index.php met https://medium.com/@renesijnke/how-to-connect-home-assistant-klikaanklikuit-kaku-492f8e7fdf4a
+
 zie
 https://community.home-assistant.io/t/klik-aan-klik-uit-doorbell-acdb-7000ac/195810
 
