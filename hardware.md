@@ -42,6 +42,14 @@ shelly radiator: https://shelly.cloud/shelly-thermostatic-radiator-valve/
 shelly button: https://shop.shelly.cloud/shelly-button-wifi-smart-home-automation#64
 
 # Local Doorbell with smart optional
+## KLIK AAN ACDB-7000BCDEURBEL
+Bedrade zender en ontvanger
+Heeft een rfxcom nodig om deze signalen af te vangen:
+https://www.robbshop.nl/usb-433mhz-controller-rfxtrx433xl-transceiver#reviews
+zie
+https://community.home-assistant.io/t/klik-aan-klik-uit-doorbell-acdb-7000ac/195810
+
+## Adafruit Feather
 Feather board: 
 https://www.kiwi-electronics.nl/en/assembled-adafruit-feather-huzzah-with-esp8266-wifi-with-headers-2863
 
