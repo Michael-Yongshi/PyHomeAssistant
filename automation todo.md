@@ -30,10 +30,21 @@ smart: https://www.bol.com/nl/nl/p/xiaomi-hhcc-flower-care-smart-plant-sensor-ho
 - move from fixed timeslots to a bunch of them (6 - 8) in order to be more flexible
 
 # ventilation
-- use shelly button for now, redo back to api workings of fan
+- Done: buttons and flask api's to operate
+- Done: mqtt to send telemetry
+
+- create an override that lasts indefinately until manually reset
+
+- control fan based on shelly i4? can be switched out to a dump one if needed, it needs a neutral line though...
 - seperate bathroom DHT sensor https://shelly.cloud/products/shelly-humidity-temperature-smart-home-automation-sensor/ for automation
-- control fan based on shelly i4 for now? can be switched out to a dump one if needed, it needs a neutral line though...
-But not really another way to create a replacement for it
+
+## comfort setting
+Currently we leave comfort setting on or around 20 degrees, so there is no need to change this automatically. What the comfort temperature means is
+- If outside temperature is muich higher (like 25 - 30 degrees) than it will cool incoming air with the cool house air (20 to 22 degrees) keeping cold in
+- If outside temperature is much cooler (like 10 - 15 degrees) than it will warm incoming air with the warm house air (20 to 22 degrees) keeping warmth in
+- If outside temperature is much colder (like 15 degrees) but the house is warm from summer heat (like 25 degrees) it will open the bypass so the warmth is not kept inside the house.
+
+Technically one could at the start of the warm summer period set it to lower (like 12 degrees) so at night the ventilation keeps cooling even though its already lower than you may find comfortable so it can absorb more heat the next day. However the ventilations effect on the temperature is not that high to warrant this, if the house is 25 and outside is 15 than it will already have trouble getting it to 20 overnight by opening the bypass, let alone lower.
 
 # gardenlight
 - change to similar to thermostat, much simpler and the time you do want to have it on for longer you can just again switch, this will happen very rarely anyway.
