@@ -48,7 +48,9 @@ modbus heat pump
 https://community.home-assistant.io/t/2-serial-modbus-connections-do-not-work-with-the-new-configuration-style/309968/6
 https://community.home-assistant.io/t/input-select-options-to-manage-heatpump-via-modbus/268600/2
 
-
+digital inputs and thermostat terminals:
+https://www.manualslib.com/manual/1349299/Ecoforest-Ecogeo-Basic.html?page=24#manual
+https://www.manualslib.com/manual/1349299/Ecoforest-Ecogeo-Basic.html?page=26#manual
 
 # Shelly stuff
 shelly plug: https://shop.shelly.cloud/shelly-plug-wifi-smart-home-automation#71
