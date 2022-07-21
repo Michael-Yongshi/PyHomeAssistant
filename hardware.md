@@ -27,8 +27,28 @@ https://kleypot.com/fully-kiosk-rest-api-integration-in-home-assistant/
 https://www.ventilatieshop.com/servomotor-silence-open-dicht-230v-4nm-voor-ventilatie-regelkleppen/?sqr=servo&
 https://www.ventilatieshop.com/servomotor-silence-open-dicht-230v-4nm-voor-ventilatie-regelkleppen/?sqr=servo&
 
-# Floor pump
-want a manual trigger for floor pump activation on
+# floor pump
+not necessary after installing heat pump (its integrated)
+
+# Heat pump
+Ecoforest geothermal heat pump
+https://ecoforest.com/en/heat-pumps/ground-source-heat-pumps/
+
+## slim maken
+thermostaat
+https://www.eplucon.nl/merken-overzicht/eplucon/th-touch/
+
+e-control app
+https://www.eplucon.nl/files/E%20control/e-control.pdf
+
+Ecoforest easynet module
+https://www.ecoforest.com/wp-content/uploads/2022/01/Manual-ECOFOREST-EASYNET-V01_NL.pdf
+
+modbus heat pump
+https://community.home-assistant.io/t/2-serial-modbus-connections-do-not-work-with-the-new-configuration-style/309968/6
+https://community.home-assistant.io/t/input-select-options-to-manage-heatpump-via-modbus/268600/2
+
+
 
 # Shelly stuff
 shelly plug: https://shop.shelly.cloud/shelly-plug-wifi-smart-home-automation#71
