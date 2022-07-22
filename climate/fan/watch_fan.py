@@ -59,7 +59,15 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
             # disregard
             return
 
-        # check if override is requested to be disabled
+        # persistent override is requested
+        elif status_new == 8:
+
+            # no override expiration
+            self.override_expiration = datetime.datetime(9999, 1, 1)
+            self.mqtt_publish(topic = self.topic_override_status, payload = f"Persistent Override", qos = 1)
+            self.event_happened(f"Fan override persists!")
+
+        # check if requested to go back to automatic programming
         elif status_new == 9:
 
             # disable override by setting expiration to current time
@@ -70,8 +78,8 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
             # immediately run automatically setting the fan as override is stopped
             self.determine_setting(kwargs)
 
-        # override is requested. determining which type
-        else:
+        # temporary override is requested. determining which type
+        elif status_new in [0,1,2,3]:
 
             # if override is already active (and speed is the same as previous override) extend the override
             if status_new == status_old and self.override_expiration > current_time:
@@ -100,6 +108,9 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
             # publish override to MQTT
             pretty_time = self.pretty_time(self.override_expiration)
             self.mqtt_publish(topic = self.topic_override_status, payload = f"Override of {status_new} active until {pretty_time}", qos = 1)
+
+        else:
+            self.log(f"Error, no valid input received: {status_new}")
 
         self.log(f"Current date and time is: {current_time}")
 
