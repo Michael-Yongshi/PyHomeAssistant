@@ -4,7 +4,23 @@
 https://docs.pi-hole.net/main/prerequisites/#supported-operating-systems
 
 
-## Floor heating
+## HVAC (Heating Ventilation and Cooling)
+### Open therm
+The heater will most probably talk Open therm which cannot directly be connected to home assistant. A gateway or bridge needs to be in the middle that can transfer HA commands to open therm commands. This can be a seperate gateway or the thermostat itself in the living room.
+
+### Thermostat
+If the thermostat is connected directly to the (opentherm) heater, it must be smart enough to incorporate the information of the TRV's so it still gives heating despite the living room being above the set temperature. 
+
+Easiest is to change the thermostat in the living room to just a thermometer and is connected to HA. It then just acts to provide a temperature reading to HA for the living room. 
+
+### Thermostatic Radiator Valve (TRV)
+All radiators and floor heating will get a TRV to block heating if the set temperature is reached. It provides a temperature reading of the room (except the floor heating) and the set temperature to HA and HA may return a command to change the set temperature.
+
+### Gateway
+A gateway is needed to translate open therm sensor data to HA and commands from HA to Opentherm.
+Unclear if 
+
+### Floor Pump
 for super stable floor pump that activates on CV activation
 
 Add additional relay that activates on signal back to the cv (25v?)
@@ -32,12 +48,3 @@ https://shelly.cloud/products/shelly-1l-single-wire-smart-home-automation-relay/
 ## doorbell
 Make dedicated doorbell that handles the ringing completely local
 https://www.zuidwijk.com/esphome-based-doorbell/
-
-## Thermostat
-There should be a smart thermostat added so you can still control the CV relay even without wifi.
-Smart controls are then optional when home assistant is connected to influence the programming.
-
-Or you can add a screen to my pi and then just have a permanent way to access the temp
-Should be researched more, is there a smart thermostat that does what I want?
-https://www.crowdsupply.com/makeopenstuff/hestiapi-touch 
-or something similar
