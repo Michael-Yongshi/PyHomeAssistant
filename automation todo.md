@@ -30,6 +30,25 @@ smart: https://www.bol.com/nl/nl/p/xiaomi-hhcc-flower-care-smart-plant-sensor-ho
 - move from fixed timeslots to a bunch of them (6 - 8) in order to be more flexible
 
 # ventilation
+## 930 wired serial to mqtt connection
+this guy connected with a rj-45 jack as present on mine
+https://blog.mosibi.nl/domotica/2017/12/31/control-a-storkair-zehnder-whr-930-ventilation-unit-using-mqtt.html
+https://github.com/Mosibi/whr_930
+
+other source for rj-45 to rs232 to usb
+https://community.home-assistant.io/t/zehnder-comfoair-ca350-integration-via-serial-connection-rs232-and-mqtt/173243/2
+and based on above mosibi
+https://github.com/AlbertHakvoort/StorkAir-Zehnder-WHR-930-Domoticz-MQTT
+
+whirlwind source, sounds similar enough but assumes i think a regular rs232 (VGA) jack. My socket seems to be rj-45
+https://www.whirlwind.nl/nieuw/bericht/zehnder-comfoair-350-zehnder-whr-930-middels-raspberry-pi-uitlezen-in-home-assistant
+
+home assistant lovelace card alternative
+https://github.com/wichers/lovelace-comfoair
+
+
+## custom
+
 - Done: buttons and flask api's to operate
 - Done: mqtt to send telemetry
 
