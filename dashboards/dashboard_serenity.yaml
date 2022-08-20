@@ -1,33 +1,187 @@
 title: Serenity
 views:
   - title: Dashboard
-    path: dashboard
+    path: default_view
     badges: []
     cards:
-      - type: entities
-        entities:
-          - entity: light.bedroom_light
-          - entity: light.office_didi
-          - entity: light.office_mike_light
-          - entity: light.garden_lights
-          - entity: light.garage_front_channel_1
-            name: Garage Front Reindeer
-          - entity: light.garage_front_channel_2
-            name: Garage Front Cluster
-          - entity: switch.wcd_iron
-        title: Lights and Power
-        show_header_toggle: true
-      - type: thermostat
-        entity: climate.thermostat
       - type: vertical-stack
         cards:
+          - type: thermostat
+            entity: climate.thermostat
+          - show_current: true
+            show_forecast: true
+            type: weather-forecast
+            entity: weather.openweathermap
+      - type: vertical-stack
+        title: Fan
+        cards:
+          - type: picture-elements
+            image: local/fan/image_transparent.png
+            elements:
+              - type: icon
+                icon: mdi:fan
+                style:
+                  top: 70%
+                  left: 45%
+                  color: white
+              - type: state-label
+                entity: sensor.mqtt_fan_status
+                style:
+                  top: 70%
+                  left: 53%
+                  color: white
+              - type: icon
+                title: Fan 1
+                icon: mdi:fan-speed-1
+                tap_action:
+                  action: call-service
+                  service: rest_command.set_fan_speed_1
+                  service_data: {}
+                  target: {}
+                style:
+                  top: 92%
+                  left: 20%
+                  color: lightgray
+                  '--iron-icon-height': 40px
+                  '--iron-icon-width': 40px
+              - type: icon
+                title: Fan 2
+                icon: mdi:fan-speed-2
+                tap_action:
+                  action: call-service
+                  service: rest_command.set_fan_speed_2
+                  service_data: {}
+                  target: {}
+                style:
+                  top: 92%
+                  left: 30%
+                  color: lightgray
+                  '--iron-icon-height': 40px
+                  '--iron-icon-width': 40px
+              - type: icon
+                title: Fan 3
+                icon: mdi:fan-speed-3
+                tap_action:
+                  action: call-service
+                  service: rest_command.set_fan_speed_3
+                  service_data: {}
+                  target: {}
+                style:
+                  top: 92%
+                  left: 40%
+                  color: lightgray
+                  '--iron-icon-height': 40px
+                  '--iron-icon-width': 40px
+              - type: icon
+                title: Fan 0
+                icon: mdi:fan-off
+                tap_action:
+                  action: call-service
+                  service: rest_command.set_fan_speed_0
+                  service_data: {}
+                  target: {}
+                style:
+                  top: 92%
+                  left: 10%
+                  color: lightgray
+                  '--iron-icon-height': 40px
+                  '--iron-icon-width': 40px
+              - type: icon
+                title: Fan Auto
+                icon: hass:cog
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: fan/override/set
+                    payload: '9'
+                    qos: '2'
+                  target: {}
+                style:
+                  top: 92%
+                  left: 60%
+                  color: lightgray
+                  '--iron-icon-height': 40px
+                  '--iron-icon-width': 40px
+              - type: icon
+                title: Fan Lock
+                icon: mdi:hand-back-left
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  target: {}
+                  data:
+                    topic: fan/override/set
+                    payload: '8'
+                    qos: '2'
+                style:
+                  top: 92%
+                  left: 70%
+                  color: lightgray
+                  '--iron-icon-height': 40px
+                  '--iron-icon-width': 40px
+              - type: state-label
+                entity: sensor.ca350_supply_fan_speed
+                style:
+                  top: 40%
+                  left: 10%
+                  color: gray
+              - type: state-label
+                entity: sensor.ca350_exhaust_fan_speed
+                style:
+                  top: 40%
+                  left: 90%
+                  color: gray
+              - type: state-label
+                entity: sensor.ca350_return_temperature
+                style:
+                  top: 10%
+                  left: 90%
+                  color: darkred
+              - type: state-label
+                entity: sensor.ca350_supply_temperature
+                style:
+                  top: 60%
+                  left: 90%
+                  color: darkred
+              - type: state-label
+                entity: sensor.ca350_outside_temperature
+                style:
+                  top: 10%
+                  left: 10%
+                  color: '#4171b1'
+              - type: state-label
+                entity: sensor.ca350_exhaust_temperature
+                style:
+                  top: 60%
+                  left: 10%
+                  color: '#4171b1'
+              - type: state-label
+                entity: sensor.ca350_bypass_valve
+                prefix: 'Bypass: '
+                style:
+                  top: 25%
+                  left: 50%
+                  color: gray
+              - type: state-label
+                entity: sensor.ca350_summer_mode
+                style:
+                  top: 10%
+                  left: 50%
+                  color: grey
+              - type: state-label
+                entity: number.ca350_filter_weeks
+                prefix: 'Change filter in '
+                style:
+                  top: 100%
+                  left: 90%
+                  color: gray
           - type: entities
             entities:
               - entity: sensor.mqtt_fan_status
               - entity: sensor.mqtt_fan_override_status
             show_header_toggle: false
-            state_color: true
-            title: Fan
+            state_color: false
           - type: horizontal-stack
             cards:
               - type: button
@@ -60,10 +214,25 @@ views:
                   service: rest_command.set_fan_speed_3
                   service_data: {}
                   target: {}
-              - type: button
+          - type: horizontal-stack
+            cards:
+              - show_name: false
+                show_icon: true
+                type: button
                 name: Fan0
+                icon: mdi:fan-off
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: rest_command.set_fan_speed_0
+                  target: {}
+                  data: {}
+                show_state: false
+              - show_name: false
+                show_icon: true
+                type: button
+                name: FanAuto
                 icon: hass:cog
-                show_name: false
                 icon_height: 30px
                 tap_action:
                   action: call-service
@@ -73,38 +242,20 @@ views:
                     payload: '9'
                     qos: '2'
                   target: {}
-                hold_action:
+              - show_name: false
+                show_icon: true
+                type: button
+                name: FanLock
+                icon: mdi:hand-back-left
+                icon_height: 30px
+                tap_action:
                   action: call-service
                   service: mqtt.publish
-                  service_data:
-                    topic: fan/override/set
-                    payload: '0'
-                    qos: '2'
                   target: {}
-      - type: gauge
-        entity: sensor.grid_power
-        name: Solar
-        unit: kW
-        max: 3000
-        min: 1
-        needle: false
-        severity:
-          green: 0
-          yellow: 1
-          red: 0
-  - title: Energy
-    path: energy
-    icon: ''
-    badges: []
-    cards:
-      - type: horizontal-stack
-        title: Energy Usage
-        cards:
-          - type: energy-usage-graph
-      - type: horizontal-stack
-        title: Solar Production
-        cards:
-          - type: energy-solar-graph
+                  data:
+                    topic: fan/override/set
+                    payload: '8'
+                    qos: '2'
       - type: vertical-stack
         title: Power
         cards:
@@ -116,40 +267,52 @@ views:
             detail: 2
             icon: mdi:transmission-tower
             unit: kW
-      - type: horizontal-stack
-        title: Energy Distribution
-        cards:
-          - type: energy-distribution
-            link_dashboard: true
+          - type: gauge
+            entity: sensor.grid_power
+            name: Solar
+            unit: kW
+            max: 3000
+            min: 1
+            needle: false
+            severity:
+              green: 0
+              yellow: 1
+              red: 0
+  - theme: Backend-selected
+    title: Lights
+    path: lights
+    badges: []
+    cards:
       - type: entities
         entities:
-          - entity: sensor.status
-            name: Solar equipment status
-            icon: mdi:power
-          - entity: sensor.grid_power
-            name: Current solar production
-            icon: mdi:solar-power
-          - entity: sensor.daily_yield
-            name: Todays solar production
-            icon: mdi:home-lightning-bolt
-          - entity: sensor.total_yield
-            name: All-time solar production
-            icon: mdi:home-lightning-bolt
-        title: Inverter
+          - entity: light.bedroom_light
+          - entity: light.office_didi
+          - entity: light.office_mike_light
+          - entity: light.garden_lights
+          - entity: light.garage_front_channel_1
+            name: Garage Front Reindeer
+          - entity: light.garage_front_channel_2
+            name: Garage Front Cluster
+          - entity: switch.wcd_iron
+        title: Lights and Power
+        show_header_toggle: true
   - title: Devices
-    path: default_view
+    path: devices
     icon: ''
     badges: []
     cards:
       - type: vertical-stack
-        title: Wifi Guest
+        title: Wifi SSID = Serenity Guest
         cards:
-          - type: picture
-            image: /local/wifi-guest-qr-cropped.png
-            tap_action:
-              action: none
-            hold_action:
-              action: none
+          - type: vertical-stack
+            title: Wifi Pass = ConnectQuicklyPlease
+            cards:
+              - type: picture
+                image: /local/wifi-guest-qr-cropped.png
+                tap_action:
+                  action: none
+                hold_action:
+                  action: none
       - type: horizontal-stack
         title: Automatic Garden Lights
         cards:
@@ -258,6 +421,77 @@ views:
             graph: line
             detail: 2
             hours_to_show: 24
+  - title: Energy
+    path: energy
+    icon: ''
+    badges: []
+    cards:
+      - type: horizontal-stack
+        title: Energy Usage
+        cards:
+          - type: energy-usage-graph
+      - type: horizontal-stack
+        title: Solar Production
+        cards:
+          - type: energy-solar-graph
+      - type: vertical-stack
+        title: Power
+        cards:
+          - hours_to_show: 24
+            graph: none
+            type: sensor
+            entity: sensor.net_energy_use
+            name: Net Energy Usage
+            detail: 2
+            icon: mdi:transmission-tower
+            unit: kW
+      - type: horizontal-stack
+        title: Energy Distribution
+        cards:
+          - type: energy-distribution
+            link_dashboard: true
+      - type: entities
+        entities:
+          - entity: sensor.status
+            name: Solar equipment status
+            icon: mdi:power
+          - entity: sensor.grid_power
+            name: Current solar production
+            icon: mdi:solar-power
+          - entity: sensor.daily_yield
+            name: Todays solar production
+            icon: mdi:home-lightning-bolt
+          - entity: sensor.total_yield
+            name: All-time solar production
+            icon: mdi:home-lightning-bolt
+        title: Inverter
+  - theme: Backend-selected
+    title: Network
+    path: network
+    badges: []
+    cards:
+      - type: entities
+        entities:
+          - binary_sensor.pi_hole
+          - entity: sensor.pi_hole_ads_blocked_today
+            name: Ads Blocked Today
+          - entity: sensor.pi_hole_ads_percentage_blocked_today
+            name: Ads Percentage Blocked Today
+          - entity: sensor.pi_hole_dns_queries_cached
+            name: DNS Queries Cached
+          - entity: sensor.pi_hole_dns_queries_forwarded
+            name: DNS Queries Forwarded
+          - entity: sensor.pi_hole_dns_queries_today
+            name: DNS Queries Today
+          - entity: sensor.pi_hole_dns_unique_clients
+            name: DNS Unique Clients
+          - entity: sensor.pi_hole_dns_unique_domains
+            name: DNS Unique Domains
+          - entity: sensor.pi_hole_domains_blocked
+            name: Domains Blocked
+          - entity: sensor.pi_hole_seen_clients
+            name: Seen Clients
+        title: Pi-Hole
   - title: Debug
     path: debug
     icon: ''
