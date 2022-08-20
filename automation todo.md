@@ -73,8 +73,20 @@ Technically one could at the start of the warm summer period set it to lower (li
 https://github.com/xirixiz/homeassistant-afvalwijzer
 
 
-# Floorplan and iot overview
+# Floorplan
+Nice floorplan instead of basic buttons, something for later
+
+https://aarongodfrey.dev/home%20automation/creating-a-3d-floorplan-in-home-assistant/
+https://aarongodfrey.dev/home%20automation/tips_for_creating_a_3d_floorplan_using_sweethome3d/
+
+Overview of your devices / iot (rpi status, restart, etc.)
+https://nicolargo.github.io/glances/
+
+
+# iot overview
 -status rpi's and ardios (check if services are running correctly, add to a new 'test' tab)
+
+
 
 # TP Link EAP
 - make sure you can add these to home assistant
