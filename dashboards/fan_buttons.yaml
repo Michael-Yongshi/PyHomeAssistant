@@ -1,0 +1,82 @@
+      - type: vertical-stack
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.mqtt_fan_status
+              - entity: sensor.mqtt_fan_override_status
+            show_header_toggle: false
+            state_color: false
+          - type: horizontal-stack
+            cards:
+              - type: button
+                name: Fan1
+                icon: mdi:fan-speed-1
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: rest_command.set_fan_speed_1
+                  service_data: {}
+                  target: {}
+              - type: button
+                icon: mdi:fan-speed-2
+                name: Fan2
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: rest_command.set_fan_speed_2
+                  service_data: {}
+                  target: {}
+              - type: button
+                name: Fan3
+                icon: mdi:fan-speed-3
+                show_name: false
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: rest_command.set_fan_speed_3
+                  service_data: {}
+                  target: {}
+          - type: horizontal-stack
+            cards:
+              - show_name: false
+                show_icon: true
+                type: button
+                name: Fan0
+                icon: mdi:fan-off
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: rest_command.set_fan_speed_0
+                  target: {}
+                  data: {}
+                show_state: false
+              - show_name: false
+                show_icon: true
+                type: button
+                name: FanAuto
+                icon: hass:cog
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  service_data:
+                    topic: fan/override/set
+                    payload: '9'
+                    qos: '2'
+                  target: {}
+              - show_name: false
+                show_icon: true
+                type: button
+                name: FanLock
+                icon: mdi:hand-back-left
+                icon_height: 30px
+                tap_action:
+                  action: call-service
+                  service: mqtt.publish
+                  target: {}
+                  data:
+                    topic: fan/override/set
+                    payload: '8'
+                    qos: '2'

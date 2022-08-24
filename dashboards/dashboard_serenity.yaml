@@ -12,261 +12,202 @@ views:
             show_forecast: true
             type: weather-forecast
             entity: weather.openweathermap
-      - type: vertical-stack
-        title: Fan
-        cards:
-          - type: picture-elements
-            image: local/fan/image_transparent.png
+      - type: picture-elements
+        image: local/fan/flows_only_bezels.png
+        elements:
+          - type: state-label
+            entity: sensor.ca350_supply_fan_speed
+            style:
+              top: 40%
+              left: 15%
+              color: gray
+          - type: state-label
+            entity: sensor.ca350_exhaust_fan_speed
+            style:
+              top: 40%
+              left: 85%
+              color: gray
+          - type: state-label
+            entity: sensor.ca350_return_temperature
+            style:
+              top: 23%
+              left: 95%
+              color: red
+          - type: state-label
+            entity: sensor.ca350_supply_temperature
+            style:
+              top: 76%
+              left: 95%
+              color: red
+          - type: state-label
+            entity: sensor.ca350_outside_temperature
+            style:
+              top: 23%
+              left: 5%
+              color: blue
+          - type: state-label
+            entity: sensor.ca350_exhaust_temperature
+            style:
+              top: 76%
+              left: 5%
+              color: blue
+          - type: state-label
+            entity: sensor.ca350_bypass_valve
+            prefix: 'Bypass: '
+            style:
+              top: 25%
+              left: 50%
+              color: gray
+          - type: state-label
+            entity: sensor.ca350_summer_mode
+            style:
+              top: 10%
+              left: 50%
+              color: grey
+          - type: state-label
+            entity: number.ca350_filter_weeks
+            prefix: 'Filter: '
+            style:
+              top: 92%
+              left: 90%
+              color: gray
+      - type: picture-elements
+        image: local/fan/1-4136127376.png
+        elements:
+          - type: conditional
+            conditions:
+              - entity: sensor.mqtt_fan_status
+                state: '1'
             elements:
               - type: icon
-                icon: mdi:fan
-                style:
-                  top: 70%
-                  left: 45%
-                  color: white
-              - type: state-label
-                entity: sensor.mqtt_fan_status
-                style:
-                  top: 70%
-                  left: 53%
-                  color: white
-              - type: icon
-                title: Fan 1
                 icon: mdi:fan-speed-1
-                tap_action:
-                  action: call-service
-                  service: rest_command.set_fan_speed_1
-                  service_data: {}
-                  target: {}
                 style:
-                  top: 92%
+                  top: 30%
                   left: 20%
-                  color: lightgray
-                  '--iron-icon-height': 40px
-                  '--iron-icon-width': 40px
-              - type: icon
-                title: Fan 2
-                icon: mdi:fan-speed-2
-                tap_action:
-                  action: call-service
-                  service: rest_command.set_fan_speed_2
-                  service_data: {}
-                  target: {}
-                style:
-                  top: 92%
-                  left: 30%
-                  color: lightgray
-                  '--iron-icon-height': 40px
-                  '--iron-icon-width': 40px
-              - type: icon
-                title: Fan 3
-                icon: mdi:fan-speed-3
-                tap_action:
-                  action: call-service
-                  service: rest_command.set_fan_speed_3
-                  service_data: {}
-                  target: {}
-                style:
-                  top: 92%
-                  left: 40%
-                  color: lightgray
-                  '--iron-icon-height': 40px
-                  '--iron-icon-width': 40px
-              - type: icon
-                title: Fan 0
-                icon: mdi:fan-off
-                tap_action:
-                  action: call-service
-                  service: rest_command.set_fan_speed_0
-                  service_data: {}
-                  target: {}
-                style:
-                  top: 92%
-                  left: 10%
-                  color: lightgray
-                  '--iron-icon-height': 40px
-                  '--iron-icon-width': 40px
-              - type: icon
-                title: Fan Auto
-                icon: hass:cog
-                tap_action:
-                  action: call-service
-                  service: mqtt.publish
-                  service_data:
-                    topic: fan/override/set
-                    payload: '9'
-                    qos: '2'
-                  target: {}
-                style:
-                  top: 92%
-                  left: 60%
-                  color: lightgray
-                  '--iron-icon-height': 40px
-                  '--iron-icon-width': 40px
-              - type: icon
-                title: Fan Lock
-                icon: mdi:hand-back-left
-                tap_action:
-                  action: call-service
-                  service: mqtt.publish
-                  target: {}
-                  data:
-                    topic: fan/override/set
-                    payload: '8'
-                    qos: '2'
-                style:
-                  top: 92%
-                  left: 70%
-                  color: lightgray
-                  '--iron-icon-height': 40px
-                  '--iron-icon-width': 40px
-              - type: state-label
-                entity: sensor.ca350_supply_fan_speed
-                style:
-                  top: 40%
-                  left: 10%
-                  color: gray
-              - type: state-label
-                entity: sensor.ca350_exhaust_fan_speed
-                style:
-                  top: 40%
-                  left: 90%
-                  color: gray
-              - type: state-label
-                entity: sensor.ca350_return_temperature
-                style:
-                  top: 10%
-                  left: 90%
-                  color: darkred
-              - type: state-label
-                entity: sensor.ca350_supply_temperature
-                style:
-                  top: 60%
-                  left: 90%
-                  color: darkred
-              - type: state-label
-                entity: sensor.ca350_outside_temperature
-                style:
-                  top: 10%
-                  left: 10%
-                  color: '#4171b1'
-              - type: state-label
-                entity: sensor.ca350_exhaust_temperature
-                style:
-                  top: 60%
-                  left: 10%
-                  color: '#4171b1'
-              - type: state-label
-                entity: sensor.ca350_bypass_valve
-                prefix: 'Bypass: '
-                style:
-                  top: 25%
-                  left: 50%
-                  color: gray
-              - type: state-label
-                entity: sensor.ca350_summer_mode
-                style:
-                  top: 10%
-                  left: 50%
-                  color: grey
-              - type: state-label
-                entity: number.ca350_filter_weeks
-                prefix: 'Change filter in '
-                style:
-                  top: 100%
-                  left: 90%
-                  color: gray
-          - type: entities
-            entities:
+                  color: orange
+                  transform: scale(6,6)
+          - type: conditional
+            conditions:
               - entity: sensor.mqtt_fan_status
-              - entity: sensor.mqtt_fan_override_status
-            show_header_toggle: false
-            state_color: false
-          - type: horizontal-stack
-            cards:
-              - type: button
-                name: Fan1
-                icon: mdi:fan-speed-1
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: rest_command.set_fan_speed_1
-                  service_data: {}
-                  target: {}
-              - type: button
+                state: '2'
+            elements:
+              - type: icon
                 icon: mdi:fan-speed-2
-                name: Fan2
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: rest_command.set_fan_speed_2
-                  service_data: {}
-                  target: {}
-              - type: button
-                name: Fan3
+                style:
+                  top: 30%
+                  left: 20%
+                  color: orange
+                  transform: scale(6,6)
+          - type: conditional
+            conditions:
+              - entity: sensor.mqtt_fan_status
+                state: '3'
+            elements:
+              - type: icon
                 icon: mdi:fan-speed-3
-                show_name: false
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: rest_command.set_fan_speed_3
-                  service_data: {}
-                  target: {}
-          - type: horizontal-stack
-            cards:
-              - show_name: false
-                show_icon: true
-                type: button
-                name: Fan0
+                style:
+                  top: 30%
+                  left: 20%
+                  color: orange
+                  transform: scale(6,6)
+          - type: conditional
+            conditions:
+              - entity: sensor.mqtt_fan_status
+                state: '0'
+            elements:
+              - type: icon
                 icon: mdi:fan-off
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: rest_command.set_fan_speed_0
-                  target: {}
-                  data: {}
-                show_state: false
-              - show_name: false
-                show_icon: true
-                type: button
-                name: FanAuto
-                icon: hass:cog
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: mqtt.publish
-                  service_data:
-                    topic: fan/override/set
-                    payload: '9'
-                    qos: '2'
-                  target: {}
-              - show_name: false
-                show_icon: true
-                type: button
-                name: FanLock
-                icon: mdi:hand-back-left
-                icon_height: 30px
-                tap_action:
-                  action: call-service
-                  service: mqtt.publish
-                  target: {}
-                  data:
-                    topic: fan/override/set
-                    payload: '8'
-                    qos: '2'
+                style:
+                  top: 30%
+                  left: 20%
+                  color: orange
+                  transform: scale(6,6)
+          - type: icon
+            title: Fan 0
+            icon: mdi:fan-off
+            tap_action:
+              action: call-service
+              service: rest_command.set_fan_speed_0
+              service_data: {}
+              target: {}
+            style:
+              top: 80%
+              left: 7%
+              color: lightgray
+              transform: scale(2,2)
+          - type: icon
+            title: Fan 1
+            icon: mdi:fan-speed-1
+            tap_action:
+              action: call-service
+              service: rest_command.set_fan_speed_1
+              service_data: {}
+              target: {}
+            style:
+              top: 80%
+              left: 20%
+              color: lightgray
+              transform: scale(2,2)
+          - type: icon
+            title: Fan 2
+            icon: mdi:fan-speed-2
+            tap_action:
+              action: call-service
+              service: rest_command.set_fan_speed_2
+              service_data: {}
+              target: {}
+            style:
+              top: 80%
+              left: 33%
+              color: lightgray
+              transform: scale(2,2)
+          - type: icon
+            title: Fan 3
+            icon: mdi:fan-speed-3
+            tap_action:
+              action: call-service
+              service: rest_command.set_fan_speed_3
+              service_data: {}
+              target: {}
+            style:
+              top: 80%
+              left: 46%
+              color: lightgray
+              transform: scale(2,2)
+          - type: icon
+            title: Fan Auto
+            icon: hass:cog
+            tap_action:
+              action: call-service
+              service: mqtt.publish
+              service_data:
+                topic: fan/override/set
+                payload: '9'
+                qos: '2'
+              target: {}
+            style:
+              top: 80%
+              left: 75%
+              color: lightgray
+              transform: scale(2,2)
+          - type: icon
+            title: Fan Lock
+            icon: mdi:hand-back-left
+            tap_action:
+              action: call-service
+              service: mqtt.publish
+              target: {}
+              data:
+                topic: fan/override/set
+                payload: '8'
+                qos: '2'
+            style:
+              top: 80%
+              left: 90%
+              color: lightgray
+              transform: scale(2,2)
       - type: vertical-stack
-        title: Power
         cards:
-          - hours_to_show: 24
-            graph: none
-            type: sensor
-            entity: sensor.net_energy_use
-            name: Net Energy Usage
-            detail: 2
-            icon: mdi:transmission-tower
-            unit: kW
           - type: gauge
             entity: sensor.grid_power
             name: Solar
@@ -278,24 +219,135 @@ views:
               green: 0
               yellow: 1
               red: 0
+          - hours_to_show: 24
+            graph: none
+            type: sensor
+            entity: sensor.net_energy_use
+            name: Net Energy Usage
+            detail: 2
+            icon: mdi:transmission-tower
+            unit: kW
+      - type: entities
+        entities:
+          - entity: switch.tv_plug
+            name: TV
+            icon: mdi:television-guide
+        show_header_toggle: false
+        state_color: true
   - theme: Backend-selected
-    title: Lights
-    path: lights
+    title: Floors
+    path: floors
     badges: []
     cards:
       - type: entities
         entities:
-          - entity: light.bedroom_light
-          - entity: light.office_didi
-          - entity: light.office_mike_light
-          - entity: light.garden_lights
-          - entity: light.garage_front_channel_1
-            name: Garage Front Reindeer
-          - entity: light.garage_front_channel_2
-            name: Garage Front Cluster
-          - entity: switch.wcd_iron
-        title: Lights and Power
-        show_header_toggle: true
+          - entity: input_select.floorplan_dropdown
+            name: Floorplan
+        show_header_toggle: false
+        title: Change floor
+        state_color: false
+      - type: vertical-stack
+        cards:
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_dropdown
+                state: Ground
+            card:
+              type: picture-elements
+              image: local/floorplans/Floorplan_ground_floor.png
+              elements:
+                - type: state-icon
+                  entity: light.garage_front_channel_1
+                  icon: mdi:lightbulb
+                  tap_action:
+                    action: toggle
+                  style:
+                    top: 52%
+                    left: 0%
+                    color: gray
+                    transform: scale(1.5,1.5)
+                - type: state-icon
+                  entity: light.garage_front_channel_2
+                  icon: mdi:lightbulb
+                  tap_action:
+                    action: toggle
+                  style:
+                    top: 52%
+                    left: 7%
+                    color: gray
+                    transform: scale(1.5,1.5)
+                - type: state-icon
+                  entity: light.garden_lights
+                  icon: mdi:lightbulb
+                  tap_action:
+                    action: toggle
+                  style:
+                    top: 0%
+                    left: 40%
+                    color: gray
+                    transform: scale(2,2)
+                - type: state-icon
+                  entity: switch.tv_plug
+                  icon: mdi:television-guide
+                  tap_action:
+                    action: toggle
+                  style:
+                    top: 75%
+                    left: 88%
+                    color: gray
+                    transform: scale(2,2)
+                - type: state-icon
+                  entity: vacuum.dusty
+                  icon: mdi:robot-vacuum
+                  tap_action:
+                    action: call-service
+                    service: vacuum.start
+                  hold_action:
+                    action: call-service
+                    service: vacuum.return_to_base
+                  style:
+                    top: 19%
+                    left: 88%
+                    color: gray
+                    transform: scale(2,2)
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_dropdown
+                state: First
+            card:
+              type: picture-elements
+              image: local/floorplans/Floorplan_first_floor.png
+              elements:
+                - type: state-icon
+                  entity: light.office_mike_light
+                  icon: mdi:lightbulb
+                  tap_action:
+                    action: toggle
+                  style:
+                    top: 80%
+                    left: 20%
+                    color: gray
+                    transform: scale(2,2)
+                - type: state-icon
+                  entity: light.office_didi
+                  icon: mdi:lightbulb
+                  tap_action:
+                    action: toggle
+                  style:
+                    top: 80%
+                    left: 65%
+                    color: gray
+                    transform: scale(2,2)
+                - type: state-icon
+                  entity: light.bedroom_light
+                  icon: mdi:lightbulb
+                  tap_action:
+                    action: toggle
+                  style:
+                    top: 15%
+                    left: 68%
+                    color: gray
+                    transform: scale(2,2)
   - title: Devices
     path: devices
     icon: ''
