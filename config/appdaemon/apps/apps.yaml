@@ -1,6 +1,6 @@
-watch_doorbell:
-  module: watch_doorbell
-  class: WatchDoorbell
+# watch_doorbell:
+#   module: watch_doorbell
+#   class: WatchDoorbell
 
 watch_fan:
   module: watch_fan
@@ -10,9 +10,13 @@ watch_thermostat:
   module: watch_thermostat
   class: WatchThermostat
 
-watch_garden_light:
-  module: watch_garden_light
-  class: WatchLight
+watch_solarheater:
+  module: watch_solar_heater
+  class: WatchSolarHeater
+
+# watch_garden_light:
+#   module: watch_garden_light
+#   class: WatchLight
 
 # watch_christmas_light:
 #   module: watch_christmas_light
