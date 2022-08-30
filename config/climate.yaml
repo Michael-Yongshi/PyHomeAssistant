@@ -1,0 +1,35 @@
+  - platform: generic_thermostat
+    name: Thermostat
+    heater: switch.mqtt_heater
+    target_sensor: sensor.mqtt_living_temperature
+    min_temp: 16
+    max_temp: 24
+    ac_mode: false
+    target_temp: 21
+    cold_tolerance: 0.5
+    hot_tolerance: 0.5
+    min_cycle_duration:
+      seconds: 30
+    keep_alive:
+      minutes: 3
+    initial_hvac_mode: "off"
+    away_temp: 15
+    precision: 0.1
+
+  - platform: generic_thermostat
+    name: Electric Heater
+    heater: switch.electric_heater_plug
+    target_sensor: sensor.mqtt_living_temperature
+    min_temp: 16
+    max_temp: 24
+    ac_mode: false
+    target_temp: 21
+    cold_tolerance: 0.5
+    hot_tolerance: 0.5
+    min_cycle_duration:
+      seconds: 30
+    keep_alive:
+      minutes: 3
+    initial_hvac_mode: "off"
+    away_temp: 15
+    precision: 0.1

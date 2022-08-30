@@ -8,9 +8,10 @@ homeassistant:
 # frontend:
 #   themes: !include themes.yaml
 
-# Manual entities
+# Devices & Entities
 sensor: !include sensor.yaml
 switch: !include switch.yaml
+climate: !include climate.yaml
 
 # helpers
 # input_boolean: !include input_boolean.yaml
@@ -39,25 +40,6 @@ telegram_bot:
 # arlo:
 #   username: <username>
 #   password: <password>
-
-climate:
-  - platform: generic_thermostat
-    name: Thermostat
-    heater: switch.mqtt_heater
-    target_sensor: sensor.mqtt_living_temperature
-    min_temp: 16
-    max_temp: 24
-    ac_mode: false
-    target_temp: 21
-    cold_tolerance: 0.5
-    hot_tolerance: 0.5
-    min_cycle_duration:
-      seconds: 30
-    keep_alive:
-      minutes: 3
-    initial_hvac_mode: "off"
-    away_temp: 15
-    precision: 0.1
 
 rest_command:
   set_fan_speed_1:
