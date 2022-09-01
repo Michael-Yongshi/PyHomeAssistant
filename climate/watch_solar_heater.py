@@ -74,6 +74,6 @@ class WatchSolarHeater(hass.Hass):
         self.log(message)
 
         # Call telegram message service to send the message from the telegram bot
-        self.call_service(
-            "telegram_bot/send_message", message=message,
-        )
+        # self.call_service(
+        #     "telegram_bot/send_message", message=message,
+        # )
