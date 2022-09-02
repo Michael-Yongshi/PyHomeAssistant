@@ -320,6 +320,165 @@ views:
             icon: mdi:television-guide
         show_header_toggle: false
         state_color: true
+      - type: picture-elements
+        image: local/blank_narrow.png
+        elements:
+          - type: conditional
+            conditions:
+              - entity: sensor.afvalwijzer_today
+                state: gft
+            elements:
+              - type: icon
+                icon: mdi:compost
+                style:
+                  top: 50%
+                  left: 20%
+                  color: Green
+                  transform: scale(6,6)
+          - type: conditional
+            conditions:
+              - entity: sensor.afvalwijzer_tomorrow
+                state: gft
+            elements:
+              - type: icon
+                icon: mdi:compost
+                style:
+                  top: 50%
+                  left: 20%
+                  color: Green
+                  transform: scale(4,4)
+          - type: conditional
+            conditions:
+              - entity: sensor.afvalwijzer_day_after_tomorrow
+                state: gft
+            elements:
+              - type: icon
+                icon: mdi:compost
+                style:
+                  top: 50%
+                  left: 20%
+                  color: Green
+                  transform: scale(2,2)
+          - type: conditional
+            conditions:
+              - entity: sensor.afvalwijzer_day_after_tomorrow
+                state_not: gft
+              - entity: sensor.afvalwijzer_tomorrow
+                state_not: gft
+              - entity: sensor.afvalwijzer_today
+                state_not: gft
+            elements:
+              - type: icon
+                icon: mdi:compost
+                style:
+                  top: 50%
+                  left: 20%
+                  color: Grey
+                  transform: scale(2,2)
+          - type: conditional
+            conditions:
+              - entity: sensor.afvalwijzer_today
+                state: papier
+            elements:
+              - type: icon
+                icon: mdi:newspaper-variant-multiple
+                style:
+                  top: 50%
+                  left: 50%
+                  color: Blue
+                  transform: scale(6,6)
+          - type: conditional
+            conditions:
+              - entity: sensor.afvalwijzer_tomorrow
+                state: papier
+            elements:
+              - type: icon
+                icon: mdi:newspaper-variant-multiple
+                style:
+                  top: 50%
+                  left: 50%
+                  color: Blue
+                  transform: scale(4,4)
+          - type: conditional
+            conditions:
+              - entity: sensor.afvalwijzer_day_after_tomorrow
+                state: papier
+            elements:
+              - type: icon
+                icon: mdi:newspaper-variant-multiple
+                style:
+                  top: 50%
+                  left: 50%
+                  color: Blue
+                  transform: scale(2,2)
+          - type: conditional
+            conditions:
+              - entity: sensor.afvalwijzer_day_after_tomorrow
+                state_not: papier
+              - entity: sensor.afvalwijzer_tomorrow
+                state_not: papier
+              - entity: sensor.afvalwijzer_today
+                state_not: papier
+            elements:
+              - type: icon
+                icon: mdi:newspaper-variant-multiple
+                style:
+                  top: 50%
+                  left: 50%
+                  color: Grey
+                  transform: scale(2,2)
+          - type: conditional
+            conditions:
+              - entity: sensor.afvalwijzer_today
+                state: plastic
+            elements:
+              - type: icon
+                icon: mdi:bottle-soda-classic
+                style:
+                  top: 50%
+                  left: 80%
+                  color: Orange
+                  transform: scale(6,6)
+          - type: conditional
+            conditions:
+              - entity: sensor.afvalwijzer_tomorrow
+                state: plastic
+            elements:
+              - type: icon
+                icon: mdi:bottle-soda-classic
+                style:
+                  top: 50%
+                  left: 80%
+                  color: Orange
+                  transform: scale(4,4)
+          - type: conditional
+            conditions:
+              - entity: sensor.afvalwijzer_day_after_tomorrow
+                state: plastic
+            elements:
+              - type: icon
+                icon: mdi:bottle-soda-classic
+                style:
+                  top: 50%
+                  left: 80%
+                  color: Orange
+                  transform: scale(2,2)
+          - type: conditional
+            conditions:
+              - entity: sensor.afvalwijzer_day_after_tomorrow
+                state_not: plastic
+              - entity: sensor.afvalwijzer_tomorrow
+                state_not: plastic
+              - entity: sensor.afvalwijzer_today
+                state_not: plastic
+            elements:
+              - type: icon
+                icon: mdi:bottle-soda-classic
+                style:
+                  top: 50%
+                  left: 80%
+                  color: Grey
+                  transform: scale(2,2)
   - theme: Backend-selected
     title: Floors
     path: floors
@@ -718,19 +877,25 @@ views:
     icon: ''
     badges: []
     cards:
-      - type: entities
-        entities:
-          - entity: sensor.hookie_ewok_status
-          - entity: binary_sensor.hookie_ewok_security_status
-          - entity: binary_sensor.hookie_ewok_below_min_remaining_life
-          - entity: binary_sensor.hookie_ewok_exceeded_max_bad_sectors
-          - entity: binary_sensor.hookie_ewok_update_available
-          - entity: sensor.hookie_ewok_used_space
-          - entity: sensor.hookie_ewok_volume_used
-        title: Network Attached Storage
-        show_header_toggle: true
-      - type: entity
-        entity: light.garden_lights
+      - type: vertical-stack
+        cards:
+          - type: glance
+            title: Maintenance
+            show_header_toggle: false
+            show_state: false
+            entities:
+              - entity: zone.home
+                icon: mdi:restart
+                name: Home Assistant Software
+                tap_action:
+                  action: call-service
+                  service: homeassistant.restart
+              - entity: zone.home
+                icon: mdi:restart
+                name: Home Assistant Device
+                tap_action:
+                  action: call-service
+                  service: hassio.host_reboot
       - type: glance
         entities:
           - entity: sensor.bedroom_light_rssi
@@ -744,60 +909,24 @@ views:
           - entity: switch.mqtt_heater
           - entity: switch.floor_pump
         title: Heater
-      - type: entities
-        title: Voltage
-        entities:
-          - sensor.voltage_phase_l1
-          - sensor.voltage_phase_l2
-          - sensor.voltage_phase_l3
-      - type: entities
-        title: Current
-        entities:
-          - entity: sensor.current_phase_l1
-          - entity: sensor.current_phase_l2
-          - entity: sensor.current_phase_l3
-          - entity: sensor.pv_current_a
-            name: Current Solar L1
-            icon: mdi:current-ac
       - type: vertical-stack
-        title: Bitcoin
-        show_header_toggle: false
+        title: Electricity
         cards:
           - type: entities
-            title: Bitcoin Mainnet
-            show_header_toggle: true
+            title: Voltage
             entities:
-              - sensor.mqtt_btcmain_current_block
-              - sensor.mqtt_btcmain_highest_block
-              - sensor.mqtt_btcmain_connections
+              - sensor.voltage_phase_l1
+              - sensor.voltage_phase_l2
+              - sensor.voltage_phase_l3
           - type: entities
-            title: Bitcoin Testnet
-            show_header_toggle: true
+            title: Current
             entities:
-              - sensor.btctest_syncing
-      - type: vertical-stack
-        title: Ethereum
-        show_header_toggle: false
-        cards:
-          - type: entities
-            title: Ethereum Mainnet
-            show_header_toggle: true
-            entities:
-              - sensor.mqtt_ethmain_current_block
-              - sensor.mqtt_ethmain_highest_block
-              - sensor.mqtt_ethmain_pulled_states
-              - sensor.mqtt_ethmain_known_states
-          - type: entities
-            title: Ethereum Ropsten
-            show_header_toggle: true
-            entities:
-              - sensor.mqtt_ethropsten_current_block
-              - sensor.mqtt_ethropsten_highest_block
-              - sensor.mqtt_ethropsten_pulled_states
-              - sensor.mqtt_ethropsten_known_states
-      - type: entities
-        entities:
-          - entity: sensor.mqtt_doorbell_status
+              - entity: sensor.current_phase_l1
+              - entity: sensor.current_phase_l2
+              - entity: sensor.current_phase_l3
+              - entity: sensor.pv_current_a
+                name: Current Solar L1
+                icon: mdi:current-ac
       - type: custom:auto-entities
         card:
           type: glance
@@ -812,3 +941,58 @@ views:
           attribute: days_until_collection_date
           method: attribute
           numeric: true
+      - type: vertical-stack
+        title: Network Attached Storage
+        cards:
+          - type: entities
+            title: Hookie-Ewok (Drive 1)
+            entities:
+              - entity: binary_sensor.hookie_ewok_drive_1_below_min_remaining_life
+                name: Below Min Remaining Life
+              - entity: binary_sensor.hookie_ewok_drive_1_exceeded_max_bad_sectors
+                name: Exceeded Max Bad Sectors
+              - entity: sensor.hookie_ewok_drive_1_status
+                name: Status
+              - entity: sensor.hookie_ewok_drive_1_temperature
+                name: Temperature
+          - type: entities
+            title: Hookie-Ewok (Volume 1)
+            entities:
+              - entity: sensor.hookie_ewok_volume_1_status
+                name: Status
+              - entity: sensor.hookie_ewok_volume_1_used_space
+                name: Used Space
+              - entity: sensor.hookie_ewok_volume_1_volume_used
+                name: Volume Used
+          - type: entities
+            entities:
+              - entity: sensor.hookie_ewok_cpu_load_average_15_min
+                name: CPU Load Average (15 min)
+              - entity: sensor.hookie_ewok_cpu_load_average_5_min
+                name: CPU Load Average (5 min)
+              - entity: sensor.hookie_ewok_cpu_utilization_total
+                name: CPU Utilization (Total)
+              - entity: sensor.hookie_ewok_cpu_utilization_user
+                name: CPU Utilization (User)
+              - entity: sensor.hookie_ewok_download_throughput
+                name: Download Throughput
+              - entity: sensor.hookie_ewok_memory_available_real
+                name: Memory Available (Real)
+              - entity: sensor.hookie_ewok_memory_available_swap
+                name: Memory Available (Swap)
+              - entity: sensor.hookie_ewok_memory_total_real
+                name: Memory Total (Real)
+              - entity: sensor.hookie_ewok_memory_total_swap
+                name: Memory Total (Swap)
+              - entity: sensor.hookie_ewok_memory_usage_real
+                name: Memory Usage (Real)
+              - entity: binary_sensor.hookie_ewok_security_status
+                name: Security Status
+              - entity: sensor.hookie_ewok_upload_throughput
+                name: Upload Throughput
+            title: Hookie-Ewok
+  - theme: Backend-selected
+    title: Test
+    path: test
+    badges: []
+    cards: []
