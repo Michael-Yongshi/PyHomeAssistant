@@ -233,65 +233,65 @@ views:
           - type: entities
             entities:
               - entity: sensor.mqtt_fan_override_status
-      - type: picture-elements
-        image: local/fan/flows_only_bezels.png
-        elements:
-          - type: state-label
-            entity: sensor.ca350_supply_fan_speed
-            style:
-              top: 40%
-              left: 15%
-              color: gray
-          - type: state-label
-            entity: sensor.ca350_exhaust_fan_speed
-            style:
-              top: 40%
-              left: 85%
-              color: gray
-          - type: state-label
-            entity: sensor.ca350_return_temperature
-            style:
-              top: 23%
-              left: 95%
-              color: red
-          - type: state-label
-            entity: sensor.ca350_supply_temperature
-            style:
-              top: 76%
-              left: 95%
-              color: red
-          - type: state-label
-            entity: sensor.ca350_outside_temperature
-            style:
-              top: 23%
-              left: 5%
-              color: blue
-          - type: state-label
-            entity: sensor.ca350_exhaust_temperature
-            style:
-              top: 76%
-              left: 5%
-              color: blue
-          - type: state-label
-            entity: sensor.ca350_bypass_valve
-            prefix: 'Bypass: '
-            style:
-              top: 25%
-              left: 50%
-              color: gray
-          - type: state-label
-            entity: sensor.ca350_summer_mode
-            style:
-              top: 10%
-              left: 50%
-              color: grey
-          - type: state-label
-            entity: number.ca350_filter_weeks
-            prefix: 'Filter: '
-            style:
-              top: 92%
-              left: 90%
-              color: gray
+          - type: picture-elements
+            image: local/fan/flows_only_bezels.png
+            elements:
+              - type: state-label
+                entity: sensor.ca350_supply_fan_speed
+                style:
+                  top: 40%
+                  left: 15%
+                  color: gray
+              - type: state-label
+                entity: sensor.ca350_exhaust_fan_speed
+                style:
+                  top: 40%
+                  left: 85%
+                  color: gray
+              - type: state-label
+                entity: sensor.ca350_return_temperature
+                style:
+                  top: 23%
+                  left: 95%
+                  color: red
+              - type: state-label
+                entity: sensor.ca350_supply_temperature
+                style:
+                  top: 76%
+                  left: 95%
+                  color: red
+              - type: state-label
+                entity: sensor.ca350_outside_temperature
+                style:
+                  top: 23%
+                  left: 5%
+                  color: blue
+              - type: state-label
+                entity: sensor.ca350_exhaust_temperature
+                style:
+                  top: 76%
+                  left: 5%
+                  color: blue
+              - type: state-label
+                entity: sensor.ca350_bypass_valve
+                prefix: 'Bypass: '
+                style:
+                  top: 25%
+                  left: 50%
+                  color: gray
+              - type: state-label
+                entity: sensor.ca350_summer_mode
+                style:
+                  top: 10%
+                  left: 50%
+                  color: grey
+              - type: state-label
+                entity: number.ca350_filter_weeks
+                prefix: 'Filter: '
+                style:
+                  top: 92%
+                  left: 90%
+                  color: gray
       - type: vertical-stack
         cards:
           - type: gauge
@@ -434,6 +434,82 @@ views:
                     left: 68%
                     color: gray
                     transform: scale(2,2)
+          - type: conditional
+            conditions:
+              - entity: input_select.floorplan_dropdown
+                state: Second
+            card:
+              type: picture-elements
+              image: local/floorplans/Floorplan_second_floor3.png
+              elements:
+                - type: state-icon
+                  entity: switch.plug_washmachine
+                  icon: mdi:washing-machine
+                  tap_action:
+                    action: toggle
+                  style:
+                    top: 56%
+                    left: 20%
+                    color: gray
+                    transform: scale(2,2)
+                - type: state-icon
+                  entity: switch.plug_iron
+                  icon: mdi:iron
+                  tap_action:
+                    action: toggle
+                  style:
+                    top: 85%
+                    left: 55%
+                    color: gray
+                    transform: scale(2,2)
+                - type: conditional
+                  conditions:
+                    - entity: sensor.mqtt_fan_status
+                      state: '1'
+                  elements:
+                    - type: icon
+                      icon: mdi:fan-speed-1
+                      style:
+                        top: 46%
+                        left: 30%
+                        color: '#FDD835'
+                        transform: scale(2,2)
+                - type: conditional
+                  conditions:
+                    - entity: sensor.mqtt_fan_status
+                      state: '2'
+                  elements:
+                    - type: icon
+                      icon: mdi:fan-speed-2
+                      style:
+                        top: 46%
+                        left: 30%
+                        color: '#FDD835'
+                        transform: scale(2,2)
+                - type: conditional
+                  conditions:
+                    - entity: sensor.mqtt_fan_status
+                      state: '3'
+                  elements:
+                    - type: icon
+                      icon: mdi:fan-speed-3
+                      style:
+                        top: 46%
+                        left: 30%
+                        color: '#FDD835'
+                        transform: scale(2,2)
+                - type: conditional
+                  conditions:
+                    - entity: sensor.mqtt_fan_status
+                      state: '0'
+                  elements:
+                    - type: icon
+                      icon: mdi:fan-off
+                      style:
+                        top: 46%
+                        left: 30%
+                        color: '#44739e'
+                        transform: scale(2,2)
   - title: Devices
     path: devices
     icon: ''
@@ -559,6 +635,13 @@ views:
             graph: line
             detail: 2
             hours_to_show: 24
+      - type: vertical-stack
+        title: Thermostats
+        cards:
+          - type: thermostat
+            entity: climate.thermostat
+          - type: thermostat
+            entity: climate.electric_heater
   - title: Energy
     path: energy
     icon: ''
