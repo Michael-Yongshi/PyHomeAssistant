@@ -18,7 +18,7 @@
 
   - platform: generic_thermostat
     name: Electric Heater
-    heater: switch.electric_heater_plug
+    heater: switch.plug_electric_heater
     target_sensor: sensor.mqtt_living_temperature
     min_temp: 16
     max_temp: 24
