@@ -233,65 +233,6 @@ views:
           - type: entities
             entities:
               - entity: sensor.mqtt_fan_override_status
-          - type: picture-elements
-            image: local/fan/flows_only_bezels.png
-            elements:
-              - type: state-label
-                entity: sensor.ca350_supply_fan_speed
-                style:
-                  top: 40%
-                  left: 15%
-                  color: gray
-              - type: state-label
-                entity: sensor.ca350_exhaust_fan_speed
-                style:
-                  top: 40%
-                  left: 85%
-                  color: gray
-              - type: state-label
-                entity: sensor.ca350_return_temperature
-                style:
-                  top: 23%
-                  left: 95%
-                  color: red
-              - type: state-label
-                entity: sensor.ca350_supply_temperature
-                style:
-                  top: 76%
-                  left: 95%
-                  color: red
-              - type: state-label
-                entity: sensor.ca350_outside_temperature
-                style:
-                  top: 23%
-                  left: 5%
-                  color: blue
-              - type: state-label
-                entity: sensor.ca350_exhaust_temperature
-                style:
-                  top: 76%
-                  left: 5%
-                  color: blue
-              - type: state-label
-                entity: sensor.ca350_bypass_valve
-                prefix: 'Bypass: '
-                style:
-                  top: 25%
-                  left: 50%
-                  color: gray
-              - type: state-label
-                entity: sensor.ca350_summer_mode
-                style:
-                  top: 10%
-                  left: 50%
-                  color: grey
-              - type: state-label
-                entity: number.ca350_filter_weeks
-                prefix: 'Filter: '
-                style:
-                  top: 92%
-                  left: 90%
-                  color: gray
       - type: vertical-stack
         cards:
           - type: gauge
@@ -430,7 +371,7 @@ views:
           - type: conditional
             conditions:
               - entity: sensor.afvalwijzer_today
-                state: plastic
+                state: pmd
             elements:
               - type: icon
                 icon: mdi:bottle-soda-classic
@@ -442,7 +383,7 @@ views:
           - type: conditional
             conditions:
               - entity: sensor.afvalwijzer_tomorrow
-                state: plastic
+                state: pmd
             elements:
               - type: icon
                 icon: mdi:bottle-soda-classic
@@ -454,7 +395,7 @@ views:
           - type: conditional
             conditions:
               - entity: sensor.afvalwijzer_day_after_tomorrow
-                state: plastic
+                state: pmd
             elements:
               - type: icon
                 icon: mdi:bottle-soda-classic
@@ -466,11 +407,11 @@ views:
           - type: conditional
             conditions:
               - entity: sensor.afvalwijzer_day_after_tomorrow
-                state_not: plastic
+                state_not: pmd
               - entity: sensor.afvalwijzer_tomorrow
-                state_not: plastic
+                state_not: pmd
               - entity: sensor.afvalwijzer_today
-                state_not: plastic
+                state_not: pmd
             elements:
               - type: icon
                 icon: mdi:bottle-soda-classic
@@ -508,7 +449,7 @@ views:
                     action: toggle
                   style:
                     top: 52%
-                    left: 0%
+                    left: 7%
                     color: gray
                     transform: scale(1.5,1.5)
                 - type: state-icon
@@ -518,7 +459,7 @@ views:
                     action: toggle
                   style:
                     top: 52%
-                    left: 7%
+                    left: 0%
                     color: gray
                     transform: scale(1.5,1.5)
                 - type: state-icon
@@ -555,6 +496,32 @@ views:
                     left: 88%
                     color: gray
                     transform: scale(2,2)
+                - type: state-icon
+                  entity: switch.floor_pump
+                  icon: mdi:pump
+                  style:
+                    top: 42%
+                    left: 65%
+                    color: gray
+                    transform: scale(1.5,1.5)
+                - type: state-icon
+                  entity: switch.plug_electric_heater
+                  icon: mdi:patio-heater
+                  tap_action:
+                    action: toggle
+                  style:
+                    top: 60%
+                    left: 90%
+                    color: gray
+                    transform: scale(1.5,1.5)
+                - type: state-icon
+                  entity: sensor.fan_button_toilet_battery
+                  icon: mdi:fan-plus
+                  style:
+                    top: 45%
+                    left: 33%
+                    color: gray
+                    transform: scale(1.5,1.5)
           - type: conditional
             conditions:
               - entity: input_select.floorplan_dropdown
@@ -593,6 +560,14 @@ views:
                     left: 68%
                     color: gray
                     transform: scale(2,2)
+                - type: state-icon
+                  entity: sensor.fan_button_bathroom_battery
+                  icon: mdi:fan-plus
+                  style:
+                    top: 25%
+                    left: 5%
+                    color: gray
+                    transform: scale(1.5,1.5)
           - type: conditional
             conditions:
               - entity: input_select.floorplan_dropdown
@@ -601,16 +576,6 @@ views:
               type: picture-elements
               image: local/floorplans/Floorplan_second_floor3.png
               elements:
-                - type: state-icon
-                  entity: switch.plug_washmachine
-                  icon: mdi:washing-machine
-                  tap_action:
-                    action: toggle
-                  style:
-                    top: 56%
-                    left: 20%
-                    color: gray
-                    transform: scale(2,2)
                 - type: state-icon
                   entity: switch.plug_iron
                   icon: mdi:iron
@@ -741,6 +706,65 @@ views:
     icon: ''
     badges: []
     cards:
+      - type: picture-elements
+        image: local/fan/flows_only_bezels.png
+        elements:
+          - type: state-label
+            entity: sensor.ca350_supply_fan_speed
+            style:
+              top: 40%
+              left: 15%
+              color: gray
+          - type: state-label
+            entity: sensor.ca350_exhaust_fan_speed
+            style:
+              top: 40%
+              left: 85%
+              color: gray
+          - type: state-label
+            entity: sensor.ca350_return_temperature
+            style:
+              top: 23%
+              left: 95%
+              color: red
+          - type: state-label
+            entity: sensor.ca350_supply_temperature
+            style:
+              top: 76%
+              left: 95%
+              color: red
+          - type: state-label
+            entity: sensor.ca350_outside_temperature
+            style:
+              top: 23%
+              left: 5%
+              color: blue
+          - type: state-label
+            entity: sensor.ca350_exhaust_temperature
+            style:
+              top: 76%
+              left: 5%
+              color: blue
+          - type: state-label
+            entity: sensor.ca350_bypass_valve
+            prefix: 'Bypass: '
+            style:
+              top: 25%
+              left: 50%
+              color: gray
+          - type: state-label
+            entity: sensor.ca350_summer_mode
+            style:
+              top: 10%
+              left: 50%
+              color: grey
+          - type: state-label
+            entity: number.ca350_filter_weeks
+            prefix: 'Filter: '
+            style:
+              top: 92%
+              left: 90%
+              color: gray
       - type: vertical-stack
         title: Thermostat Timeslots
         cards:
@@ -801,6 +825,11 @@ views:
             entity: climate.thermostat
           - type: thermostat
             entity: climate.electric_heater
+      - type: entities
+        entities:
+          - entity: switch.mqtt_heater
+          - entity: switch.floor_pump
+        title: Heater
   - title: Energy
     path: energy
     icon: ''
@@ -845,6 +874,30 @@ views:
             name: All-time solar production
             icon: mdi:home-lightning-bolt
         title: Inverter
+      - type: picture
+        image: local/groups.png
+        tap_action:
+          action: none
+        hold_action:
+          action: none
+      - type: vertical-stack
+        title: Electricity
+        cards:
+          - type: entities
+            title: Voltage
+            entities:
+              - sensor.voltage_phase_l1
+              - sensor.voltage_phase_l2
+              - sensor.voltage_phase_l3
+          - type: entities
+            title: Current
+            entities:
+              - entity: sensor.current_phase_l1
+              - entity: sensor.current_phase_l2
+              - entity: sensor.current_phase_l3
+              - entity: sensor.pv_current_a
+                name: Current Solar L1
+                icon: mdi:current-ac
   - theme: Backend-selected
     title: Network
     path: network
@@ -904,29 +957,6 @@ views:
           - entity: sensor.garden_lights_rssi
           - entity: sensor.floor_pump_rssi
         title: Shellies
-      - type: entities
-        entities:
-          - entity: switch.mqtt_heater
-          - entity: switch.floor_pump
-        title: Heater
-      - type: vertical-stack
-        title: Electricity
-        cards:
-          - type: entities
-            title: Voltage
-            entities:
-              - sensor.voltage_phase_l1
-              - sensor.voltage_phase_l2
-              - sensor.voltage_phase_l3
-          - type: entities
-            title: Current
-            entities:
-              - entity: sensor.current_phase_l1
-              - entity: sensor.current_phase_l2
-              - entity: sensor.current_phase_l3
-              - entity: sensor.pv_current_a
-                name: Current Solar L1
-                icon: mdi:current-ac
       - type: custom:auto-entities
         card:
           type: glance
