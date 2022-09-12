@@ -46,6 +46,12 @@ https://www.whirlwind.nl/nieuw/bericht/zehnder-comfoair-350-zehnder-whr-930-midd
 home assistant lovelace card alternative
 https://github.com/wichers/lovelace-comfoair
 
+RJ45 plug plugs in with the 
+- white/orange striped having 12 volt (not used)
+- orange solid being the RX of the WHR (connects to the TX of the RPI)
+- white/green striped being the TX of the WHR (connects to the RX of the RPI)
+- brown solid is the GND (connected but doesnt really make a difference in functionality)
+
 
 ## custom
 
