@@ -107,7 +107,12 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
             
             # publish override to MQTT
             pretty_time = self.pretty_time(self.override_expiration)
-            self.mqtt_publish(topic = self.topic_override_status, payload = f"Override of {status_new} active until {pretty_time}", qos = 1)
+
+            time_left_delta = self.override_expiration - current_time
+            time_left_str = self.pretty_time_delta(time_left_delta.total_seconds())
+
+            self.event_happened(f"override {self.override_expiration}, current {current_time}, delta {time_left_delta}, delta str {time_left_str}")
+            self.mqtt_publish(topic = self.topic_override_status, payload = f"{time_left_str}", qos = 1)
 
         else:
             self.log(f"Error, no valid input received: {status_new}")
@@ -283,6 +288,22 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         pretty_t = datetime.strftime("%H:%M")
 
         return pretty_t
+
+    def pretty_time_delta(self, seconds):
+
+        seconds = int(seconds)
+        days, seconds = divmod(seconds, 86400)
+        hours, seconds = divmod(seconds, 3600)
+        minutes, seconds = divmod(seconds, 60)
+
+        if days > 0:
+            return f"{days}d" #{hours}h {minutes}m {seconds}s"
+        elif hours > 0:
+            return f"{hours}h" #{minutes}m {seconds}s"
+        elif minutes > 0:
+            return f"{minutes}m" #{seconds}s"
+        else:
+            return f"{seconds}s"
 
     def event_happened(self, message):
         """
