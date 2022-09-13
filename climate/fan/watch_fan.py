@@ -106,13 +106,8 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
                 self.event_happened(f"Someone requested fan override, setting speed {status_old} => {status_new} until {pretty_time}!")
             
             # publish override to MQTT
-            pretty_time = self.pretty_time(self.override_expiration)
-
-            time_left_delta = self.override_expiration - current_time
-            time_left_str = self.pretty_time_delta(time_left_delta.total_seconds())
-
-            self.event_happened(f"override {self.override_expiration}, current {current_time}, delta {time_left_delta}, delta str {time_left_str}")
-            self.mqtt_publish(topic = self.topic_override_status, payload = f"{time_left_str}", qos = 1)
+            time_left = self.time_left()
+            self.mqtt_publish(topic = self.topic_override_status, payload = f"{time_left}", qos = 1)
 
         else:
             self.log(f"Error, no valid input received: {status_new}")
@@ -135,8 +130,11 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
         # check if override is active
         if self.override_expiration >= current_time:
-            until = self.override_expiration - current_time
-            self.log(f"Override active, expires in {until}")
+
+            # publish override to MQTT
+            time_left = self.time_left()
+            self.mqtt_publish(topic = self.topic_override_status, payload = f"{time_left}", qos = 1)
+
             return
 
         else:
@@ -169,40 +167,6 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
     def post_fan_speed(self, speed):
 
         self.mqtt_publish(topic = "fan/set", payload = speed, qos = 1)
-
-    # def get_fan_speed(self):
-    #     """
-    #     get the current speed of the fan
-    #     """
-
-    #     # address for the rest api
-    #     url = self.fan_url + "/get_speed"
-
-    #     # send out the actual request to the api
-    #     response = requests.get(url=url)
-    #     speed = response.text
-
-    #     return speed
-
-    # # set the speed of the fan
-    # def post_fan_speed(self, speed):
-
-    #     # address for the rest api
-    #     url = self.fan_url + "/post_speed"
-
-    #     # denote that we are sending data in the form of a json string
-    #     headers = {
-    #         "content-type": "application/json",
-    #     }
-
-    #     json = {
-    #         "speed": f"{speed}",
-    #     }
-
-    #     # send out the actual request to the api
-    #     response = requests.post(url=url, headers=headers, json=json)
-
-    #     self.log(response.text)
 
     def determine_time(self):
         """
@@ -281,6 +245,16 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
             self.log(f"Couldn't observe temperature!")
 
         return setting
+
+
+    def time_left(self):
+
+        current_time = datetime.datetime.now()
+
+        time_left_delta = self.override_expiration - current_time
+        time_left_str = self.pretty_time_delta(time_left_delta.total_seconds())
+
+        return time_left_str
 
     def pretty_time(self, datetime):
 
