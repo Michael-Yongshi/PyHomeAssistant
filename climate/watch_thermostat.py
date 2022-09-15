@@ -19,7 +19,7 @@ class WatchThermostat(hass.Hass):
 
         # Home assistant parameters
         self.climate_entity = "climate.thermostat"
-        self.floorpump_entity = "switch.floor_pump"
+        self.floorpump_entity = "switch.floorpump"
         self.heater_status_entity = "sensor.mqtt_heater_status"
         self.current_program = self.set_program()
 
