@@ -11,16 +11,16 @@
       qos: 1
       retain: true
 
-# Heater distribution pump (floor) - Shelly
-    - name: mqtt_heater_pump
-      state_topic: heater/pump/status
-      command_topic: heater/pump/set
-      payload_on: 1
-      payload_off: 0
-      state_on: 1
-      state_off: 0
-      optimistic: false
-      qos: 1  
+# # Heater distribution pump (floor) - Shelly
+#     - name: mqtt_heater_pump
+#       state_topic: heater/pump/status
+#       command_topic: heater/pump/set
+#       payload_on: 1
+#       payload_off: 0
+#       state_on: 1
+#       state_off: 0
+#       optimistic: false
+#       qos: 1  
   
   
   #################################################################
