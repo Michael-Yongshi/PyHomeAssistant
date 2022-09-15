@@ -34,6 +34,7 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         self.topic_override_set = "fan/override/set"
         # override status topic is the current status of the override
         self.topic_override_status = "fan/override/status"
+        self.topic_override_timeleft = "fan/override/timeleft"
 
         # call a certain method when mqtt updates are available.
         self.listen_state(self.mqtt_update, "sensor.mqtt_bathroom_humidity")
@@ -41,6 +42,8 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
         # enforce determining setting even if humidity is unchanged every minute
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
+
+        self.determine_setting()
 
     # the method that is called when someone wants to override fan setting from home assistant itself
     def override(self, entity, attribute, old, new, kwargs):
@@ -64,7 +67,7 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
             # no override expiration
             self.override_expiration = datetime.datetime(9999, 1, 1)
-            self.mqtt_publish(topic = self.topic_override_status, payload = f"Persistent Override", qos = 1)
+            self.mqtt_publish(topic = self.topic_override_status, payload = "Persistent Override", qos = 1)
             self.event_happened(f"Fan override persists!")
 
         # check if requested to go back to automatic programming
@@ -72,7 +75,7 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
             # disable override by setting expiration to current time
             self.override_expiration = current_time
-            self.mqtt_publish(topic = self.topic_override_status, payload = "Automatic programming", qos = 1)
+            self.mqtt_publish(topic = self.topic_override_status, payload = "Automatic Programming", qos = 1)
             self.event_happened(f"Fan override lifted!")
 
             # immediately run automatically setting the fan as override is stopped
@@ -107,7 +110,8 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
             
             # publish override to MQTT
             time_left = self.time_left()
-            self.mqtt_publish(topic = self.topic_override_status, payload = f"{time_left}", qos = 1)
+            self.mqtt_publish(topic = self.topic_override_status, payload = "Temporary Override", qos = 1)
+            self.mqtt_publish(topic = self.topic_override_timeleft, payload = f"{time_left}", qos = 1)
 
         else:
             self.log(f"Error, no valid input received: {status_new}")
@@ -133,7 +137,7 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
             # publish override to MQTT
             time_left = self.time_left()
-            self.mqtt_publish(topic = self.topic_override_status, payload = f"{time_left}", qos = 1)
+            self.mqtt_publish(topic = self.topic_override_timeleft, payload = f"{time_left}", qos = 1)
 
             return
 

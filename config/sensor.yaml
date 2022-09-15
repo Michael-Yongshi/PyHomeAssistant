@@ -114,6 +114,11 @@
     name: mqtt_fan_override_status
     state_topic: 'fan/override/status'
 
+  - platform: mqtt
+    # icon by customize.yaml
+    name: mqtt_fan_override_timeleft
+    state_topic: 'fan/override/timeleft'
+
   #################################################################
   ## MQTT Climate Heater sensors
   #################################################################
@@ -162,57 +167,57 @@
   ## MQTT DLT nodes
   #################################################################
 
-  - platform: mqtt
-    name: mqtt_ethmain_current_block
-    state_topic: "ethmain/current_block"
-    icon: hass:lan
+  # - platform: mqtt
+  #   name: mqtt_ethmain_current_block
+  #   state_topic: "ethmain/current_block"
+  #   icon: hass:lan
 
-  - platform: mqtt
-    name: mqtt_ethmain_highest_block
-    state_topic: "ethmain/highest_block"
-    icon: hass:lan
+  # - platform: mqtt
+  #   name: mqtt_ethmain_highest_block
+  #   state_topic: "ethmain/highest_block"
+  #   icon: hass:lan
 
-  - platform: mqtt
-    name: mqtt_ethmain_pulled_states
-    state_topic: "ethmain/pulled_states"
-    icon: hass:lan
+  # - platform: mqtt
+  #   name: mqtt_ethmain_pulled_states
+  #   state_topic: "ethmain/pulled_states"
+  #   icon: hass:lan
 
-  - platform: mqtt
-    name: mqtt_ethmain_known_states
-    state_topic: "ethmain/known_states"
-    icon: hass:lan
+  # - platform: mqtt
+  #   name: mqtt_ethmain_known_states
+  #   state_topic: "ethmain/known_states"
+  #   icon: hass:lan
 
-  - platform: mqtt
-    name: mqtt_ethropsten_current_block
-    state_topic: "ethropsten/current_block"
-    icon: hass:lan
+  # - platform: mqtt
+  #   name: mqtt_ethropsten_current_block
+  #   state_topic: "ethropsten/current_block"
+  #   icon: hass:lan
 
-  - platform: mqtt
-    name: mqtt_ethropsten_highest_block
-    state_topic: "ethropsten/highest_block"
-    icon: hass:lan
+  # - platform: mqtt
+  #   name: mqtt_ethropsten_highest_block
+  #   state_topic: "ethropsten/highest_block"
+  #   icon: hass:lan
 
-  - platform: mqtt
-    name: mqtt_ethropsten_pulled_states
-    state_topic: "ethropsten/pulled_states"
-    icon: hass:lan
+  # - platform: mqtt
+  #   name: mqtt_ethropsten_pulled_states
+  #   state_topic: "ethropsten/pulled_states"
+  #   icon: hass:lan
 
-  - platform: mqtt
-    name: mqtt_ethropsten_known_states
-    state_topic: "ethropsten/known_states"
-    icon: hass:lan
+  # - platform: mqtt
+  #   name: mqtt_ethropsten_known_states
+  #   state_topic: "ethropsten/known_states"
+  #   icon: hass:lan
 
-  - platform: mqtt
-    name: mqtt_btcmain_current_block
-    state_topic: "btcmain/current_block"
-    icon: hass:lan
+  # - platform: mqtt
+  #   name: mqtt_btcmain_current_block
+  #   state_topic: "btcmain/current_block"
+  #   icon: hass:lan
 
-  - platform: mqtt
-    name: mqtt_btcmain_highest_block
-    state_topic: "btcmain/highest_block"
-    icon: hass:lan
+  # - platform: mqtt
+  #   name: mqtt_btcmain_highest_block
+  #   state_topic: "btcmain/highest_block"
+  #   icon: hass:lan
 
-  - platform: mqtt
-    name: mqtt_btcmain_connections
-    state_topic: "btcmain/connections"
-    icon: hass:lan
+  # - platform: mqtt
+  #   name: mqtt_btcmain_connections
+  #   state_topic: "btcmain/connections"
+  #   icon: hass:lan
