@@ -1,0 +1,169 @@
+# Heater relay controlled by an RPI
+  switch:
+    - name: mqtt_heater
+      state_topic: "heater/status"
+      command_topic: "heater/set"
+      payload_on: 1
+      payload_off: 0
+      state_on: 1
+      state_off: 0
+      optimistic: false
+      qos: 1
+      retain: true
+
+# Heater distribution pump (floor) - Shelly
+    - name: mqtt_heater_pump
+      state_topic: heater/pump/status
+      command_topic: heater/pump/set
+      payload_on: 1
+      payload_off: 0
+      state_on: 1
+      state_off: 0
+      optimistic: false
+      qos: 1  
+  
+  
+  #################################################################
+  ## MQTT Doorbell status
+  #################################################################
+  sensor:
+    - name: mqtt_doorbell_status
+      state_topic: 'doorbell/status'
+
+  #################################################################
+  ## MQTT Climate sensors
+  #################################################################
+
+    - name: mqtt_bathroom_humidity
+      state_topic: "bathroom/humidity"
+      unit_of_measurement: '%'
+
+    - name: mqtt_living_humidity
+      state_topic: "living/humidity"
+      unit_of_measurement: '%'
+
+    - name: mqtt_bathroom_temperature
+      state_topic: "bathroom/temperature"
+      unit_of_measurement: '°C'
+
+    - name: mqtt_living_temperature
+      state_topic: "living/temperature"
+      unit_of_measurement: '°C'
+
+  #################################################################
+  ## MQTT Climate Fan sensors
+  #################################################################
+
+    - name: mqtt_fan_status
+      state_topic: 'fan/speed'
+      # icon by customize.yaml
+
+    # mqtt topic to communicate command to the fan service
+    - name: mqtt_fan_set
+      state_topic: 'fan/set'
+  
+    # mqtt topic to communicate a user override via mqtt to the watch_fan in appdaemon
+    - name: mqtt_fan_override_set
+      state_topic: 'fan/override/set'
+
+    - name: mqtt_fan_override_status
+      state_topic: 'fan/override/status'
+      # icon by customize.yaml
+
+    - name: mqtt_fan_override_timeleft
+      state_topic: 'fan/override/timeleft'
+
+  #################################################################
+  ## MQTT Climate Heater sensors
+  #################################################################
+
+    - name: mqtt_heater_status
+      state_topic: 'heater/status'
+
+    - name: mqtt_thermostat_morning_temp
+      state_topic: "thermostat/morning/temp"
+      unit_of_measurement: '°C'
+
+    - name: mqtt_thermostat_afternoon_temp
+      state_topic: "thermostat/afternoon/temp"
+      unit_of_measurement: '°C'
+
+    - name: mqtt_thermostat_evening_temp
+      state_topic: "thermostat/evening/temp"
+      unit_of_measurement: '°C'
+
+    - name: mqtt_thermostat_night_temp
+      state_topic: "thermostat/night/temp"
+      unit_of_measurement: '°C'
+
+    - name: mqtt_thermostat_morning_timeslot_end
+      state_topic: "thermostat/morning/timeslot_end"
+
+    - name: mqtt_thermostat_afternoon_timeslot_end
+      state_topic: "thermostat/afternoon/timeslot_end"
+
+    - name: mqtt_thermostat_evening_timeslot_end
+      state_topic: "thermostat/evening/timeslot_end"
+
+    - name: mqtt_thermostat_night_timeslot_end
+      state_topic: "thermostat/night/timeslot_end"
+
+  #################################################################
+  ## MQTT DLT nodes
+  #################################################################
+
+  # - platform: mqtt
+  #   name: mqtt_ethmain_current_block
+  #     state_topic: "ethmain/current_block"
+  #   icon: hass:lan
+
+  # - platform: mqtt
+  #   name: mqtt_ethmain_highest_block
+  #     state_topic: "ethmain/highest_block"
+  #   icon: hass:lan
+
+  # - platform: mqtt
+  #   name: mqtt_ethmain_pulled_states
+  #     state_topic: "ethmain/pulled_states"
+  #   icon: hass:lan
+
+  # - platform: mqtt
+  #   name: mqtt_ethmain_known_states
+  #     state_topic: "ethmain/known_states"
+  #   icon: hass:lan
+
+  # - platform: mqtt
+  #   name: mqtt_ethropsten_current_block
+  #     state_topic: "ethropsten/current_block"
+  #   icon: hass:lan
+
+  # - platform: mqtt
+  #   name: mqtt_ethropsten_highest_block
+  #     state_topic: "ethropsten/highest_block"
+  #   icon: hass:lan
+
+  # - platform: mqtt
+  #   name: mqtt_ethropsten_pulled_states
+  #     state_topic: "ethropsten/pulled_states"
+  #   icon: hass:lan
+
+  # - platform: mqtt
+  #   name: mqtt_ethropsten_known_states
+  #     state_topic: "ethropsten/known_states"
+  #   icon: hass:lan
+
+  # - platform: mqtt
+  #   name: mqtt_btcmain_current_block
+  #     state_topic: "btcmain/current_block"
+  #   icon: hass:lan
+
+  # - platform: mqtt
+  #   name: mqtt_btcmain_highest_block
+  #     state_topic: "btcmain/highest_block"
+  #   icon: hass:lan
+
+  # - platform: mqtt
+  #   name: mqtt_btcmain_connections
+  #     state_topic: "btcmain/connections"
+  #   icon: hass:lan
+

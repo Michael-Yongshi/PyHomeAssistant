@@ -11,6 +11,7 @@ homeassistant:
 # Devices & Entities
 sensor: !include sensor.yaml
 switch: !include switch.yaml
+mqtt: !include mqtt.yaml
 climate: !include climate.yaml
 
 # helpers
