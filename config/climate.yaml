@@ -1,5 +1,5 @@
   - platform: generic_thermostat
-    name: Thermostat
+    name: Central Heating
     heater: switch.mqtt_heater
     target_sensor: sensor.mqtt_living_temperature
     min_temp: 16
