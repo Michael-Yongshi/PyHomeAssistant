@@ -10,7 +10,7 @@ class WatchThermostat(hass.Hass):
     - Event Listener
 
     Method called:
-    - update state of 'climate.thermostat' entity, attribute 'target_temperature' in order to influence the thermostat setting
+    - update state of 'climate.central_heating' entity, attribute 'target_temperature' in order to influence the thermostat setting
 
     """
 
@@ -18,7 +18,7 @@ class WatchThermostat(hass.Hass):
     def initialize(self):
 
         # Home assistant parameters
-        self.climate_entity = "climate.thermostat"
+        self.climate_entity = "climate.central_heating"
         self.floorpump_entity = "switch.floorpump"
         self.heater_status_entity = "sensor.mqtt_heater_status"
         self.current_program = self.set_program()

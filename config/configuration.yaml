@@ -5,6 +5,9 @@
 homeassistant:
   customize: !include customize.yaml
 
+# Example configuration.yaml entry to enable the cloud component
+cloud:
+
 # frontend:
 #   themes: !include themes.yaml
 
