@@ -7,7 +7,7 @@ views:
       - type: vertical-stack
         cards:
           - type: thermostat
-            entity: climate.thermostat
+            entity: climate.central_heating
           - show_current: true
             show_forecast: true
             type: weather-forecast
@@ -26,7 +26,7 @@ views:
                     icon: mdi:fan-speed-1
                     style:
                       top: 30%
-                      left: 45%
+                      left: 30%
                       color: orange
                       transform: scale(6,6)
               - type: conditional
@@ -38,7 +38,7 @@ views:
                     icon: mdi:fan-speed-2
                     style:
                       top: 30%
-                      left: 45%
+                      left: 30%
                       color: orange
                       transform: scale(6,6)
               - type: conditional
@@ -50,7 +50,7 @@ views:
                     icon: mdi:fan-speed-3
                     style:
                       top: 30%
-                      left: 45%
+                      left: 30%
                       color: orange
                       transform: scale(6,6)
               - type: conditional
@@ -62,7 +62,7 @@ views:
                     icon: mdi:fan-off
                     style:
                       top: 30%
-                      left: 45%
+                      left: 30%
                       color: orange
                       transform: scale(6,6)
               - type: icon
@@ -194,9 +194,7 @@ views:
               - type: conditional
                 conditions:
                   - entity: sensor.mqtt_fan_override_status
-                    state_not: Persistent Override
-                  - entity: sensor.mqtt_fan_override_status
-                    state_not: Automatic programming
+                    state: Temporary Override
                 elements:
                   - type: icon
                     title: Fan Auto
@@ -230,9 +228,13 @@ views:
                       left: 90%
                       color: lightgrey
                       transform: scale(2,2)
-          - type: entities
-            entities:
-              - entity: sensor.mqtt_fan_override_status
+                  - type: state-label
+                    entity: sensor.mqtt_fan_override_timeleft
+                    style:
+                      top: 55%
+                      left: 75%
+                      color: lightgrey
+                      transform: scale(2,2)
       - type: vertical-stack
         cards:
           - type: gauge
@@ -259,6 +261,8 @@ views:
           - entity: switch.tv_plug
             name: TV
             icon: mdi:television-guide
+          - entity: switch.plug_electric_heater
+            icon: mdi:radiator
         show_header_toggle: false
         state_color: true
       - type: picture-elements
@@ -448,8 +452,8 @@ views:
                   tap_action:
                     action: toggle
                   style:
-                    top: 52%
-                    left: 7%
+                    top: 44%
+                    left: 10%
                     color: gray
                     transform: scale(1.5,1.5)
                 - type: state-icon
@@ -458,8 +462,8 @@ views:
                   tap_action:
                     action: toggle
                   style:
-                    top: 52%
-                    left: 0%
+                    top: 44%
+                    left: 3%
                     color: gray
                     transform: scale(1.5,1.5)
                 - type: state-icon
@@ -468,8 +472,8 @@ views:
                   tap_action:
                     action: toggle
                   style:
-                    top: 0%
-                    left: 40%
+                    top: 5%
+                    left: 35%
                     color: gray
                     transform: scale(2,2)
                 - type: state-icon
@@ -497,7 +501,7 @@ views:
                     color: gray
                     transform: scale(2,2)
                 - type: state-icon
-                  entity: switch.floor_pump
+                  entity: switch.floorpump
                   icon: mdi:pump
                   style:
                     top: 42%
@@ -506,12 +510,12 @@ views:
                     transform: scale(1.5,1.5)
                 - type: state-icon
                   entity: switch.plug_electric_heater
-                  icon: mdi:patio-heater
+                  icon: mdi:radiator
                   tap_action:
                     action: toggle
                   style:
-                    top: 60%
-                    left: 90%
+                    top: 63%
+                    left: 35%
                     color: gray
                     transform: scale(1.5,1.5)
                 - type: state-icon
@@ -531,7 +535,7 @@ views:
               image: local/floorplans/Floorplan_first_floor.png
               elements:
                 - type: state-icon
-                  entity: light.office_mike_light
+                  entity: light.office_mike
                   icon: mdi:lightbulb
                   tap_action:
                     action: toggle
@@ -586,6 +590,30 @@ views:
                     left: 55%
                     color: gray
                     transform: scale(2,2)
+                - type: conditional
+                  conditions:
+                    - entity: sensor.status
+                      state_not: Ok
+                  elements:
+                    - type: icon
+                      icon: mdi:solar-panel
+                      style:
+                        top: 70%
+                        left: 20%
+                        color: gray
+                        transform: scale(2,2)
+                - type: conditional
+                  conditions:
+                    - entity: sensor.status
+                      state: Ok
+                  elements:
+                    - type: icon
+                      icon: mdi:solar-panel
+                      style:
+                        top: 70%
+                        left: 20%
+                        color: '#44739e'
+                        transform: scale(2,2)
                 - type: conditional
                   conditions:
                     - entity: sensor.mqtt_fan_status
@@ -706,92 +734,83 @@ views:
     icon: ''
     badges: []
     cards:
-      - type: picture-elements
-        image: local/fan/flows_only_bezels.png
-        elements:
-          - type: state-label
-            entity: sensor.ca350_supply_fan_speed
-            style:
-              top: 40%
-              left: 15%
-              color: gray
-          - type: state-label
-            entity: sensor.ca350_exhaust_fan_speed
-            style:
-              top: 40%
-              left: 85%
-              color: gray
-          - type: state-label
-            entity: sensor.ca350_return_temperature
-            style:
-              top: 23%
-              left: 95%
-              color: red
-          - type: state-label
-            entity: sensor.ca350_supply_temperature
-            style:
-              top: 76%
-              left: 95%
-              color: red
-          - type: state-label
-            entity: sensor.ca350_outside_temperature
-            style:
-              top: 23%
-              left: 5%
-              color: blue
-          - type: state-label
-            entity: sensor.ca350_exhaust_temperature
-            style:
-              top: 76%
-              left: 5%
-              color: blue
-          - type: state-label
-            entity: sensor.ca350_bypass_valve
-            prefix: 'Bypass: '
-            style:
-              top: 25%
-              left: 50%
-              color: gray
-          - type: state-label
-            entity: sensor.ca350_summer_mode
-            style:
-              top: 10%
-              left: 50%
-              color: grey
-          - type: state-label
-            entity: number.ca350_filter_weeks
-            prefix: 'Filter: '
-            style:
-              top: 92%
-              left: 90%
-              color: gray
       - type: vertical-stack
-        title: Thermostat Timeslots
+        title: Central Heating
         cards:
+          - type: thermostat
+            entity: climate.central_heating
           - type: entities
             entities:
-              - entity: input_datetime.night_timeslot_slider
-              - entity: input_number.night_temp_slider
-            show_header_toggle: false
-            state_color: false
-          - type: entities
-            entities:
-              - entity: input_datetime.morning_timeslot_slider
-              - entity: input_number.morning_temp_slider
-            show_header_toggle: false
-            state_color: false
-          - type: entities
-            entities:
-              - entity: input_datetime.afternoon_timeslot_slider
-              - entity: input_number.afternoon_temp_slider
-            show_header_toggle: false
-            state_color: false
-          - type: entities
-            entities:
-              - entity: input_datetime.evening_timeslot_slider
-              - entity: input_number.evening_temp_slider
-            show_header_toggle: false
-            state_color: false
+              - entity: switch.floorpump
+      - type: vertical-stack
+        title: Additional Heating
+        cards:
+          - type: thermostat
+            entity: climate.electric_heater
+      - type: vertical-stack
+        title: Fan
+        cards:
+          - type: thermostat
+            entity: climate.ca350_climate
+          - type: picture-elements
+            image: local/fan/flows_only_bezels.png
+            elements:
+              - type: state-label
+                entity: sensor.ca350_supply_fan_speed
+                style:
+                  top: 40%
+                  left: 15%
+                  color: gray
+              - type: state-label
+                entity: sensor.ca350_exhaust_fan_speed
+                style:
+                  top: 40%
+                  left: 85%
+                  color: gray
+              - type: state-label
+                entity: sensor.ca350_return_temperature
+                style:
+                  top: 23%
+                  left: 95%
+                  color: red
+              - type: state-label
+                entity: sensor.ca350_supply_temperature
+                style:
+                  top: 76%
+                  left: 95%
+                  color: red
+              - type: state-label
+                entity: sensor.ca350_outside_temperature
+                style:
+                  top: 23%
+                  left: 5%
+                  color: blue
+              - type: state-label
+                entity: sensor.ca350_exhaust_temperature
+                style:
+                  top: 76%
+                  left: 5%
+                  color: blue
+              - type: state-label
+                entity: sensor.ca350_bypass_valve
+                prefix: 'Bypass: '
+                style:
+                  top: 25%
+                  left: 50%
+                  color: gray
+              - type: state-label
+                entity: sensor.ca350_summer_mode
+                style:
+                  top: 10%
+                  left: 50%
+                  color: grey
+              - type: state-label
+                entity: number.ca350_filter_weeks
+                prefix: 'Filter: '
+                style:
+                  top: 92%
+                  left: 90%
+                  color: gray
       - type: vertical-stack
         title: Humidity
         cards:
@@ -819,17 +838,32 @@ views:
             detail: 2
             hours_to_show: 24
       - type: vertical-stack
-        title: Thermostats
+        title: Thermostat Timeslots
         cards:
-          - type: thermostat
-            entity: climate.thermostat
-          - type: thermostat
-            entity: climate.electric_heater
-      - type: entities
-        entities:
-          - entity: switch.mqtt_heater
-          - entity: switch.floor_pump
-        title: Heater
+          - type: entities
+            entities:
+              - entity: input_datetime.night_timeslot_slider
+              - entity: input_number.night_temp_slider
+            show_header_toggle: false
+            state_color: false
+          - type: entities
+            entities:
+              - entity: input_datetime.morning_timeslot_slider
+              - entity: input_number.morning_temp_slider
+            show_header_toggle: false
+            state_color: false
+          - type: entities
+            entities:
+              - entity: input_datetime.afternoon_timeslot_slider
+              - entity: input_number.afternoon_temp_slider
+            show_header_toggle: false
+            state_color: false
+          - type: entities
+            entities:
+              - entity: input_datetime.evening_timeslot_slider
+              - entity: input_number.evening_temp_slider
+            show_header_toggle: false
+            state_color: false
   - title: Energy
     path: energy
     icon: ''
@@ -893,11 +927,11 @@ views:
             title: Current
             entities:
               - entity: sensor.current_phase_l1
-              - entity: sensor.current_phase_l2
-              - entity: sensor.current_phase_l3
               - entity: sensor.pv_current_a
                 name: Current Solar L1
                 icon: mdi:current-ac
+              - entity: sensor.current_phase_l2
+              - entity: sensor.current_phase_l3
   - theme: Backend-selected
     title: Network
     path: network
@@ -952,10 +986,10 @@ views:
       - type: glance
         entities:
           - entity: sensor.bedroom_light_rssi
-          - entity: sensor.office_mike_light_rssi
           - entity: sensor.office_didi_rssi
           - entity: sensor.garden_lights_rssi
-          - entity: sensor.floor_pump_rssi
+          - entity: sensor.floorpump_rssi
+          - entity: sensor.office_mike_rssi
         title: Shellies
       - type: custom:auto-entities
         card:
@@ -1021,6 +1055,35 @@ views:
               - entity: sensor.hookie_ewok_upload_throughput
                 name: Upload Throughput
             title: Hookie-Ewok
+      - type: entities
+        entities:
+          - entity: sensor.mqtt_fan_status
+          - entity: sensor.mqtt_fan_override_status
+          - entity: sensor.mqtt_fan_set
+          - entity: sensor.mqtt_fan_override_set
+          - entity: sensor.mqtt_fan_override_timeleft
+        title: Fan
+      - type: vertical-stack
+        title: MQTT
+        cards:
+          - type: entities
+            entities:
+              - sensor.mqtt_fan_status
+              - sensor.mqtt_fan_override_status
+              - sensor.mqtt_fan_set
+              - sensor.mqtt_fan_override_set
+              - sensor.mqtt_fan_override_timeleft
+            title: Fan
+          - type: entities
+            title: Heater
+            entities:
+              - entity: switch.mqtt_heater
+              - entity: sensor.mqtt_heater_status
+              - entity: switch.mqtt_heater_pump
+              - entity: sensor.mqtt_living_humidity
+              - entity: sensor.mqtt_living_temperature
+              - entity: sensor.mqtt_bathroom_humidity
+              - entity: sensor.mqtt_bathroom_temperature
   - theme: Backend-selected
     title: Test
     path: test
