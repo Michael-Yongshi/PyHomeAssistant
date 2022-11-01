@@ -230,6 +230,7 @@ views:
                       transform: scale(2,2)
                   - type: state-label
                     entity: sensor.mqtt_fan_override_timeleft
+                    tap_action: none
                     style:
                       top: 55%
                       left: 75%
@@ -518,13 +519,17 @@ views:
                     left: 35%
                     color: gray
                     transform: scale(1.5,1.5)
-                - type: state-icon
-                  entity: sensor.fan_button_toilet_battery
-                  icon: mdi:fan-plus
+                - type: state-label
+                  entity: climate.central_heating
+                  attribute: current_temperature
+                  suffix: ' °C'
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/climate
                   style:
-                    top: 45%
-                    left: 33%
-                    color: gray
+                    top: 65%
+                    left: 60%
+                    color: red
                     transform: scale(1.5,1.5)
           - type: conditional
             conditions:
@@ -564,14 +569,6 @@ views:
                     left: 68%
                     color: gray
                     transform: scale(2,2)
-                - type: state-icon
-                  entity: sensor.fan_button_bathroom_battery
-                  icon: mdi:fan-plus
-                  style:
-                    top: 25%
-                    left: 5%
-                    color: gray
-                    transform: scale(1.5,1.5)
           - type: conditional
             conditions:
               - entity: input_select.floorplan_dropdown
@@ -911,7 +908,9 @@ views:
       - type: picture
         image: local/groups.png
         tap_action:
-          action: none
+          action: url
+          url_path: >-
+            https://gitlab.com/Michael-Yongshi/iot_overview/-/blob/main/groups.md
         hold_action:
           action: none
       - type: vertical-stack
