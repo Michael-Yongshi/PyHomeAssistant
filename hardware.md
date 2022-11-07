@@ -63,6 +63,9 @@ https://shop.shelly.cloud/shelly-plus-i4-plus-shelly-wall-switch-4-wifi-smart-ho
 shelly radiator: https://shelly.cloud/shelly-thermostatic-radiator-valve/
 shelly button: https://shop.shelly.cloud/shelly-button-wifi-smart-home-automation#64
 
+# Zigbee
+https://www.zigbee2mqtt.io/guide/adapters/flashing/flashing_the_cc2531.html
+
 # Local Doorbell with smart optional
 ## KLIK AAN ACDB-7000BCDEURBEL
 drukknop bedraad aan een zender die 433 signalen stuurt naar een of meerdere ontvangers
