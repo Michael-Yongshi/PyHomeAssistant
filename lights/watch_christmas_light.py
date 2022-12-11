@@ -39,12 +39,8 @@ class WatchLight(hass.Hass):
             ]
         self.event = "CHRISTMAS_LIGHTS_OVERRIDE"
 
-        # check config and fetch settings
-        config_filename = "config_christmas_light"
-        self.config = self.load_json(config_filename)
-
         # set timezone
-        self.timezone = pytz.timezone(self.config["timezone"])
+        self.timezone = pytz.timezone("Europe/Amsterdam")
         self.log(self.timezone)
 
         # tells appdaemon we want to call a certain method upon event or state change
@@ -167,7 +163,7 @@ class WatchLight(hass.Hass):
             return
 
         # get current status and skip if status of the entity is unavailable
-        status = self.get_state(self.entity)
+        status = self.get_state(self.entities[0])
         if status == "unavailable":
             message = f"status is unavailable, skipping for now..."
 
@@ -224,7 +220,7 @@ class WatchLight(hass.Hass):
 
     def determine_setting(self, current_datetime_utc, current_datetime_local):
         """
-        Finds the correct setting based on the config file and the current datetime
+        Finds the correct setting based on the config and the current datetime
         """
 
         # establish noon as a datetime aware object (based on today in local time, but expressed in UTC)
@@ -241,10 +237,13 @@ class WatchLight(hass.Hass):
         weekday = current_datetime_local.weekday()
 
         # get settings for yesterday, today and tomorrow (weekday start at 0 / monday, so today is just weekday number in lookup in the array)
-        self.program = self.config["program"]
+        self.program = self.set_program()
         tomorrows_program = self.program[weekday + 1] if weekday < 6 else self.program[0]
+        # self.log(f"tomorrows program = {tomorrows_program}")
         todays_program = self.program[weekday]
+        # self.log(f"todays program = {todays_program}")
         yesterdays_program = self.program[weekday - 1] if weekday > 0 else self.program[6]
+        # self.log(f"yesterdays program = {yesterdays_program}")
 
         # take the correct settings with noon as the delimiter (as sun is up and lights are definitely supposed to be off, in contrast to midnight...)
         if current_datetime_local > noon_local:
@@ -307,6 +306,88 @@ class WatchLight(hass.Hass):
         for entity in self.entities:
             self.call_service("light/turn_on", entity_id = entity)
         self.log(f"Turned on lights")
+
+    def set_program(self):
+
+        default_program = [
+            {
+                "weekday": 0,
+                "day": "Monday",
+                "morning_start": "6:00:00",
+                "evening_end": "22:00:00"
+            },
+            {
+                "weekday": 1,
+                "day": "Tuesday",
+                "morning_start": "6:00:00",
+                "evening_end": "22:00:00"
+            },
+            {
+                "weekday": 2,
+                "day": "Wednesday",
+                "morning_start": "6:00:00",
+                "evening_end": "22:00:00"
+            },
+            {
+                "weekday": 3,
+                "day": "Thursday",
+                "morning_start": "6:00:00",
+                "evening_end": "22:00:00"
+            },
+            {
+                "weekday": 4,
+                "day": "Friday",
+                "morning_start": "6:00:00",
+                "evening_end": "23:00:00"
+            },
+            {
+                "weekday": 5,
+                "day": "Saturday",
+                "morning_start": "7:00:00",
+                "evening_end": "23:00:00"
+            },
+            {
+                "weekday": 6,
+                "day": "Sunday",
+                "morning_start": "7:00:00",
+                "evening_end": "22:00:00"
+            }
+        ]
+
+        user_program = []
+
+        try:
+            # Iterate over user settings
+            for timeofday in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
+
+                # get user settings for this time of day
+                morning_time_sensor = f"input_number.light_{timeofday}_morning_start"
+                morning_time_state = self.get_state(morning_time_sensor)
+                timeslot_morning = morning_time_state.split('.')[0]
+                # self.event_happened(f"timeslot sensor is {timeslot_sensor} with value {timeslotend}")
+
+                evening_end_sensor = f"input_number.light_{timeofday}_evening_end"
+                evening_end_state = self.get_state(evening_end_sensor)
+                timeslot_evening = evening_end_state.split('.')[0]
+                # self.event_happened(f'temp sensor is {temp_sensor} with value {temp}')
+
+                timeslotdict = {
+                    "day": f"{timeofday}",
+                    "morning_start": f"{timeslot_morning}:00:00",
+                    "evening_end": f"{timeslot_evening}:00:00"
+                }
+
+                user_program += [timeslotdict]
+                # self.event_happened(f"Added timeslot {timeofday} as {timeslotdict}!")
+
+            program = user_program
+            self.event_happened(f"Set user program!")
+
+        except:
+            program = default_program
+            self.event_happened(f"Couldn't set user program, reverting to default program")
+
+        return program
 
     def event_happened(self, message):
         """
