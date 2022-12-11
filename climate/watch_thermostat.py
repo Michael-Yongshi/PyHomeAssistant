@@ -19,7 +19,6 @@ class WatchThermostat(hass.Hass):
 
         # Home assistant parameters
         self.climate_entity = "climate.central_heating"
-        self.floorpump_entity = "switch.floorpump"
         self.heater_status_entity = "sensor.mqtt_heater_status"
         self.current_program = self.set_program()
 
@@ -30,62 +29,6 @@ class WatchThermostat(hass.Hass):
         # loop method to determine if target temp needs to change
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
         self.run_minutely(self.check_heater, datetime.time(0, 0, 0))
-
-        # call turn on/off floorpump when heater status changes and add once a day floor pump flushing to prevent damage to pipes
-        self.listen_state(self.floorpump_auto, self.heater_status_entity)
-        self.run_daily(self.floorpump_24_on, datetime.time(12, 0, 0))
-        self.run_daily(self.floorpump_24_off, datetime.time(12, 10, 0))
-
-    def floorpump_auto(self, entity, attribute, old, new, kwargs):
-        """
-        Sync floorpump status with Heater, so they both turn on and off simultaneously
-        """
-
-        if int(new) == 1:
-            self.turn_on(self.floorpump_entity)
-        else:
-            self.turn_off(self.floorpump_entity)
-
-        t = 0
-        while t < 10 and self.get_floorpump_status() == "unavailable":
-            self.event_happened(f"Floorpump is unavailable")
-            time.sleep(30)
-            t += 1
-
-        status = self.get_floorpump_status()
-        self.event_happened(f"Floorpump should turn {new}")
-
-    def floorpump_24_on(self, kwargs):
-        """
-        Turns on pump once a day at midnight
-        """
-
-        if self.get_heater_status() == 0:
-            self.turn_on(self.floorpump_entity)
-            message = f"Flushing floor radiator, turning floorpump on:\n"
-        else:
-            message = f"Heater is on, flushing floor radiator is not necessary:\n"
-
-        status = self.get_floorpump_status()
-        event = message + f"Floorpump should turn on"
-
-        self.event_happened(event)
-
-    def floorpump_24_off(self, kwargs):
-        """
-        Turns off pump once a day at midnight + some minutes if heater is off
-        """
-
-        if self.get_heater_status() == 0:
-            self.turn_off(self.floorpump_entity)
-            message = f"Flushing floor radiator stopped, turning floorpump off:\n"
-        else:
-            message = f"Heater already on, floor pump does not have to turn off:\n"
-
-        status = self.get_floorpump_status()
-        event = message + f"Floorpump should turn off"
-
-        self.event_happened(event)
 
     def determine_setting(self, kwargs):
         """
@@ -158,13 +101,6 @@ class WatchThermostat(hass.Hass):
                 break
 
         return current_timeslot
-
-    def get_floorpump_status(self):
-
-        # get floorpump state from the floorpump entity in home assistant
-        floorpump_status = self.get_state(self.floorpump_entity)
-
-        return floorpump_status
 
     def get_heater_status(self):
 
