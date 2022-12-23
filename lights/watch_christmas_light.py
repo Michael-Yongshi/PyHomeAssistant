@@ -37,6 +37,7 @@ class WatchLight(hass.Hass):
             "binary_sensor.garage_front_channel_1_input",
             "binary_sensor.garage_front_channel_2_input",
             ]
+        self.toggle = "input_boolean.christmas_programming"
         self.event = "CHRISTMAS_LIGHTS_OVERRIDE"
 
         # set timezone
@@ -51,7 +52,8 @@ class WatchLight(hass.Hass):
         """
         Following call runs every minute to check if something needs to happen
         """
-        self.run_minutely(self.periodic_process, datetime.time(0, 0, 10))
+        if self.get_state(self.toggle) == "on":
+            self.run_minutely(self.periodic_process, datetime.time(0, 0, 10))
 
     def override_switch(self, entity, attribute, old, new, kwargs):
         """
