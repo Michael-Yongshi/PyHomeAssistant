@@ -62,16 +62,6 @@ class WatchThermostat(hass.Hass):
             else:
                 self.event_happened(f"New timeslot, but target temperature is already set correctly to {program_target}")
 
-    def check_heater(self, kwargs):
-        """
-        Check heater and push status to telegram if changed
-        """
-        
-        new = self.get_heater_status()
-        if new != self.last_heater_status:
-            self.last_heater_status = new
-            self.event_happened(f"Heater turned to {new}")
-
     def get_current_timeslot(self, current_time):
         """
         Current timeslot is calculated as follows
@@ -101,17 +91,6 @@ class WatchThermostat(hass.Hass):
                 break
 
         return current_timeslot
-
-    def get_heater_status(self):
-
-        # get heater state from the heater entity in home assistant
-        heater_status = int(self.get_state(self.heater_status_entity))
-
-        return heater_status
-
-    def post_target_temp(self, target_temp):
-
-        self.call_service("climate/set_temperature", entity_id=self.climate_entity, temperature=target_temp)
 
     def set_program(self):
 
@@ -195,6 +174,27 @@ class WatchThermostat(hass.Hass):
                 contents = json.load(infile)
         
             return contents
+
+    def check_heater(self, kwargs):
+        """
+        Check heater and push status to telegram if changed
+        """
+        
+        new = self.get_heater_status()
+        if new != self.last_heater_status:
+            self.last_heater_status = new
+            self.event_happened(f"Heater turned to {new}")
+
+    def get_heater_status(self):
+
+        # get heater state from the heater entity in home assistant
+        heater_status = int(self.get_state(self.heater_status_entity))
+
+        return heater_status
+
+    def post_target_temp(self, target_temp):
+
+        self.call_service("climate/set_temperature", entity_id=self.climate_entity, temperature=target_temp)
 
     def event_happened(self, message):
         """
