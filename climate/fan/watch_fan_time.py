@@ -21,14 +21,6 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
-        
-        # we set some humidity limits, TODO can become MQTT settings in the future to set by the user
-        self.limit3 = 95
-        self.limit2 = 85
-
-        # Were keeping track of an override variable to keep override only on for a certain amount of time
-        self.override_expiration = datetime.datetime.now()
-        self.override_interval = 30
 
         # override set topic is a queue to take commands and always gets reset back to 99 after a command is taken
         self.topic_override_set = "fan/override/set"
@@ -36,14 +28,22 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         self.topic_override_status = "fan/override/status"
         self.topic_override_timeleft = "fan/override/timeleft"
 
+        # keep track of timeslot to allow for user adjustments in between program slots
+        self.last_timeslot_end = 0
+        self.last_fan_status = None
+
+        # Home assistant parameters
+        self.current_program = self.set_program()
+
+        # Were keeping track of an override variable to keep override only on for a certain amount of time
+        self.override_expiration = datetime.datetime.now()
+        self.override_interval = 30
+
         # call a certain method when mqtt updates are available.
-        self.listen_state(self.mqtt_update, "sensor.mqtt_bathroom_humidity")
         self.listen_state(self.override, "sensor.mqtt_fan_override_set")
 
         # enforce determining setting even if humidity is unchanged every minute
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
-
-        self.determine_setting()
 
     # the method that is called when someone wants to override fan setting from home assistant itself
     def override(self, entity, attribute, old, new, kwargs):
@@ -118,13 +118,11 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
         self.log(f"Current date and time is: {current_time}")
 
-    # determine setting when humidity changed
-    def mqtt_update(self, entity, attribute, old, new, kwargs):
-
-        self.determine_setting(kwargs)
-
-    # determining the setting for the fan based on humidity and override expiration
+    # determining the setting for the fan based on override expiration
     def determine_setting(self, kwargs):
+        """
+        Check logic to see if target speed should change on the thermostat
+        """
 
         # get fanspeed state
         current_speed = self.get_fan_speed()
@@ -145,111 +143,127 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
             # make sure override status is on auto
             self.mqtt_publish(topic = self.topic_override_status, payload = "Automatic programming", qos = 1)
 
-        # Collect requested settings
-        settings = []
-        settings += [self.determine_time()]
-        # settings += [self.determine_humidity()]
-        # settings += [self.determine_cooling()]
 
-        # retrieve highest setting from the array (sort and get last element)
-        new_speed = sorted(settings)[-1]
 
-        if current_speed != new_speed:
-            self.event_happened(f"Setting fan speed to {new_speed}!")
-            self.post_fan_speed(new_speed)
+        # reload user determined program
+        self.current_program = self.set_program()
 
-    def get_fan_speed(self):
-        """
-        get the current speed of the fan
-        """
+        # get current and target values
+        current_timeslot = self.get_current_timeslot(current_time)
+        current_timeslot_end = current_timeslot["end"]
+        program_target = current_timeslot["speed"]
+        self.log(f"Programming target speed is {program_target}, while current target speed is {current_speed}")
 
-        # get hass sensor data
-        current_speed = int(self.get_state("sensor.mqtt_fan_status"))
+        # check if we already programmed this timeslot before (we will only once, so user can still change it)
+        if self.last_timeslot_end != current_timeslot_end:
 
-        return current_speed
+            # register that we now programmed this timeslot
+            self.last_timeslot_end = current_timeslot_end
 
-    def post_fan_speed(self, speed):
+            # only set new speed if its different
+            if program_target != current_speed:
+                # set new target speed
+                self.post_fan_speed(speed=program_target)
+                self.event_happened(f"Set new fan speed to {program_target}, according to the program")
 
-        self.mqtt_publish(topic = "fan/set", payload = speed, qos = 1)
-
-    def determine_time(self):
-        """
-        Requests a setting to shut off in the evening when all the hearths are spreading smoke in the neighborhood
-        """
-
-        current_time = datetime.datetime.now()
-        evening_time = current_time.replace(hour=19, minute=0, second=0)
-
-        if current_time > evening_time:
-            setting = 0
-        else:
-            setting = 1
-
-        # self.event_happened(f"Timebased program requires setting {setting}")
-        return setting
-
-    def determine_humidity(self):
-        """
-        Requests a setting to exhaust moisture
-        """
-
-        # humidity level (try block as sensor can be down)
-        try:
-            humidity = float(self.get_state("sensor.mqtt_bathroom_humidity"))
-        
-            self.log(f"Measured humidity at {humidity}%!")
-
-            # set to 3 if humidity increased to above limit3
-            if humidity >= self.limit3:
-                setting = 3
-                self.log(f"level above {self.limit3}%  observed!")
-            
-            # set to 2 if humidity is above limit2
-            elif humidity >= self.limit2:
-                setting = 2
-                self.log(f"level above {self.limit2}%, but below {self.limit3}, observed!")
-
-            # set to 1 if humidity is below limit2
-            elif humidity < self.limit2:
-                setting = 1
-                self.log(f"level below {self.limit2}% observed!")
-
-        # if sensor is down, return fan to lowest setting
-        except:
-            setting = 1
-            self.log(f"Couldn't observe humidity!")
-        
-        return setting
-    
-    def determine_cooling(self):
-        """
-        Requests a higher setting in order to cool
-        """
-
-        try:
-            comfort_temp = 12
-            inside_temp = float(self.get_state("sensor.mqtt_living_temperature"))
-            outside_temp = float(self.get_state(entity_id="weather.serenity", attribute="temperature"))
-            self.log(f"Inside temperature is {inside_temp} versus outside temperature of {outside_temp}")
-
-            if inside_temp > 23:
-                self.log(f"Inside temperature is high")
-                if inside_temp > outside_temp:
-                    setting = 2
-                    self.log(f"Outside temperature is low enough to cool!")
-                else:
-                    setting = 1
-                    self.log(f"Outside temperature is too high!")
             else:
-                setting = 1
-                self.log(f"Inside temperature reached target")
+                self.event_happened(f"New timeslot, but target fan speed is already set correctly to {program_target}")
+
+    def get_current_timeslot(self, current_time):
+        """
+        Current timeslot is calculated as follows
+
+        Iterate over the timeslots in the current program (start with morning and ending with night)
+        check if current time is before the end of the timeslot
+        if so this timeslot is the active timeslot
+        """
+
+        # get current time parameters
+        current_year = current_time.year
+        current_month = current_time.month
+        current_day = current_time.day
+
+        for timeslot in self.current_program:
+            timeslot_end = timeslot["end"]
+
+            # Convert timeslot 'end' to time type
+            timeslot_end_str = datetime.datetime.strptime(timeslot_end, "%H:%M:%S")
+            timeslot_end_dt = timeslot_end_str.replace(year=current_year, month=current_month, day=current_day)
+
+            # check if current time still falls within this timeslot
+            if current_time <= timeslot_end_dt:
+
+                # set as current timeslot
+                current_timeslot = timeslot
+                break
+
+        return current_timeslot
+
+    def set_program(self):
+
+        default_program = [
+            # night
+            {
+                "end": "05:00:00",
+                "speed": 1
+            },
+            # morning
+            {
+                "end": "12:00:00",
+                "speed": 1
+            },
+            # afternoon
+            {
+                "end": "17:00:00",
+                "speed": 1
+            },
+            # evening
+            {
+                "end": "21:00:00",
+                "speed": 0
+            },
+        ]
+
+        user_program = []
+
+        try:
+            # Iterate over user settings
+            for timeofday in ['night', 'morning', 'afternoon', 'evening']:
+
+                # get user settings for this time of day
+                timeslot_sensor = f"input_datetime.fan_{timeofday}_timeslot_end"
+                timeslotend = self.get_state(timeslot_sensor)
+                # self.event_happened(f"timeslot sensor is {timeslot_sensor} with value {timeslotend}")
+
+                speed_sensor = f"input_number.fan_{timeofday}_speed"
+                speed_string = self.get_state(speed_sensor)
+                # self.event_happened(f'speed is {speed_string}')
+                speed = int(speed_string[0])
+                # self.event_happened(f'speed sensor is {speed_sensor} with value {speed}')
+
+                timeslotdict = {
+                    "end": timeslotend,
+                    "speed": speed,
+                }
+
+                user_program += [timeslotdict]
+                # self.event_happened(f"Added timeslot {timeofday} as {timeslotdict}!")
+
+            program = user_program
+            self.event_happened(f"Set user program!")
 
         except:
-            setting = 1
-            self.log(f"Couldn't observe temperature!")
+            program = default_program
+            self.event_happened(f"Couldn't set user program, reverting to default program")
 
-        return setting
+        # add last timeslot until midnight and use the first timeslot as speed
+        timeslotdict = {
+            "end": "23:59:59",
+            "speed": program[0]["speed"],
+        }
+        program += [timeslotdict]
 
+        return program
 
     def time_left(self):
 
@@ -282,6 +296,20 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
             return f"{minutes}m" #{seconds}s"
         else:
             return f"{seconds}s"
+
+    def get_fan_speed(self):
+        """
+        get the current speed of the fan
+        """
+
+        # get hass sensor data
+        current_speed = int(self.get_state("sensor.mqtt_fan_status"))
+
+        return current_speed
+
+    def post_fan_speed(self, speed):
+
+        self.mqtt_publish(topic = "fan/set", payload = speed, qos = 1)
 
     def event_happened(self, message):
         """
