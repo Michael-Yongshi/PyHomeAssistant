@@ -162,14 +162,15 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
             # register that we now programmed this timeslot
             self.last_timeslot_end = current_timeslot_end
 
-            # only set new speed if its different
-            if program_target != current_speed:
-                # set new target speed
-                self.post_fan_speed(speed=program_target)
-                self.event_happened(f"Set new fan speed to {program_target}, according to the program")
+        # only set new speed if its different
+        if program_target != current_speed:
+            # set new target speed
+            self.post_fan_speed(speed=program_target)
+            self.event_happened(f"Set new fan speed to {program_target}, according to the program")
 
-            else:
-                self.event_happened(f"New timeslot, but target fan speed is already set correctly to {program_target}")
+        else:
+            self.event_happened(f"Target fan speed is already set correctly to {program_target}")
+
 
     def get_current_timeslot(self, current_time):
         """
