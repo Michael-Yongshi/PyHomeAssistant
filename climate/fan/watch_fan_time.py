@@ -45,6 +45,8 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         # enforce determining setting even if humidity is unchanged every minute
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
 
+        self.determine_setting(kwargs=None)
+
     # the method that is called when someone wants to override fan setting from home assistant itself
     def override(self, entity, attribute, old, new, kwargs):
 
