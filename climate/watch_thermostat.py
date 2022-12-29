@@ -30,6 +30,8 @@ class WatchThermostat(hass.Hass):
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
         self.run_minutely(self.check_heater, datetime.time(0, 0, 0))
 
+        self.determine_setting(kwargs=None)
+
     def determine_setting(self, kwargs):
         """
         Check logic to see if target temp should change on the thermostat
