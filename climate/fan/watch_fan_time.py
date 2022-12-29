@@ -169,7 +169,8 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
             self.event_happened(f"Set new fan speed to {program_target}, according to the program")
 
         else:
-            self.event_happened(f"Target fan speed is already set correctly to {program_target}")
+            # self.event_happened(f"Target fan speed is already set correctly to {program_target}")
+            pass
 
 
     def get_current_timeslot(self, current_time):
