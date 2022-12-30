@@ -38,12 +38,12 @@ class WatchLight(hass.Hass):
             "binary_sensor.garage_front_channel_2_input",
             ]
         self.toggle = "input_boolean.christmas_programming"
-        self.elevation_offset = "input_number.light_elevation_offset" # elevation gives you an offset of around 10 - 15 minutes depending on your location
+        self.elevation_offset = "input_number.light_elevation_offset" # elevation gives you an offset of around 10 - 15 minutes per degree depending on your location
         self.event = "CHRISTMAS_LIGHTS_OVERRIDE"
 
         # set timezone
         self.timezone = pytz.timezone("Europe/Amsterdam")
-        self.event_happened(self.timezone)
+        # self.event_happened(self.timezone)
 
         # tells appdaemon we want to call a certain method upon event or state change
         self.listen_event(self.override_event, self.event)
@@ -185,7 +185,7 @@ class WatchLight(hass.Hass):
         # self.event_happened(f"target offset = {offset} and is type {type(offset)}")
 
         if int(sun_elevation) < offset:
-            self.event_happened(f"Actual elevation {sun_elevation} is below elevation {offset_raw}")
+            # self.event_happened(f"Actual elevation {sun_elevation} is below elevation {offset_raw}")
             # self.event_happened(f"Sun is down, now checking if its in exclusion frame...")
 
             morning_start_utc, morning_start_local, evening_end_utc, evening_end_local = self.determine_setting(current_datetime_utc, current_datetime_local)
