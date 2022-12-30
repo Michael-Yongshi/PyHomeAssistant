@@ -154,7 +154,7 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         current_timeslot = self.get_current_timeslot(current_time)
         current_timeslot_end = current_timeslot["end"]
         program_target = current_timeslot["speed"]
-        self.log(f"Programming target speed is {program_target}, while current target speed is {current_speed}")
+        # self.log(f"Programming target speed is {program_target}, while current target speed is {current_speed}")
 
         # check if we already programmed this timeslot before (we will only once, so user can still change it)
         if self.last_timeslot_end != current_timeslot_end:

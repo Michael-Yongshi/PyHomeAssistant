@@ -68,7 +68,7 @@ class WatchLight(hass.Hass):
         old = unavailable to new = valid status
         """
 
-        self.event_happened(f"{old} changed to {new}")
+        # self.event_happened(f"{old} changed to {new}")
 
         valid = ["on", "off"]
         if old in valid and new in valid:
