@@ -38,7 +38,7 @@ class WatchLight(hass.Hass):
             "binary_sensor.garage_front_channel_2_input",
             ]
         self.toggle = "input_boolean.christmas_programming"
-        self.elevation_offset = "input_number.light_elevation_offset"
+        self.elevation_offset = "input_number.light_elevation_offset" # elevation gives you an offset of around 10 - 15 minutes depending on your location
         self.event = "CHRISTMAS_LIGHTS_OVERRIDE"
 
         # set timezone
@@ -182,11 +182,11 @@ class WatchLight(hass.Hass):
         offset_raw = self.get_state(self.elevation_offset)
         offset_str = offset_raw.split(".")[0]
         offset = int(offset_str)
-        self.event_happened(f"target offset = {offset} and is type {type(offset)}")
+        # self.event_happened(f"target offset = {offset} and is type {type(offset)}")
 
         if int(sun_elevation) < offset:
             self.event_happened(f"Actual elevation {sun_elevation} is below elevation {offset_raw}")
-            self.event_happened(f"Sun is down, now checking if its in exclusion frame...")
+            # self.event_happened(f"Sun is down, now checking if its in exclusion frame...")
 
             morning_start_utc, morning_start_local, evening_end_utc, evening_end_local = self.determine_setting(current_datetime_utc, current_datetime_local)
 
