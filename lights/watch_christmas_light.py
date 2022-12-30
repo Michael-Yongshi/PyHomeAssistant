@@ -38,6 +38,7 @@ class WatchLight(hass.Hass):
             "binary_sensor.garage_front_channel_2_input",
             ]
         self.toggle = "input_boolean.christmas_programming"
+        self.elevation_offset = "input_number.light_elevation_offset"
         self.event = "CHRISTMAS_LIGHTS_OVERRIDE"
 
         # set timezone
@@ -54,6 +55,8 @@ class WatchLight(hass.Hass):
         """
         if self.get_state(self.toggle) == "on":
             self.run_minutely(self.periodic_process, datetime.time(0, 0, 10))
+
+        self.process()
 
     def override_switch(self, entity, attribute, old, new, kwargs):
         """
@@ -155,13 +158,12 @@ class WatchLight(hass.Hass):
         current_datetime_local = self.convert_dt_utc_aware_to_local_aware(current_datetime_utc)
         # self.event_happened(f"current datetime is {current_datetime_local}")
 
-        # check if override is active
+        # check if override is active, if so discontinue and return
         if self.override_expiration_utc >= current_datetime_utc:
             expire_time = self.override_expiration_utc - current_datetime_utc
             override_expiration_local = self.convert_dt_utc_aware_to_local_aware(self.override_expiration_utc)
             # self.event_happened(f"Override active, expires in {expire_time} at {override_expiration_local}")
 
-            # override is active, return without doing anything
             return
 
         # get current status and skip if status of the entity is unavailable
@@ -174,11 +176,11 @@ class WatchLight(hass.Hass):
 
             return
 
-        # sun status
-        sun_status = self.get_state("sun.sun")
-        # self.event_happened(f"sun is {sun_status}")
+        sun_elevation = self.get_state("sun.sun", attribute = 'elevation')
+        # self.event_happened(f"elevation is {sun_elevation} and is of type {type(sun_elevation)}")
 
-        if sun_status == "below_horizon":
+        if int(sun_elevation) < self.elevation_offset:
+            # self.event_happened(f"Actual elevation {sun_elevation} is below elevation {self.elevation_offset}")
             # self.event_happened(f"Sun is down, now checking if its in exclusion frame...")
 
             morning_start_utc, morning_start_local, evening_end_utc, evening_end_local = self.determine_setting(current_datetime_utc, current_datetime_local)
