@@ -179,9 +179,14 @@ class WatchLight(hass.Hass):
         sun_elevation = self.get_state("sun.sun", attribute = 'elevation')
         # self.event_happened(f"elevation is {sun_elevation} and is of type {type(sun_elevation)}")
 
-        if int(sun_elevation) < self.elevation_offset:
-            # self.event_happened(f"Actual elevation {sun_elevation} is below elevation {self.elevation_offset}")
-            # self.event_happened(f"Sun is down, now checking if its in exclusion frame...")
+        offset_raw = self.get_state(self.elevation_offset)
+        offset_str = offset_raw.split(".")[0]
+        offset = int(offset_str)
+        self.event_happened(f"target offset = {offset} and is type {type(offset)}")
+
+        if int(sun_elevation) < offset:
+            self.event_happened(f"Actual elevation {sun_elevation} is below elevation {offset_raw}")
+            self.event_happened(f"Sun is down, now checking if its in exclusion frame...")
 
             morning_start_utc, morning_start_local, evening_end_utc, evening_end_local = self.determine_setting(current_datetime_utc, current_datetime_local)
 
@@ -425,6 +430,9 @@ class WatchLight(hass.Hass):
         date or timezone info still needs to be added!
         """
 
+        if string_local[:2] == '24':
+            string_local = '00' + string_local[2:]
+            # self.event_happened(f"string local corrected to {string_local}")
         dt_local_naive = datetime.datetime.strptime(string_local, "%H:%M:%S")
 
         return dt_local_naive
