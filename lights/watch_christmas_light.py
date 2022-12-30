@@ -42,7 +42,7 @@ class WatchLight(hass.Hass):
 
         # set timezone
         self.timezone = pytz.timezone("Europe/Amsterdam")
-        self.log(self.timezone)
+        self.event_happened(self.timezone)
 
         # tells appdaemon we want to call a certain method upon event or state change
         self.listen_event(self.override_event, self.event)
@@ -68,7 +68,7 @@ class WatchLight(hass.Hass):
         old = unavailable to new = valid status
         """
 
-        self.log(f"{old} changed to {new}")
+        self.event_happened(f"{old} changed to {new}")
 
         valid = ["on", "off"]
         if old in valid and new in valid:
@@ -96,7 +96,7 @@ class WatchLight(hass.Hass):
         # current (date)time
         current_datetime_utc = datetime.datetime.now(tz=utc)
         current_datetime_local = self.convert_dt_utc_aware_to_local_aware(current_datetime_utc)
-        self.log(f"current datetime is {current_datetime_local}")
+        # self.event_happened(f"current datetime is {current_datetime_local}")
 
         # get current status of the entity
         current_status = self.get_state(self.entity)
@@ -153,13 +153,13 @@ class WatchLight(hass.Hass):
         # current (date)time
         current_datetime_utc = datetime.datetime.now(tz=utc)
         current_datetime_local = self.convert_dt_utc_aware_to_local_aware(current_datetime_utc)
-        self.log(f"current datetime is {current_datetime_local}")
+        # self.event_happened(f"current datetime is {current_datetime_local}")
 
         # check if override is active
         if self.override_expiration_utc >= current_datetime_utc:
             expire_time = self.override_expiration_utc - current_datetime_utc
             override_expiration_local = self.convert_dt_utc_aware_to_local_aware(self.override_expiration_utc)
-            self.log(f"Override active, expires in {expire_time} at {override_expiration_local}")
+            # self.event_happened(f"Override active, expires in {expire_time} at {override_expiration_local}")
 
             # override is active, return without doing anything
             return
@@ -176,10 +176,10 @@ class WatchLight(hass.Hass):
 
         # sun status
         sun_status = self.get_state("sun.sun")
-        # self.log(f"sun is {sun_status}")
+        # self.event_happened(f"sun is {sun_status}")
 
         if sun_status == "below_horizon":
-            self.log(f"Sun is down, now checking if its in exclusion frame...")
+            # self.event_happened(f"Sun is down, now checking if its in exclusion frame...")
 
             morning_start_utc, morning_start_local, evening_end_utc, evening_end_local = self.determine_setting(current_datetime_utc, current_datetime_local)
 
@@ -204,7 +204,7 @@ class WatchLight(hass.Hass):
             within_lights_window = False
 
         # log for debugging of every decision
-        self.log(message)
+        # self.event_happened(message)
 
         # if within a light window, but lights are off, turn them on
         if within_lights_window == True and status == "off":
@@ -230,7 +230,7 @@ class WatchLight(hass.Hass):
         noon = datetime.datetime.combine(current_datetime_local.date(), noontime.time())
         noon_utc = self.convert_dt_local_naive_to_dt_utc_aware(noon)
         noon_local = self.convert_dt_utc_aware_to_local_aware(noon_utc)
-        self.log(f"Noon Local is at {noon_local}")
+        # self.event_happened(f"Noon Local is at {noon_local}")
 
         # get today, tomorrow, yesterday and weekday in local times (otherwise date is off)
         today = current_datetime_local.date()
@@ -241,17 +241,17 @@ class WatchLight(hass.Hass):
         # get settings for yesterday, today and tomorrow (weekday start at 0 / monday, so today is just weekday number in lookup in the array)
         self.program = self.set_program()
         tomorrows_program = self.program[weekday + 1] if weekday < 6 else self.program[0]
-        # self.log(f"tomorrows program = {tomorrows_program}")
+        # self.event_happened(f"tomorrows program = {tomorrows_program}")
         todays_program = self.program[weekday]
-        # self.log(f"todays program = {todays_program}")
+        # self.event_happened(f"todays program = {todays_program}")
         yesterdays_program = self.program[weekday - 1] if weekday > 0 else self.program[6]
-        # self.log(f"yesterdays program = {yesterdays_program}")
+        # self.event_happened(f"yesterdays program = {yesterdays_program}")
 
         # take the correct settings with noon as the delimiter (as sun is up and lights are definitely supposed to be off, in contrast to midnight...)
         if current_datetime_local > noon_local:
 
             # its post-noon program (between noon and midnight)
-            self.log("Post-Noon programming for this evening and tomorrow morning")
+            # self.event_happened("Post-Noon programming for this evening and tomorrow morning")
             evening_program = todays_program["evening_end"]
             evening_day = today
             morning_program = tomorrows_program["morning_start"]
@@ -260,7 +260,7 @@ class WatchLight(hass.Hass):
         else:
 
             # its night or morning (between midnight and noon)
-            self.log("Pre-Noon programming for yesterday evening and this morning")
+            # self.event_happened("Pre-Noon programming for yesterday evening and this morning")
 
             evening_program = yesterdays_program["evening_end"]
             evening_day = yesterday
@@ -273,14 +273,14 @@ class WatchLight(hass.Hass):
         evening_end_naive = datetime.datetime.combine(evening_day + datetime.timedelta(days=evening_day_correction), evening_time.time())
         evening_end_utc = self.convert_dt_local_naive_to_dt_utc_aware(evening_end_naive)
         evening_end_local = self.convert_dt_utc_aware_to_local_aware(evening_end_utc)
-        self.log(f"Evening end is {evening_end_local}")
+        # self.event_happened(f"Evening end is {evening_end_local}")
 
         morning_time = self.convert_string_local_to_t_local_naive(morning_program)
         morning_day_correction = 1 if morning_time.time() > datetime.time(hour=12) else 0
         morning_start_naive = datetime.datetime.combine(morning_day - datetime.timedelta(days=morning_day_correction), morning_time.time())
         morning_start_utc = self.convert_dt_local_naive_to_dt_utc_aware(morning_start_naive)
         morning_start_local = self.convert_dt_utc_aware_to_local_aware(morning_start_utc)
-        self.log(f"Morning start is {morning_start_local}")
+        # self.event_happened(f"Morning start is {morning_start_local}")
 
         return morning_start_utc, morning_start_local, evening_end_utc, evening_end_local
 
@@ -298,7 +298,7 @@ class WatchLight(hass.Hass):
 
         for entity in self.entities:
             self.call_service("light/turn_off", entity_id = entity)
-        self.log(f"Turned off lights")
+        self.event_happened(f"Turned off lights")
 
     def light_on(self):
         """
@@ -307,7 +307,7 @@ class WatchLight(hass.Hass):
 
         for entity in self.entities:
             self.call_service("light/turn_on", entity_id = entity)
-        self.log(f"Turned on lights")
+        self.event_happened(f"Turned on lights")
 
     def set_program(self):
 
