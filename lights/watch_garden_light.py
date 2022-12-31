@@ -1,5 +1,4 @@
-import os
-import json
+
 import datetime
 import pytz
 
@@ -31,15 +30,13 @@ class WatchLight(hass.Hass):
         # define the actual (light) entities used in home assistant and the events to watch for
         self.entity = "light.garden_lights"
         self.switch = "binary_sensor.garden_lights_input"
+        self.toggle = "input_boolean.gardenlight_programming"
+        self.elevation_offset = "input_number.light_elevation_offset" # elevation gives you an offset of around 10 - 15 minutes per degree depending on your location
         self.event = "GARDEN_LIGHTS_OVERRIDE"
 
-        # check config and fetch settings
-        config_filename = "config_garden_light"
-        self.config = self.load_json(config_filename)
-
         # set timezone
-        self.timezone = pytz.timezone(self.config["timezone"])
-        self.log(self.timezone)
+        self.timezone = pytz.timezone("Europe/Amsterdam")
+        # self.event_happened(self.timezone)
 
         # tells appdaemon we want to call a certain method upon event or state change
         self.listen_event(self.override_event, self.event)
@@ -49,6 +46,8 @@ class WatchLight(hass.Hass):
         Following call runs every minute to check if something needs to happen
         """
         self.run_minutely(self.periodic_process, datetime.time(0, 0, 10))
+
+        self.process()
 
     def override_switch(self, entity, attribute, old, new, kwargs):
         """
@@ -63,16 +62,11 @@ class WatchLight(hass.Hass):
         old = unavailable to new = valid status
         """
 
-        self.log(f"{old} changed to {new}")
+        # self.event_happened(f"{old} changed to {new}")
 
         valid = ["on", "off"]
         if old in valid and new in valid:
-
-            # get current status of the entity
-            switched_to = self.get_state(self.entity)
-            self.log(f"physically switched to {switched_to}")
-            
-            self.override_set(set_state = switched_to)
+            self.override(set_state=new)
 
     def override_event(self, event_name, data, kwargs):
         """
@@ -88,30 +82,6 @@ class WatchLight(hass.Hass):
 
         self.process()
 
-    def override_set(self, set_state):
-
-        # current (date)time
-        current_datetime_utc = datetime.datetime.now(tz=utc)
-        current_datetime_local = self.convert_dt_utc_aware_to_local_aware(current_datetime_utc)
-        self.log(f"current datetime is {current_datetime_local}")
-
-
-        # just set the override anew
-
-        # to get to noon next day or today
-        # i.e. 21 o clock, then 15 hours have to be added to get to tomorrows noon. 36 - 21 = 15
-        # i.e. 7 o clock, then only 5 hours have to be added to get to todays noon. 12 - 7 = 5
-        extension = 36 if current_datetime_local.hour > 12 else 12
-        expiration_time_delta = datetime.timedelta(hours=(extension-current_datetime_local.hour))
-
-        # override is set anew
-        self.override_expiration_utc = current_datetime_local + expiration_time_delta
-        # self.override_expiration_utc = self.convert_string_utc_to_dt_utc_aware(self.get_state('sun.sun', 'next_noon'))
-
-        # log
-        message = f"Someone requested lights override, lights are turned {set_state}!"
-        self.event_happened(message)
-
     def override(self, set_state=""):
         """
         if no set_state is given it will default to "auto"
@@ -120,7 +90,7 @@ class WatchLight(hass.Hass):
         # current (date)time
         current_datetime_utc = datetime.datetime.now(tz=utc)
         current_datetime_local = self.convert_dt_utc_aware_to_local_aware(current_datetime_utc)
-        self.log(f"current datetime is {current_datetime_local}")
+        self.event_happened(f"current datetime is {current_datetime_local}")
 
         # get current status of the entity
         current_status = self.get_state(self.entity)
@@ -176,13 +146,13 @@ class WatchLight(hass.Hass):
         # current (date)time
         current_datetime_utc = datetime.datetime.now(tz=utc)
         current_datetime_local = self.convert_dt_utc_aware_to_local_aware(current_datetime_utc)
-        self.log(f"current datetime is {current_datetime_local}")
+        self.event_happened(f"current datetime is {current_datetime_local}")
 
         # check if override is active
         if self.override_expiration_utc >= current_datetime_utc:
             expire_time = self.override_expiration_utc - current_datetime_utc
             override_expiration_local = self.convert_dt_utc_aware_to_local_aware(self.override_expiration_utc)
-            self.log(f"Override active, expires in {expire_time} at {override_expiration_local}")
+            self.event_happened(f"Override active, expires in {expire_time} at {override_expiration_local}")
 
             # override is active, return without doing anything
             return
@@ -197,12 +167,18 @@ class WatchLight(hass.Hass):
 
             return
 
-        # sun status
-        sun_status = self.get_state("sun.sun")
-        # self.log(f"sun is {sun_status}")
 
-        if sun_status == "below_horizon":
-            self.log(f"Sun is down, now checking if its in exclusion frame...")
+        sun_elevation = self.get_state("sun.sun", attribute = 'elevation')
+        # self.event_happened(f"elevation is {sun_elevation} and is of type {type(sun_elevation)}")
+
+        offset_raw = self.get_state(self.elevation_offset)
+        offset_str = offset_raw.split(".")[0]
+        offset = int(offset_str)
+        # self.event_happened(f"target offset = {offset} and is type {type(offset)}")
+
+        if int(sun_elevation) < offset:
+            self.event_happened(f"Actual elevation {sun_elevation} is below elevation {offset_raw}")
+            self.event_happened(f"Sun is down, now checking if its in exclusion frame...")
 
             morning_start_utc, morning_start_local, evening_end_utc, evening_end_local = self.determine_setting(current_datetime_utc, current_datetime_local)
 
@@ -227,7 +203,7 @@ class WatchLight(hass.Hass):
             within_lights_window = False
 
         # log for debugging of every decision
-        self.log(message)
+        self.event_happened(message)
 
         # if within a light window, but lights are off, turn them on
         if within_lights_window == True and status == "off":
@@ -253,7 +229,7 @@ class WatchLight(hass.Hass):
         noon = datetime.datetime.combine(current_datetime_local.date(), noontime.time())
         noon_utc = self.convert_dt_local_naive_to_dt_utc_aware(noon)
         noon_local = self.convert_dt_utc_aware_to_local_aware(noon_utc)
-        self.log(f"Noon Local is at {noon_local}")
+        self.event_happened(f"Noon Local is at {noon_local}")
 
         # get today, tomorrow, yesterday and weekday in local times (otherwise date is off)
         today = current_datetime_local.date()
@@ -262,16 +238,19 @@ class WatchLight(hass.Hass):
         weekday = current_datetime_local.weekday()
 
         # get settings for yesterday, today and tomorrow (weekday start at 0 / monday, so today is just weekday number in lookup in the array)
-        self.program = self.config["program"]
+        self.program = self.set_program()
         tomorrows_program = self.program[weekday + 1] if weekday < 6 else self.program[0]
+        # self.event_happened(f"tomorrows program = {tomorrows_program}")
         todays_program = self.program[weekday]
+        # self.event_happened(f"todays program = {todays_program}")
         yesterdays_program = self.program[weekday - 1] if weekday > 0 else self.program[6]
+        # self.event_happened(f"yesterdays program = {yesterdays_program}")
 
         # take the correct settings with noon as the delimiter (as sun is up and lights are definitely supposed to be off, in contrast to midnight...)
         if current_datetime_local > noon_local:
 
             # its post-noon program (between noon and midnight)
-            self.log("Post-Noon programming for this evening and tomorrow morning")
+            self.event_happened("Post-Noon programming for this evening and tomorrow morning")
             evening_program = todays_program["evening_end"]
             evening_day = today
             morning_program = tomorrows_program["morning_start"]
@@ -280,7 +259,7 @@ class WatchLight(hass.Hass):
         else:
 
             # its night or morning (between midnight and noon)
-            self.log("Pre-Noon programming for yesterday evening and this morning")
+            self.event_happened("Pre-Noon programming for yesterday evening and this morning")
 
             evening_program = yesterdays_program["evening_end"]
             evening_day = yesterday
@@ -293,14 +272,14 @@ class WatchLight(hass.Hass):
         evening_end_naive = datetime.datetime.combine(evening_day + datetime.timedelta(days=evening_day_correction), evening_time.time())
         evening_end_utc = self.convert_dt_local_naive_to_dt_utc_aware(evening_end_naive)
         evening_end_local = self.convert_dt_utc_aware_to_local_aware(evening_end_utc)
-        self.log(f"Evening end is {evening_end_local}")
+        self.event_happened(f"Evening end is {evening_end_local}")
 
         morning_time = self.convert_string_local_to_t_local_naive(morning_program)
         morning_day_correction = 1 if morning_time.time() > datetime.time(hour=12) else 0
         morning_start_naive = datetime.datetime.combine(morning_day - datetime.timedelta(days=morning_day_correction), morning_time.time())
         morning_start_utc = self.convert_dt_local_naive_to_dt_utc_aware(morning_start_naive)
         morning_start_local = self.convert_dt_utc_aware_to_local_aware(morning_start_utc)
-        self.log(f"Morning start is {morning_start_local}")
+        self.event_happened(f"Morning start is {morning_start_local}")
 
         return morning_start_utc, morning_start_local, evening_end_utc, evening_end_local
 
@@ -317,7 +296,7 @@ class WatchLight(hass.Hass):
         """
 
         self.call_service("light/turn_off", entity_id = self.entity)
-        self.log(f"Turned off lights")
+        self.event_happened(f"Turned off lights")
 
     def light_on(self):
         """
@@ -325,7 +304,90 @@ class WatchLight(hass.Hass):
         """
 
         self.call_service("light/turn_on", entity_id = self.entity)
-        self.log(f"Turned on lights")
+        self.event_happened(f"Turned on lights")
+
+
+    def set_program(self):
+
+        default_program = [
+            {
+                "weekday": 0,
+                "day": "Monday",
+                "morning_start": "6:00:00",
+                "evening_end": "22:00:00"
+            },
+            {
+                "weekday": 1,
+                "day": "Tuesday",
+                "morning_start": "6:00:00",
+                "evening_end": "22:00:00"
+            },
+            {
+                "weekday": 2,
+                "day": "Wednesday",
+                "morning_start": "6:00:00",
+                "evening_end": "22:00:00"
+            },
+            {
+                "weekday": 3,
+                "day": "Thursday",
+                "morning_start": "6:00:00",
+                "evening_end": "22:00:00"
+            },
+            {
+                "weekday": 4,
+                "day": "Friday",
+                "morning_start": "6:00:00",
+                "evening_end": "23:00:00"
+            },
+            {
+                "weekday": 5,
+                "day": "Saturday",
+                "morning_start": "7:00:00",
+                "evening_end": "23:00:00"
+            },
+            {
+                "weekday": 6,
+                "day": "Sunday",
+                "morning_start": "7:00:00",
+                "evening_end": "22:00:00"
+            }
+        ]
+
+        user_program = []
+
+        # try:
+        # Iterate over user settings
+        for timeofday in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
+
+            # get user settings for this time of day
+            morning_time_sensor = f"input_number.light_{timeofday}_morning_start"
+            morning_time_state = self.get_state(morning_time_sensor)
+            timeslot_morning = morning_time_state.split('.')[0]
+            # self.event_happened(f"timeslot sensor is {timeslot_sensor} with value {timeslotend}")
+
+            evening_end_sensor = f"input_number.light_{timeofday}_evening_end"
+            evening_end_state = self.get_state(evening_end_sensor)
+            timeslot_evening = evening_end_state.split('.')[0]
+            # self.event_happened(f'temp sensor is {temp_sensor} with value {temp}')
+
+            timeslotdict = {
+                "day": f"{timeofday}",
+                "morning_start": f"{timeslot_morning}:00:00",
+                "evening_end": f"{timeslot_evening}:00:00"
+            }
+
+            user_program += [timeslotdict]
+            # self.event_happened(f"Added timeslot {timeofday} as {timeslotdict}!")
+
+        program = user_program
+        self.event_happened(f"Set user program!")
+
+        # except:
+        #     program = default_program
+        #     self.event_happened(f"Couldn't set user program, reverting to default program")
+
+        return program
 
     def event_happened(self, message):
         """
@@ -358,6 +420,11 @@ class WatchLight(hass.Hass):
 
         date or timezone info still needs to be added!
         """
+
+
+        if string_local[:2] == '24':
+            string_local = '00' + string_local[2:]
+            # self.event_happened(f"string local corrected to {string_local}")
 
         dt_local_naive = datetime.datetime.strptime(string_local, "%H:%M:%S")
 
@@ -394,22 +461,3 @@ class WatchLight(hass.Hass):
 
         return pretty_dt
 
-    def load_json(self, filename):
-        """
-        Load settings json
-        """
-
-        path = os.path.join(os.sep, "config", "appdaemon", "apps")
-
-        # check if directory already exists
-        if not os.path.exists(path):
-            self.log(f"cant find path '{path}'")
-
-        else:
-            complete_path = os.path.join(path, filename + ".json")
-
-            # open json and return as an array
-            with open(complete_path, 'r') as infile:
-                contents = json.load(infile)
-        
-            return contents

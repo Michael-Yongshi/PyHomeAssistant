@@ -1,5 +1,4 @@
-import os
-import json
+
 import datetime
 import pytz
 
@@ -467,23 +466,3 @@ class WatchLight(hass.Hass):
         pretty_dt = datetime.strftime("day %d time %H:%M")
 
         return pretty_dt
-
-    def load_json(self, filename):
-        """
-        Load settings json
-        """
-
-        path = os.path.join(os.sep, "config", "appdaemon", "apps")
-
-        # check if directory already exists
-        if not os.path.exists(path):
-            self.log(f"cant find path '{path}'")
-
-        else:
-            complete_path = os.path.join(path, filename + ".json")
-
-            # open json and return as an array
-            with open(complete_path, 'r') as infile:
-                contents = json.load(infile)
-        
-            return contents
