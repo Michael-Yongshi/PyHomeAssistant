@@ -19,21 +19,21 @@ class WatchThermostat(hass.Hass):
 
         # Home assistant parameters
         self.climate_entity = "climate.central_heating"
-        self.heater_status_entity = "sensor.mqtt_heater_status"
+        # self.climate_status_entity = "sensor.mqtt_climate_status"
         self.current_program = self.set_program()
 
         # keep track of timeslot to allow for user adjustments in between program slots
         self.last_timeslot_end = 0
-        self.last_heater_status = None
+        self.last_climate_status = None
 
         # loop method to determine if target temp needs to change
         self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
-        self.run_minutely(self.check_heater, datetime.time(0, 0, 0))
 
         self.determine_setting(kwargs=None)
 
     def determine_setting(self, kwargs):
         """
+        Check heater
         Check logic to see if target temp should change on the thermostat
         """
 
@@ -176,23 +176,6 @@ class WatchThermostat(hass.Hass):
                 contents = json.load(infile)
         
             return contents
-
-    def check_heater(self, kwargs):
-        """
-        Check heater and push status to telegram if changed
-        """
-        
-        new = self.get_heater_status()
-        if new != self.last_heater_status:
-            self.last_heater_status = new
-            self.event_happened(f"Heater turned to {new}")
-
-    def get_heater_status(self):
-
-        # get heater state from the heater entity in home assistant
-        heater_status = int(self.get_state(self.heater_status_entity))
-
-        return heater_status
 
     def post_target_temp(self, target_temp):
 
