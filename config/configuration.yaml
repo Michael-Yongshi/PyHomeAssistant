@@ -5,20 +5,15 @@
 homeassistant:
   customize: !include customize.yaml
 
-# Example configuration.yaml entry to enable the cloud component
-cloud:
-
-# frontend:
-#   themes: !include themes.yaml
-
 # Devices & Entities
 sensor: !include sensor.yaml
 switch: !include switch.yaml
 mqtt: !include mqtt.yaml
 climate: !include climate.yaml
+rest_command: !include rest.yaml
 
 # helpers
-# input_boolean: !include input_boolean.yaml
+input_boolean: !include input_boolean.yaml
 input_number: !include input_number.yaml
 input_datetime: !include input_datetime.yaml
 
@@ -44,19 +39,3 @@ telegram_bot:
 # arlo:
 #   username: <username>
 #   password: <password>
-
-rest_command:
-  set_fan_speed_1:
-    url: 'http://192.168.178.29:5000/set_speed?speed=1'
-
-  set_fan_speed_2:
-    url: 'http://192.168.178.29:5000/set_speed?speed=2'
-
-  set_fan_speed_3:
-    url: 'http://192.168.178.29:5000/set_speed?speed=3'
-
-  set_fan_speed_0:
-    url: 'http://192.168.178.29:5000/set_speed?speed=0'
-
-  set_fan_speed_auto:
-    url: 'http://192.168.178.29:5000/set_speed?speed=9'
