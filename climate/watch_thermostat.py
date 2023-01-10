@@ -1,8 +1,6 @@
 import appdaemon.plugins.hass.hassapi as hass
-import os
-import json
 import datetime
-import time
+import pytz
 
 class WatchThermostat(hass.Hass):
     """
@@ -17,36 +15,57 @@ class WatchThermostat(hass.Hass):
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
 
-        # Home assistant parameters
-        self.climate_entity = "climate.central_heating"
-        # self.climate_status_entity = "sensor.mqtt_climate_status"
+        # Entities to influence
+        self.entity = "climate.central_heating"
+
+
+        ###### User program
+
+        # Toggle to turn programming on or off
+        self.toggle = "input_boolean.thermostat_programming"
+        self.timezone = pytz.timezone("Europe/Amsterdam")
+
+        # helper format
+        helper_type_temp = "input_number."
+        helper_type_end = "input_datetime."
+        self.helper_temp = helper_type_temp + "thermostat_temperature_"
+        self.helper_end = helper_type_end + "thermostat_timeslot_"
+        self.timeslotcategories = ['night', 'morning', 'afternoon', 'evening']
+
+        # variables to watch with initial value
         self.current_program = self.set_program()
 
-        # keep track of timeslot to allow for user adjustments in between program slots
-        self.last_timeslot_end = 0
-        self.last_climate_status = None
 
-        # loop method to determine if target temp needs to change
-        self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
+        ###### Override method: Simple
+        # only set temperature upon new timeslot
+        self.last_timeslot_end = 0
+        
+
+        """
+        Following call runs every minute to check if something needs to happen
+        """
+        if self.get_state(self.toggle) == "on":
+            self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
 
         self.determine_setting(kwargs=None)
 
     def determine_setting(self, kwargs):
         """
-        Check heater
         Check logic to see if target temp should change on the thermostat
         """
 
+        # get current datetime value
         current_time = datetime.datetime.now()
 
-        # reload user determined program
-        self.current_program = self.set_program()
-
-        # get target temperature values
+        # get current timeslot
         current_timeslot = self.get_current_timeslot(current_time)
+
+        # get variables from timeslot data
         current_timeslot_end = current_timeslot["end"]
         program_target = current_timeslot["temp"]
-        current_target = self.get_state(self.climate_entity, attribute="temperature")
+
+        # get current value from entity
+        current_target = self.get_state(self.entity, attribute="temperature")
         # self.log(f"Programming target temperature is {program_target}, while current target temperature is {current_target}")
 
         # check if we already programmed this timeslot before (we will only once, so user can still change it)
@@ -73,6 +92,9 @@ class WatchThermostat(hass.Hass):
         if so this timeslot is the active timeslot
         """
 
+        # reload user determined program
+        self.current_program = self.set_program()
+
         # get current time parameters
         current_year = current_time.year
         current_month = current_time.month
@@ -96,59 +118,31 @@ class WatchThermostat(hass.Hass):
 
     def set_program(self):
 
-        default_program = [
-            # night
-            {
-                "end": "05:00:00",
-                "temp": 16
-            },
-            # morning
-            {
-                "end": "12:00:00",
-                "temp": 21
-            },
-            # afternoon
-            {
-                "end": "17:00:00",
-                "temp": 20
-            },
-            # evening
-            {
-                "end": "21:00:00",
-                "temp": 18
-            },
-        ]
-
         user_program = []
 
-        try:
-            # Iterate over user settings
-            for timeofday in ['night', 'morning', 'afternoon', 'evening']:
+        # Iterate over user settings
+        for category in self.timeslotcategories:
 
-                # get user settings for this time of day
-                timeslot_sensor = f"input_datetime.{timeofday}_timeslot_slider"
-                timeslotend = self.get_state(timeslot_sensor)
-                # self.event_happened(f"timeslot sensor is {timeslot_sensor} with value {timeslotend}")
+            # get user settings for this time of day
+            timeslot_sensor = self.helper_end + category
+            timeslotend = self.get_state(timeslot_sensor)
+            # self.event_happened(f"timeslot sensor is {timeslot_sensor} with value {timeslotend}")
 
-                temp_sensor = f"input_number.{timeofday}_temp_slider"
-                temp = self.get_state(temp_sensor)
-                # self.event_happened(f'temp sensor is {temp_sensor} with value {temp}')
-                # temp = int(self.get_state(f"mqtt_thermostat_{timeofday}_temp"))
+            temp_sensor = self.helper_temp + category
+            temp = self.get_state(temp_sensor)
+            # self.event_happened(f'temp sensor is {temp_sensor} with value {temp}')
+            # temp = int(self.get_state(f"mqtt_thermostat_{category}_temp"))
 
-                timeslotdict = {
-                    "end": timeslotend,
-                    "temp": temp,
-                }
+            timeslotdict = {
+                "end": timeslotend,
+                "temp": temp,
+            }
 
-                user_program += [timeslotdict]
-                # self.event_happened(f"Added timeslot {timeofday} as {timeslotdict}!")
+            user_program += [timeslotdict]
+            # self.event_happened(f"Added timeslot {category} as {timeslotdict}!")
 
-            program = user_program
-            # self.event_happened(f"Set user program!")
-
-        except:
-            program = default_program
-            self.event_happened(f"Couldn't set user program, reverting to default program")
+        program = user_program
+        # self.event_happened(f"Set user program!")
 
         # add last timeslot until midnight and use the first timeslot as temperature
         timeslotdict = {
@@ -158,28 +152,6 @@ class WatchThermostat(hass.Hass):
         program += [timeslotdict]
 
         return program
-
-    def load_json(self, filename):
-        """Load settings json"""
-
-        path = os.path.join(os.sep, "config", "appdaemon", "apps")
-
-        # check if directory already exists
-        if not os.path.exists(path):
-            self.log(f"cant find path '{path}'")
-
-        else:
-            complete_path = os.path.join(path, filename + ".json")
-
-            # open json and return as an array
-            with open(complete_path, 'r') as infile:
-                contents = json.load(infile)
-        
-            return contents
-
-    def post_target_temp(self, target_temp):
-
-        self.call_service("climate/set_temperature", entity_id=self.climate_entity, temperature=target_temp)
 
     def event_happened(self, message):
         """
@@ -193,3 +165,14 @@ class WatchThermostat(hass.Hass):
         self.call_service(
             "telegram_bot/send_message", message=message,
         )
+
+    def pretty_datetime(self, datetime):
+
+        # Format datetime string
+        pretty_dt = datetime.strftime("day %d time %H:%M")
+
+        return pretty_dt
+
+    def post_target_temp(self, target_temp):
+
+        self.call_service("climate/set_temperature", entity_id=self.entity, temperature=target_temp)

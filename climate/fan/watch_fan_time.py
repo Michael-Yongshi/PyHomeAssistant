@@ -1,6 +1,7 @@
 import appdaemon.plugins.hass.hassapi as hass
 import datetime
 import requests
+import pytz
 
 import mqttapi as mqtt
 
@@ -22,33 +23,56 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
     # Next, we will define our initialize function, which is how AppDaemon starts our app. 
     def initialize(self):
 
-        # override set topic is a queue to take commands and always gets reset back to 99 after a command is taken
-        self.topic_override_set = "fan/override/set"
-        # override status topic is the current status of the override
-        self.topic_override_status = "fan/override/status"
-        self.topic_override_timeleft = "fan/override/timeleft"
+        ###### User program
+
+        # Toggle to turn programming on or off
+        self.toggle = "input_boolean.fan_programming"
+        self.timezone = pytz.timezone("Europe/Amsterdam")
+
+        # helper format
+        helper_type_speed = "input_number."
+        helper_type_end = "input_datetime."
+        self.helper_speed = helper_type_speed + "fan_speed_"
+        self.helper_end = helper_type_end + "fan_timeslot_"
+        self.timeslotcategories = ['night', 'morning', 'afternoon', 'evening']
+
+        # variables to watch with initial value
+        self.current_program = self.set_program()
+
+
+        ###### Override method: Complex
+        # get interval setting from a helper
+        self.set_override_interval = "input_number.fan_default_override"
+
+        # variable to watch with initial value
+        self.override_expiration = datetime.datetime.now()
 
         # keep track of timeslot to allow for user adjustments in between program slots
         self.last_timeslot_end = 0
         self.last_fan_status = None
 
-        # Home assistant parameters
-        self.current_program = self.set_program()
+        self.topic_override_set = "fan/override/set"
+        self.topic_override_status = "fan/override/status"
+        self.topic_override_timeleft = "fan/override/timeleft"
 
-        # Were keeping track of an override variable to keep override only on for a certain amount of time
-        self.override_expiration = datetime.datetime.now()
-        self.override_interval = 30
 
-        # call a certain method when mqtt updates are available.
+        """
+        Callback runs once an mqtt update has been done
+        """
         self.listen_state(self.override, "sensor.mqtt_fan_override_set")
 
-        # enforce determining setting even if humidity is unchanged every minute
-        self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
+        """
+        Following call runs every minute to check if something needs to happen
+        """
+        if self.get_state(self.toggle) == "on":
+            self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
 
         self.determine_setting(kwargs=None)
 
-    # the method that is called when someone wants to override fan setting from home assistant itself
     def override(self, entity, attribute, old, new, kwargs):
+        """
+        the method that is called when someone wants to override fan setting from home assistant itself
+        """
 
         # immediately reset override command flag in mqtt to gather additional inputs
         self.mqtt_publish(topic = self.topic_override_set, payload = 99, qos = 1)
@@ -86,13 +110,16 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         # temporary override is requested. determining which type
         elif status_new in [0,1,2,3]:
 
+            override_interval_raw = self.get_state(self.set_override_interval)
+            override_interval = int(override_interval_raw.split('.')[0])
+
             # if override is already active (and speed is the same as previous override) extend the override
             if status_new == status_old and self.override_expiration > current_time:
 
                 # extend the override parameter
-                self.override_expiration += datetime.timedelta(minutes=self.override_interval)
+                self.override_expiration += datetime.timedelta(minutes=override_interval)
                 pretty_time = self.pretty_time(self.override_expiration)
-                self.event_happened(f"Someone requested fan override, extending the override by {self.override_interval} minutes to {pretty_time}!")
+                self.event_happened(f"Someone requested fan override, extending the override by {override_interval} minutes to {pretty_time}!")
 
             # override is currently not active (or for a different speed) so override is set anew
             elif status_new == 0:
@@ -105,7 +132,7 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
             else:
                 # new override
-                self.override_expiration = current_time + datetime.timedelta(minutes=self.override_interval)
+                self.override_expiration = current_time + datetime.timedelta(minutes=override_interval)
                 self.post_fan_speed(status_new)
                 pretty_time = self.pretty_time(self.override_expiration)
                 self.event_happened(f"Someone requested fan override, setting speed {status_old} => {status_new} until {pretty_time}!")
@@ -205,60 +232,31 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
     def set_program(self):
 
-        default_program = [
-            # night
-            {
-                "end": "05:00:00",
-                "speed": 1
-            },
-            # morning
-            {
-                "end": "12:00:00",
-                "speed": 1
-            },
-            # afternoon
-            {
-                "end": "17:00:00",
-                "speed": 1
-            },
-            # evening
-            {
-                "end": "21:00:00",
-                "speed": 0
-            },
-        ]
-
         user_program = []
 
-        try:
-            # Iterate over user settings
-            for timeofday in ['night', 'morning', 'afternoon', 'evening']:
+        # Iterate over user settings
+        for category in self.timeslotcategories:
 
-                # get user settings for this time of day
-                timeslot_sensor = f"input_datetime.fan_{timeofday}_timeslot_end"
-                timeslotend = self.get_state(timeslot_sensor)
-                # self.event_happened(f"timeslot sensor is {timeslot_sensor} with value {timeslotend}")
+            # get user settings for this time of day
+            timeslot_sensor = self.helper_end + category
+            timeslotend = self.get_state(timeslot_sensor)
+            # self.event_happened(f"timeslot sensor is {timeslot_sensor} with value {timeslotend}")
 
-                speed_sensor = f"input_number.fan_{timeofday}_speed"
-                speed_string = self.get_state(speed_sensor)
-                # self.event_happened(f'speed is {speed_string}')
-                speed = int(speed_string[0])
-                # self.event_happened(f'speed sensor is {speed_sensor} with value {speed}')
+            speed_sensor = self.helper_speed + category
+            speed_string = self.get_state(speed_sensor)
+            speed = int(speed_string[0])
+            # self.event_happened(f'speed sensor is {speed_sensor} with value {speed}')
 
-                timeslotdict = {
-                    "end": timeslotend,
-                    "speed": speed,
-                }
+            timeslotdict = {
+                "end": timeslotend,
+                "speed": speed,
+            }
 
-                user_program += [timeslotdict]
-                # self.event_happened(f"Added timeslot {timeofday} as {timeslotdict}!")
+            user_program += [timeslotdict]
+            # self.event_happened(f"Added timeslot {category} as {timeslotdict}!")
 
-            program = user_program
-            # self.event_happened(f"Set user program!")
-
-        except:
-            program = default_program
-            self.event_happened(f"Couldn't set user program, reverting to default program")
+        program = user_program
+        # self.event_happened(f"Set user program!")
 
         # add last timeslot until midnight and use the first timeslot as speed
         timeslotdict = {
