@@ -13,8 +13,7 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
     Method called:
     - Post to api of fan-pi to switch on ventilator with speed x
     
-    Test this class by firing a test event
-    -> hass web ui -> developer tools -> events -> type "FAN_OVERRIDE -> fire event
+    Test this class by setting mqtt topic. You can do this by setting an mqtt topic from home assistant
 
     add data like below and replace x with 0 - 3 (0 means stop override)
     {'speed': x}
