@@ -221,11 +221,24 @@ def start_flask():
 def set_speed():
     """
     Sets speed, expects input between 0 - 3. 
-    It will request fan object to trigger the new speed and notify over mqtt that a manual override is used.
-    
-    :param string or int speed:
+    It will request fan object to trigger the new speed 
+    opens up flask to receive non-manual signals from other sources
 
+    :param string or int speed:
     :return string result:
+
+    ------------------------------------------
+
+    Flask set to port 5000 and device currently on internal ip 192.168.178.29
+
+    example commands
+
+    Speed 0-3
+    > http://192.168.178.29:5000/set_speed?speed=0 # off
+    > http://192.168.178.29:5000/set_speed?speed=1
+    > http://192.168.178.29:5000/set_speed?speed=2
+    > http://192.168.178.29:5000/set_speed?speed=3
+
     """
 
     logging.critical(f"Received http request {request.args}")
