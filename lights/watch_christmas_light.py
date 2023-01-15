@@ -30,7 +30,6 @@ class WatchLight(hass.Hass):
             "light.garage_front_channel_2",
             ]
 
-
         ###### User program
 
         # Toggle to turn programming on or off
@@ -327,7 +326,7 @@ class WatchLight(hass.Hass):
         # self.event_happened(f"current datetime is {current_datetime_local}")
 
         # get current status of the entity
-        current_status = self.get_state(self.entity)
+        current_status = self.get_state(self.entities[0])
 
         if set_state == "auto" or set_state == "":
 
