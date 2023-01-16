@@ -25,20 +25,17 @@ class WatchLight(hass.Hass):
         """
 
         # Entities to influence
-        self.entities = [
-            "light.garage_front_channel_1",
-            "light.garage_front_channel_2",
-            ]
+        self.entities = self.args["entities"]
 
         ###### User program
 
         # Toggle to turn programming on or off
-        self.toggle = "input_boolean.christmas_programming"
+        self.toggle = self.args["toggle"]
         self.timezone = pytz.timezone("Europe/Amsterdam")
         self.timezone = utc
 
         # In amount of degrees of elevation: gives you offset of around 10 - 15 minutes per degree
-        self.elevation_offset = "input_number.light_elevation_offset"
+        self.elevation_offset = self.args["offset"]
 
         # helper format
         helper_type = "input_datetime."
@@ -53,19 +50,16 @@ class WatchLight(hass.Hass):
 
         ###### Override method: Complex
         # keep track of override datetime variables to allow for user override disregarding timeslots
-        self.override_interval = 1 # hardcoded in days
+        self.override_interval = self.args["interval"]
 
         # variable to watch with initial value
         self.override_expiration_utc = datetime.datetime.now(tz=self.timezone)
 
         # Entities to listen for manual override
-        self.switches = [
-            "binary_sensor.garage_front_channel_1_input",
-            "binary_sensor.garage_front_channel_2_input",
-            ]
+        self.switches = self.args["switches"]
         
         # Event to listen for HASS override
-        self.event = "CHRISTMAS_LIGHTS_OVERRIDE"
+        self.event = self.args["event"]
 
         """
         Callback runs once an event has been fired in HASS
