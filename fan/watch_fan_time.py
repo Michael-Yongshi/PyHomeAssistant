@@ -52,16 +52,22 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         self.last_timeslot_end = 0
         self.last_fan_status = None
 
-        # Topics to communicate override request (bilaterally), status (push) and time (push)
-        self.topic_override_set = self.args["topicset"]
-        self.topic_override_status = self.args["topicstatus"]
-        self.topic_override_timeleft = self.args["topictime"]
+        # Topic to communicate override request (bilaterally)
+        self.topic_override_set = "fan/override/set" # self.args["topicset"]
 
+        # Topics to push info only
+        self.topic_override_status = "fan/override/status" # self.args["topicstatus"]
+        self.topic_override_timeleft = "fan/override/timeleft" # self.args["topictime"]
 
         """
         Callback runs once an mqtt update has been done
         """
-        self.listen_state(self.override, self.topic_override_set)
+        self.listen_state(self.override, self.args["entityset"])
+
+        # TODO, listen to topic instead of HASS entity
+        # self.mqtt_subscribe(topic=self.topic_override_set, namespace = "mqtt")
+        # self.listen_event(self.test, event="MQTT_MESSAGE", topic="fan/override/set")
+        # self.call_service("mqtt/subscribe", topic = "fan/override/set", namespace = "mqtt")
 
         """
         Following call runs every minute to check if something needs to happen
@@ -70,6 +76,10 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
             self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
 
         self.determine_setting(kwargs=None)
+
+    # def test(self, event_name, data, kwargs):
+
+    #     self.event_happened(f"test fired with new is {data}")
 
     def override(self, entity, attribute, old, new, kwargs):
         """
