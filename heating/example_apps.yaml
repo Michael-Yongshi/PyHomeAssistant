@@ -1,0 +1,11 @@
+
+watch_thermostat:
+  module: watch_thermostat
+  class: WatchThermostat
+  climate: climate.central_heating
+  toggle: input_boolean.thermostat_programming
+  timeslots:
+    - night
+    - morning
+    - afternoon
+    - evening

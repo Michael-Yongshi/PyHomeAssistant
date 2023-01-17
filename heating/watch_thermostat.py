@@ -1,6 +1,7 @@
 import appdaemon.plugins.hass.hassapi as hass
 import datetime
 import pytz
+from pytz import utc
 
 class WatchThermostat(hass.Hass):
     """
@@ -16,21 +17,21 @@ class WatchThermostat(hass.Hass):
     def initialize(self):
 
         # Entities to influence
-        self.entity = "climate.central_heating"
-
+        self.entity = self.args["climate"]
 
         ###### User program
 
         # Toggle to turn programming on or off
-        self.toggle = "input_boolean.thermostat_programming"
+        self.toggle = self.args["toggle"]
         self.timezone = pytz.timezone("Europe/Amsterdam")
+        self.timezone = utc
 
         # helper format
         helper_type_temp = "input_number."
         helper_type_end = "input_datetime."
         self.helper_temp = helper_type_temp + "thermostat_temperature_"
         self.helper_end = helper_type_end + "thermostat_timeslot_"
-        self.timeslotcategories = ['night', 'morning', 'afternoon', 'evening']
+        self.timeslotcategories = self.args["timeslots"]
 
         # variables to watch with initial value
         self.current_program = self.set_program()

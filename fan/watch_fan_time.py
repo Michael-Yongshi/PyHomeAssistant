@@ -2,6 +2,7 @@ import appdaemon.plugins.hass.hassapi as hass
 import datetime
 import requests
 import pytz
+from pytz import utc
 
 import mqttapi as mqtt
 
@@ -25,15 +26,16 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         ###### User program
 
         # Toggle to turn programming on or off
-        self.toggle = "input_boolean.fan_programming"
+        self.toggle = self.args["toggle"]
         self.timezone = pytz.timezone("Europe/Amsterdam")
+        self.timezone = utc
 
         # helper format
         helper_type_speed = "input_number."
         helper_type_end = "input_datetime."
         self.helper_speed = helper_type_speed + "fan_speed_"
         self.helper_end = helper_type_end + "fan_timeslot_"
-        self.timeslotcategories = ['night', 'morning', 'afternoon', 'evening']
+        self.timeslotcategories = self.args["timeslots"]
 
         # variables to watch with initial value
         self.current_program = self.set_program()
@@ -41,7 +43,7 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
 
         ###### Override method: Complex
         # get interval setting from a helper
-        self.set_override_interval = "input_number.fan_default_override"
+        self.set_override_interval = self.args["interval"]
 
         # variable to watch with initial value
         self.override_expiration = datetime.datetime.now()
@@ -50,15 +52,16 @@ class WatchFan(mqtt.Mqtt, hass.Hass):
         self.last_timeslot_end = 0
         self.last_fan_status = None
 
-        self.topic_override_set = "fan/override/set"
-        self.topic_override_status = "fan/override/status"
-        self.topic_override_timeleft = "fan/override/timeleft"
+        # Topics to communicate override request (bilaterally), status (push) and time (push)
+        self.topic_override_set = self.args["topicset"]
+        self.topic_override_status = self.args["topicstatus"]
+        self.topic_override_timeleft = self.args["topictime"]
 
 
         """
         Callback runs once an mqtt update has been done
         """
-        self.listen_state(self.override, "sensor.mqtt_fan_override_set")
+        self.listen_state(self.override, self.topic_override_set)
 
         """
         Following call runs every minute to check if something needs to happen
