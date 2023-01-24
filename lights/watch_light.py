@@ -85,9 +85,10 @@ class WatchLight(hass.Hass):
         """
 
         # get current datetime value
-        current_datetime_utc = datetime.datetime.now(tz=self.timezone)
-        current_datetime_local = self.convert_dt_utc_aware_to_local_aware(current_datetime_utc)
-        # self.event_happened(f"current datetime is {current_datetime_local}")
+        current_datetime_local = datetime.datetime.now(tz=self.timezone)
+        self.log(f"current datetime local is {current_datetime_local}")
+        current_datetime_utc = self.convert_dt_local_aware_to_utc_aware(current_datetime_local)
+        self.log(f"current datetime utc is {current_datetime_utc}")
 
         # check if override is active, if so discontinue and return
         if self.override_expiration_utc >= current_datetime_utc:
@@ -100,7 +101,7 @@ class WatchLight(hass.Hass):
         # get current status and skip if status of the entity is unavailable
         status = self.get_state(self.entities[0])
         if status == "unavailable":
-            message = f"status is unavailable, skipping for now..."
+            self.log(f"status is unavailable, skipping for now...")
 
             # signal whenever the state cant be received
             # self.event_happened(message)
@@ -121,40 +122,46 @@ class WatchLight(hass.Hass):
         # timeslot is only needed if sun is under elevation level
         if sun_elevation < offset:
 
-            # self.event_happened(f"Actual elevation {sun_elevation} is below elevation {offset_raw}")
-            # self.event_happened(f"Sun is down, now checking if its in exclusion frame...")
+            self.log(f"Actual elevation {sun_elevation} is below elevation {offset_raw}")
+            self.log(f"Sun is down, now checking if its in exclusion frame...")
 
             # get current timeslot (in utc)
             current_timeslot = self.get_current_timeslot(current_datetime_local)
-            morning_start_utc = current_timeslot["start"]
-            evening_end_utc = current_timeslot["end"]
+            morning_start_local_naive = current_timeslot["start"]
+            evening_end_local_naive = current_timeslot["end"]
+            morning_start_utc = self.convert_dt_local_naive_to_dt_utc_aware(morning_start_local_naive)
+            evening_end_utc = self.convert_dt_local_naive_to_dt_utc_aware(evening_end_local_naive)
 
             # get times in local for logging purposes
-            morning_start_local = evening_end_local = self.convert_dt_utc_aware_to_local_aware(morning_start_utc)
-            evening_end_local = evening_end_local = self.convert_dt_utc_aware_to_local_aware(evening_end_utc)
+            morning_start_local = self.convert_dt_local_naive_to_dt_local_aware(morning_start_local_naive)
+            evening_end_local = self.convert_dt_local_naive_to_dt_local_aware(evening_end_local_naive)
 
             # check if time is before evening end (evening window)
             if current_datetime_utc <= evening_end_utc:
+                self.log(f"current time utc {current_datetime_utc} is before evening end utc {evening_end_utc}, local time setting was {evening_end_local}")
                 message = f"Sun is down, time {self.pretty_datetime(current_datetime_local)} is before evening end {self.pretty_datetime(evening_end_local)}, lights should be on"
                 within_lights_window = True
 
             # check if time is after morning start (morning window)
             elif current_datetime_utc >= morning_start_utc:
+                self.log(f"current time utc {current_datetime_utc} is before evening end utc {morning_start_utc}, local time setting was {morning_start_local}")
                 message = f"Sun is down, time {self.pretty_datetime(current_datetime_local)} is after morning start {self.pretty_datetime(morning_start_local)}, lights should be on"
                 within_lights_window = True
 
             # check if time is in between evening end and morning start (exclusion frame)
             else:
+                self.log(f"current time utc {current_datetime_utc} is between evening end utc {evening_end_utc}, local time setting was {evening_end_local}, and morning start utc {morning_start_utc}, with local setting was {morning_start_local}")
                 message = f"Sun is down, time {self.pretty_datetime(current_datetime_local)} is between between evening end {self.pretty_datetime(evening_end_local)} and morning start {self.pretty_datetime(morning_start_local)}, lights should be off"
                 within_lights_window = False
 
         # sun is up, lights should be off regardless
         else:
+            self.log(f"sun is up with current time utc {current_datetime_utc} and local time {current_datetime_local}")
             message = f"Sun is up, time {self.pretty_datetime(current_datetime_local)}"
             within_lights_window = False
 
         # log for debugging of every decision
-        # self.event_happened(message)
+        self.log(message)
 
         # if within a light window, but lights are off, turn them on
         if within_lights_window == True and status == "off":
@@ -193,12 +200,11 @@ class WatchLight(hass.Hass):
         yesterdays_program = self.current_program[weekday - 1] if weekday > 0 else self.current_program[6]
         # self.event_happened(f"yesterdays program = {yesterdays_program}")
 
-        # establish noon as a datetime aware object (based on today in local time, but expressed in UTC)
+        # establish noon as a datetime aware object (in UTC)
         noontime = self.convert_string_local_to_t_local_naive("12:00:00")
         noon = datetime.datetime.combine(current_datetime_local.date(), noontime.time())
-        noon_utc = self.convert_dt_local_naive_to_dt_utc_aware(noon)
-        noon_local = self.convert_dt_utc_aware_to_local_aware(noon_utc)
-        # self.event_happened(f"Noon Local is at {noon_local}")
+        noon_local = self.convert_dt_local_naive_to_dt_local_aware(noon)
+        self.log(f"Noon local is at {noon_local}, while current dt is {current_datetime_local}")
 
         # take the correct settings with noon as the delimiter (as sun is up and lights are definitely supposed to be off, in contrast to midnight...)
         if current_datetime_local > noon_local:
@@ -225,17 +231,17 @@ class WatchLight(hass.Hass):
         evening_day_correction = 0 if evening_time.time() > datetime.time(hour=12) else 1
         evening_end_naive = datetime.datetime.combine(evening_day + datetime.timedelta(days=evening_day_correction), evening_time.time())
         evening_end_utc = self.convert_dt_local_naive_to_dt_utc_aware(evening_end_naive)
-        # self.event_happened(f"Evening end is {evening_end_utc}")
+        self.log(f"Evening end is in utc {evening_end_utc}, which is in local time {evening_end_naive}")
 
         morning_time = self.convert_string_local_to_t_local_naive(morning_program)
         morning_day_correction = 1 if morning_time.time() > datetime.time(hour=12) else 0
         morning_start_naive = datetime.datetime.combine(morning_day - datetime.timedelta(days=morning_day_correction), morning_time.time())
         morning_start_utc = self.convert_dt_local_naive_to_dt_utc_aware(morning_start_naive)
-        # self.event_happened(f"Morning start is {morning_start_utc}")
+        self.log(f"Morning start in utc is {morning_start_utc}, which is in local time {morning_start_naive}")
 
         current_timeslot = {
-            "start": morning_start_utc, 
-            "end": evening_end_utc
+            "start": morning_start_naive, 
+            "end": evening_end_naive
         }
 
         return current_timeslot
@@ -375,6 +381,16 @@ class WatchLight(hass.Hass):
 
         return dt_utc_aware
 
+    def convert_string_utc_to_t_utc_aware(self, string_utc):
+        """
+        Converts a string of UTC time to a (timezone aware) datetime object
+        Home assistant works with UTC datetime strings, including the UTC timezone attribute
+        """
+
+        dt_utc_aware = datetime.datetime.strptime(string_utc, "%H:%M:%S%z")
+
+        return dt_utc_aware
+
     def convert_string_local_to_t_local_naive(self, string_local):
         """
         Used to convert a string notation of a time stamp into a python datetime object 
@@ -402,19 +418,35 @@ class WatchLight(hass.Hass):
 
         return dt_local_aware
 
+    def convert_dt_local_aware_to_utc_aware(self, dt_local_aware):
+        """
+        receives a utc aware datetime and transforms it in local aware datetime
+        """
+
+        # converts a timezone aware datetime object to local time (based on timezone established in config)
+        dt_utc_aware = dt_local_aware.astimezone(tz=utc)
+
+        return dt_utc_aware
+
     def convert_dt_local_naive_to_dt_utc_aware(self, dt_local_naive):
         """
         receives a local naive datetime and transforms it in utc aware datetime
         Once we converted a user setting to a naive datetime object we still need to add timezone info and transform to UTC time
         """
 
+        dt_local_aware = self.convert_dt_local_naive_to_dt_local_aware(dt_local_naive)
+
+        # converts a timezone aware datetime object to universal time (utc)
+        dt_utc_aware = dt_local_aware.astimezone(tz=utc)
+
+        return dt_utc_aware
+
+    def convert_dt_local_naive_to_dt_local_aware(self, dt_local_naive):
+
         # adds timezone info only in order to make the datetime object aware of the timezone it represents
         dt_local_aware = self.timezone.localize(dt_local_naive)
 
-        # converts a timezone aware datetime object to universal time (utc)
-        dt_utc_aware = dt_local_aware.astimezone(tz=self.timezone)
-
-        return dt_utc_aware
+        return dt_local_aware
 
     def pretty_datetime(self, datetime):
 
