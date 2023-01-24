@@ -32,7 +32,7 @@ class WatchLight(hass.Hass):
         # Toggle to turn programming on or off
         self.toggle = self.args["toggle"]
         self.timezone = pytz.timezone("Europe/Amsterdam")
-        self.timezone = utc
+        # self.timezone = utc
 
         # In amount of degrees of elevation: gives you offset of around 10 - 15 minutes per degree
         self.elevation_offset = self.args["offset"]
