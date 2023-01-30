@@ -338,7 +338,7 @@ class WatchLight(hass.Hass):
             self.event_happened(message)
 
             # immediately run automatically setting the lights as override is stopped
-            self.process()
+            self.determine_setting(kwargs=None)
 
         # if override is active (and speed is the same as previous override) extend the override
         elif set_state == current_status and self.override_expiration_utc > current_datetime_utc:
