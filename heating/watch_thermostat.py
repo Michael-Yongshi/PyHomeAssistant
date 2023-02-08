@@ -45,8 +45,7 @@ class WatchThermostat(hass.Hass):
         """
         Following call runs every minute to check if something needs to happen
         """
-        if self.get_state(self.toggle) == "on":
-            self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
+        self.run_minutely(self.determine_setting, datetime.time(0, 0, 0))
 
         self.determine_setting(kwargs=None)
 
@@ -54,6 +53,9 @@ class WatchThermostat(hass.Hass):
         """
         Check logic to see if target temp should change on the thermostat
         """
+
+        if self.get_state(self.toggle) != "on":
+            return
 
         # get current datetime value
         current_time = datetime.datetime.now()
@@ -164,8 +166,7 @@ class WatchThermostat(hass.Hass):
 
         # Call telegram message service to send the message from the telegram bot
         self.call_service(
-            "telegram_bot/send_message", message=message,
-        )
+            f'notify/telegram_log', title="", message=message)
 
     def pretty_datetime(self, datetime):
 

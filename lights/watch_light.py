@@ -71,8 +71,7 @@ class WatchLight(hass.Hass):
         """
         Following call runs every minute to check if something needs to happen
         """
-        if self.get_state(self.toggle) == "on":
-            self.run_minutely(self.determine_setting, datetime.time(0, 0, 10))
+        self.run_minutely(self.determine_setting, datetime.time(0, 0, 10))
 
         self.determine_setting(kwargs=None)
 
@@ -83,6 +82,9 @@ class WatchLight(hass.Hass):
 
         in order to run lights always when its dark, set evening end to 1 o clock and morning start at 23 o clock
         """
+
+        if self.get_state(self.toggle) != "on":
+            return
 
         # get current datetime value
         current_datetime_local = datetime.datetime.now(tz=self.timezone)
@@ -286,8 +288,7 @@ class WatchLight(hass.Hass):
 
         # Call telegram message service to send the message from the telegram bot
         self.call_service(
-            "telegram_bot/send_message", message=message,
-        )
+            f'notify/telegram_log', title="", message=message)
 
     def override_switch(self, entity, attribute, old, new, kwargs):
         """
